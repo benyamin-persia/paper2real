@@ -1,0 +1,190 @@
+{
+  "last_updated": "2026-05-01T15:29:04.331742+00:00",
+  "has_critical": false,
+  "exchange_hack_alert": null,
+  "stablecoin_depeg": null,
+  "critical_alerts": [],
+  "important_news": [
+    {
+      "headline": "***",
+      "url": "https://cryptopanic.com/news/bitcoin/31925239/Earning-075324-Bitcoins-Daily-The-BTC-Ecosystem-Revenue-Model-Sparks-Widespread-Discussion",
+      "published_at": "",
+      "importance": 0
+    },
+    {
+      "headline": "24min",
+      "url": "https://cryptopanic.com/news/bitcoin/32050681/BlackRock-Deposits-26K-ETH-226-BTC-to-Coinbase-Prime",
+      "published_at": "Fri May 01 2026 11:05:00 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "35min",
+      "url": "https://cryptopanic.com/news/bitcoin/32050288/Bitcoin-Crossed-78000-as-Iran-Sent-New-Peace-Proposal-to-US",
+      "published_at": "Fri May 01 2026 10:53:56 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "39min",
+      "url": "https://cryptopanic.com/news/bitcoin/32051015/Crypto-Youtubers-Predict-Bitcoin-Bottom-and-Bear-Market-Cycle",
+      "published_at": "Fri May 01 2026 10:50:12 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "50min",
+      "url": "https://cryptopanic.com/news/bitcoin/32050287/MSTR-Surges-33-In-April-Is-Peter-Schiff-Wrong-About-The-Largest-Ponzi-In-The-World",
+      "published_at": "Fri May 01 2026 10:38:51 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "1h",
+      "url": "https://cryptopanic.com/news/bitcoin/32048745/Brazil-Bans-Crypto-in-Cross-Border-Payments",
+      "published_at": "Fri May 01 2026 10:05:16 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "2h",
+      "url": "https://cryptopanic.com/news/bitcoin/32050417/Institutional-demand-to-drive-bitcoin-market-cap-to-16-trillion-by-2030-Ark-Invest",
+      "published_at": "Fri May 01 2026 09:31:53 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "2h",
+      "url": "https://cryptopanic.com/news/bitcoin/32048572/SHIB-Joins-BTC-ETH-XRP-SOL-in-Japan-Lending-Push-via-SBI-VC-Trade",
+      "published_at": "Fri May 01 2026 09:10:00 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "2h",
+      "url": "https://cryptopanic.com/news/bitcoin/32047004/Bitcoin-Eyes-60K-200WMA-as-ETF-Pressure-Builds-While-BTC-Tests-76200-Lows",
+      "published_at": "Fri May 01 2026 09:00:10 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "3h",
+      "url": "https://cryptopanic.com/news/bitcoin/32046945/77-Billion-XRP-is-Exposed-to-Quantum-Computing-Threats-Report",
+      "published_at": "Fri May 01 2026 08:48:21 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "3h",
+      "url": "https://cryptopanic.com/news/bitcoin/32046948/Bitcoin-Reclaims-77000-Ethereum-XRP-Dogecoin-Bump-1",
+      "published_at": "Fri May 01 2026 08:33:56 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "3h",
+      "url": "https://cryptopanic.com/news/bitcoin/32046954/Analyst-shares-new-Bitcoin-prediction-for-all-of-2026",
+      "published_at": "Fri May 01 2026 08:30:00 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "3h",
+      "url": "https://cryptopanic.com/news/bitcoin/32046895/OpenAI-Foundation-CFO-Joins-1-Billion-XRP-Treasury-Bitcoins-Worst-Case-by-May-2026-Detailed-by-Expert-Trader-183-Million-Capital-Flight-Hits-Ethereum-ETFs-Amid-DeFi-Hack-Wave-Morning-Crypto-Report",
+      "published_at": "Fri May 01 2026 08:27:15 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "3h",
+      "url": "https://cryptopanic.com/news/bitcoin/32045589/Satoshi-Still-Owns-More-BTC-Than-Coinbase-and-BlackRock-Combined",
+      "published_at": "Fri May 01 2026 08:05:00 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "3h",
+      "url": "https://cryptopanic.com/news/bitcoin/32045377/Bhutans-Bitcoin-sell-offs-hit-200-mln-Is-the-country-letting-go-of-its-BTC-reserve",
+      "published_at": "Fri May 01 2026 08:00:33 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "4h",
+      "url": "https://cryptopanic.com/news/bitcoin/32048763/Japan-Launches-SBI-Visa-crypto-card-Letting-Users-earn-BTC-ETH-and-XRP-rewards",
+      "published_at": "Fri May 01 2026 07:56:38 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "4h",
+      "url": "https://cryptopanic.com/news/bitcoin/32045260/Bitcoin-Closes-April-Up-12-as-Strategys-MSTR-Posts-First-Positive-Month-Since-July",
+      "published_at": "Fri May 01 2026 07:47:53 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "4h",
+      "url": "https://cryptopanic.com/news/bitcoin/32047653/Bitcoin-bounces-as-big-tech-earnings-fuel-optimism-short-term-pressures-remain",
+      "published_at": "Fri May 01 2026 07:15:02 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "4h",
+      "url": "https://cryptopanic.com/news/bitcoin/32045203/Ripple-CEO-Sends-Strong-XRP-Signal-From-Las-Vegas",
+      "published_at": "Fri May 01 2026 07:10:21 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "4h",
+      "url": "https://cryptopanic.com/news/bitcoin/32043798/Bitcoin-is-repeating-a-2022-pattern-and-this-time-were-missing-the-buyers-for-what-came-next",
+      "published_at": "Fri May 01 2026 07:00:38 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32045195/Bitcoin-ETFs-draw-2B-in-April-for-highest-monthly-inflows-this-year",
+      "published_at": "Fri May 01 2026 06:53:44 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32045732/CLARITY-Act-Petition-Gains-Momentum-What-Does-it-Mean",
+      "published_at": "Fri May 01 2026 06:48:37 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32043620/Bitcoin-BTC-Holds-Above-76000-With-13-Percent-April-Gain-as-Fed-Rate-Hold-and-Iran-Risk-Keep-Bulls-Cautious",
+      "published_at": "Fri May 01 2026 06:48:00 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32045211/XRP-Price-Follows-Bitcoin-Bill-Morgan-Explains-XRP-BTC-Correlation",
+      "published_at": "Fri May 01 2026 06:36:28 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32043547/Bitwise-CIO-Altcoin-Season-Is-Over-Bitcoin-Could-Hit-1M-in-5-Years",
+      "published_at": "Fri May 01 2026 06:33:15 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32044703/Bitcoin-ticks-higher-but-remains-range-bound-as-traders-keep-short-bias",
+      "published_at": "Fri May 01 2026 06:20:23 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32042902/Heres-how-much-Bitcoin-ETFs-recorded-in-inflows-in-April-2026",
+      "published_at": "Fri May 01 2026 06:15:44 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32043134/Can-Bitcoin-Ride-A-Stock-Market-Breakout-80K-Next-If-SP-500-Keeps-Rallying",
+      "published_at": "Fri May 01 2026 06:13:42 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32042917/Five-Things-That-Will-Define-Crypto-in-May-2026",
+      "published_at": "Fri May 01 2026 06:13:35 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    },
+    {
+      "headline": "5h",
+      "url": "https://cryptopanic.com/news/bitcoin/32044504/Altcoins-Stuck-Since-February-Will-ADA-SOL-LTC-SUI-and-LINK-Finally-Break-Out-This-Month",
+      "published_at": "Fri May 01 2026 06:09:57 GMT-0400 (Eastern Daylight Time)",
+      "importance": 0
+    }
+  ],
+  "scrape_error": null
+}

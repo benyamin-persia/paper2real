@@ -1,0 +1,481 @@
+{
+  "checked_at": "2026-04-30",
+  "total": 79,
+  "bad": [],
+  "results": [
+    {
+      "handle": "POTUS",
+      "live": true,
+      "title": "President Donald J. Trump (@POTUS) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "WhiteHouse",
+      "live": true,
+      "title": "The White House (@WhiteHouse) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "realDonaldTrump",
+      "live": true,
+      "title": "Donald J. Trump (@realDonaldTrump) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "federalreserve",
+      "live": true,
+      "title": "Federal Reserve (@federalreserve) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "SECGov",
+      "live": true,
+      "title": "U.S. Securities and Exchange Commission (@SECGov) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "USTreasury",
+      "live": true,
+      "title": "Treasury Department (@USTreasury) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "CFTC",
+      "live": true,
+      "title": "CFTC (@CFTC) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "TheJusticeDept",
+      "live": true,
+      "title": "U.S. Department of Justice (@TheJusticeDept) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "JPMorgan",
+      "live": true,
+      "title": "J.P. Morgan (@jpmorgan) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "BlackRock",
+      "live": true,
+      "title": "BlackRock (@BlackRock) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "iShares",
+      "live": true,
+      "title": "iShares (@iShares) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "Fidelity",
+      "live": true,
+      "title": "Fidelity Investments (@Fidelity) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "MicroStrategy",
+      "live": true,
+      "title": "Strategy (@MicroStrategy) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "saylor",
+      "live": true,
+      "title": "Michael Saylor (@saylor) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "binance",
+      "live": true,
+      "title": "Binance (@binance) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "coinbase",
+      "live": true,
+      "title": "Coinbase \ud83d\udee1\ufe0f (@coinbase) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "Grayscale",
+      "live": true,
+      "title": "Grayscale (@Grayscale) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "Tether",
+      "live": true,
+      "title": "Tether (@tether) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "paoloardoino",
+      "live": true,
+      "title": "Paolo Ardoino \ud83e\udd16 (@paoloardoino) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "zachxbt",
+      "live": true,
+      "title": "ZachXBT (@zachxbt) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "PeckShieldAlert",
+      "live": true,
+      "title": "PeckShieldAlert (@PeckShieldAlert) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "SlowMist_Team",
+      "live": true,
+      "title": "SlowMist (@SlowMist_Team) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "CertiKAlert",
+      "live": true,
+      "title": "CertiK Alert (@CertiKAlert) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "WuBlockchain",
+      "live": true,
+      "title": "Wu Blockchain (@WuBlockchain) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "JDVance",
+      "live": true,
+      "title": "JD Vance (@JDVance) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "SecScottBessent",
+      "live": true,
+      "title": "Treasury Secretary Scott Bessent (@SecScottBessent) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "SenLummis",
+      "live": true,
+      "title": "Senator Cynthia Lummis (@SenLummis) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "RepTomEmmer",
+      "live": true,
+      "title": "Profile / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "richardteng",
+      "live": true,
+      "title": "Richard Teng (@RichardTeng) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "heyibinance",
+      "live": true,
+      "title": "Yi He (@heyibinance) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "brian_armstrong",
+      "live": true,
+      "title": "Brian Armstrong (@brian_armstrong) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "ki_young_ju",
+      "live": true,
+      "title": "Ki Young Ju (@ki_young_ju) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "elonmusk",
+      "live": true,
+      "title": "Elon Musk (@elonmusk) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "cz_binance",
+      "live": true,
+      "title": "CZ \ud83d\udd36 BNB (@cz_binance) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "CathieDWood",
+      "live": true,
+      "title": "Cathie Wood (@CathieDWood) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "ARKInvest",
+      "live": true,
+      "title": "ARK Invest (@ARKInvest) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "novogratz",
+      "live": true,
+      "title": "Mike Novogratz (@novogratz) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "tyler",
+      "live": true,
+      "title": "Tyler Winklevoss (@tyler) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "cameron",
+      "live": true,
+      "title": "Cameron Winklevoss (@cameron) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "CaitlinLong_",
+      "live": true,
+      "title": "Caitlin Long \ud83d\udd11\u26a1\ufe0f\ud83d\udfe0 (@CaitlinLong_) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "MarathonDH",
+      "live": true,
+      "title": "Moved to @MARAHoldings (@MarathonDH) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "RiotPlatforms",
+      "live": true,
+      "title": "Riot Platforms, Inc. (@RiotPlatforms) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "RayDalio",
+      "live": true,
+      "title": "Ray Dalio (@RayDalio) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "WarrenBuffett",
+      "live": true,
+      "title": "Warren Buffett (@WarrenBuffett) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "100trillionUSD",
+      "live": true,
+      "title": "PlanB (@100trillionUSD) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "balajis",
+      "live": true,
+      "title": "Balaji (@balajis) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "willywoo",
+      "live": true,
+      "title": "Willy Woo (@willywoo) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "glassnode",
+      "live": true,
+      "title": "glassnode (@glassnode) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "danheld",
+      "live": true,
+      "title": "Dan Held (@danheld) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "nic__carter",
+      "live": true,
+      "title": "Profile / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "APompliano",
+      "live": true,
+      "title": "Anthony Pompliano \ud83c\udf2a (@APompliano) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "CoinDesk",
+      "live": true,
+      "title": "CoinDesk (@CoinDesk) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "Cointelegraph",
+      "live": true,
+      "title": "Cointelegraph (@Cointelegraph) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "TheBlockCo",
+      "live": true,
+      "title": "The Block (@TheBlockCo) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "BitcoinMagazine",
+      "live": true,
+      "title": "Bitcoin Magazine (@BitcoinMagazine) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "DecryptMedia",
+      "live": true,
+      "title": "Decrypt (@DecryptMedia) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "coinbureau",
+      "live": true,
+      "title": "Coin Bureau (@coinbureau) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "DocumentingBTC",
+      "live": true,
+      "title": "Documenting \u20bfitcoin \ud83d\udcc4 (@DocumentingBTC) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "jack",
+      "live": true,
+      "title": "jack (@jack) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "SenWarren",
+      "live": true,
+      "title": "Elizabeth Warren (@SenWarren) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "TedCruz",
+      "live": true,
+      "title": "Ted Cruz (@tedcruz) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "GaryGensler",
+      "live": true,
+      "title": "Gary Gensler (@GaryGensler) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "VitalikButerin",
+      "live": true,
+      "title": "vitalik.eth (@VitalikButerin) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "RaoulGMI",
+      "live": true,
+      "title": "Raoul Pal (@RaoulGMI) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "EricBalchunas",
+      "live": true,
+      "title": "Eric Balchunas (@EricBalchunas) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "JSeyff",
+      "live": true,
+      "title": "James Seyffart (@JSeyff) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "NickTimiraos",
+      "live": true,
+      "title": "Nick Timiraos (@NickTimiraos) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "Bitwise",
+      "live": true,
+      "title": "Bitwise (@Bitwise) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "vaneck_us",
+      "live": true,
+      "title": "VanEck (@vaneck_us) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "krakenfx",
+      "live": true,
+      "title": "Kraken (@krakenfx) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "okx",
+      "live": true,
+      "title": "OKX (@okx) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "Bybit_Official",
+      "live": true,
+      "title": "Bybit (@Bybit_Official) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "circle",
+      "live": true,
+      "title": "Circle (@circle) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "BLS_gov",
+      "live": true,
+      "title": "BLS-Labor Statistics (@BLS_gov) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "BEA_News",
+      "live": true,
+      "title": "BEA News (@BEA_News) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "FinCENnews",
+      "live": true,
+      "title": "Financial Crimes Enforcement Network (FinCEN) (@FinCENnews) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "IRSnews",
+      "live": true,
+      "title": "IRSnews (@IRSnews) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "SenateBanking",
+      "live": true,
+      "title": "Senate Banking and Housing Democrats (@SenateBanking) / X",
+      "reason": "ok"
+    },
+    {
+      "handle": "FinancialCmte",
+      "live": true,
+      "title": "Financial Services GOP (@FinancialCmte) / X",
+      "reason": "ok"
+    }
+  ]
+}

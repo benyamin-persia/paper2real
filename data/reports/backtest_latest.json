@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-05-01T16:16:23.474462+00:00",
+  "input": "data\\processed\\master_dataset.csv",
+  "period_start": "2024-11-15",
+  "period_end": "2026-04-30",
+  "rows": 531,
+  "assumptions": {
+    "fee_rate_pct_per_fill": 0.1,
+    "slippage_pct_per_fill": 0.05,
+    "risk_per_trade_pct": 1.0,
+    "atr_initial_stop_mult": 1.5,
+    "atr_trailing_stop_mult": 2.0,
+    "note": "Backtest replays daily master_dataset signals, not live 15-minute Claude decisions."
+  },
+  "summary": {
+    "starting_balance": 10000.0,
+    "final_cash": 9909.28,
+    "final_equity": 9909.28,
+    "return_pct": -0.91,
+    "buy_and_hold_return_pct": -17.18,
+    "max_drawdown_pct": 3.35,
+    "total_fees_usd": 26.84,
+    "signals_buy": 64,
+    "signals_sell": 32,
+    "signals_hold": 435,
+    "executed_buys": 10,
+    "executed_sells": 0,
+    "stop_sells": 10,
+    "trades_closed": 10,
+    "open_positions": 0,
+    "wins": 4,
+    "losses": 6,
+    "win_rate_pct": 40.0,
+    "avg_trade_usd": -9.07,
+    "best_trade_usd": 135.0,
+    "worst_trade_usd": -76.69,
+    "hold_ratio_pct": 98.12
+  },
+  "block_breakdown": {
+    "no_open_position": 32,
+    "max_open_trades": 8,
+    "consecutive_losses": 46
+  }
+}

@@ -1,0 +1,3879 @@
+
+My name is David Andre and in this video
+
+My name is David Andre and in this video
+ 
+
+My name is David Andre and in this video
+I'm going to show you how to build a web
+
+I'm going to show you how to build a web
+ 
+
+I'm going to show you how to build a web
+scraping AI agent. Now you need to start
+
+scraping AI agent. Now you need to start
+ 
+
+scraping AI agent. Now you need to start
+putting your AI agents to work because
+
+putting your AI agents to work because
+ 
+
+putting your AI agents to work because
+with web scraping your agents can become
+
+with web scraping your agents can become
+ 
+
+with web scraping your agents can become
+productive members of your life and
+
+productive members of your life and
+ 
+
+productive members of your life and
+business. For example, you can put an
+
+business. For example, you can put an
+ 
+
+business. For example, you can put an
+agent to find more leads for your
+
+agent to find more leads for your
+ 
+
+agent to find more leads for your
+business, grow your social media
+
+business, grow your social media
+ 
+
+business, grow your social media
+accounts, scrape job candidates, and so
+
+accounts, scrape job candidates, and so
+ 
+
+accounts, scrape job candidates, and so
+much more all by itself autonomously.
+
+much more all by itself autonomously.
+ 
+
+much more all by itself autonomously.
+And so first I'll explain what web
+
+And so first I'll explain what web
+ 
+
+And so first I'll explain what web
+scraping is. Then we'll look at how to
+
+scraping is. Then we'll look at how to
+ 
+
+scraping is. Then we'll look at how to
+plug it into your AI agent. And then
+
+plug it into your AI agent. And then
+ 
+
+plug it into your AI agent. And then
+I'll show you how you can scrape
+
+I'll show you how you can scrape
+ 
+
+I'll show you how you can scrape
+literally anything. So take a deep
+
+literally anything. So take a deep
+ 
+
+literally anything. So take a deep
+breath and pay attention. First off,
+
+breath and pay attention. First off,
+ 
+
+breath and pay attention. First off,
+what even is web scraping? Simply put,
+
+what even is web scraping? Simply put,
+ 
+
+what even is web scraping? Simply put,
+web scraping takes information from
+
+web scraping takes information from
+ 
+
+web scraping takes information from
+websites and turns it into data that you
+
+websites and turns it into data that you
+ 
+
+websites and turns it into data that you
+can actually use. So what would take you
+
+can actually use. So what would take you
+ 
+
+can actually use. So what would take you
+or me hours of copy pasting, a scraper
+
+or me hours of copy pasting, a scraper
+ 
+
+or me hours of copy pasting, a scraper
+can handle that in a matter of minutes
+
+can handle that in a matter of minutes
+ 
+
+can handle that in a matter of minutes
+or even seconds. Now, as I mentioned,
+
+or even seconds. Now, as I mentioned,
+ 
+
+or even seconds. Now, as I mentioned,
+you can use a web scraper to grow your
+
+you can use a web scraper to grow your
+ 
+
+you can use a web scraper to grow your
+business, make more money, or you can
+
+business, make more money, or you can
+ 
+
+business, make more money, or you can
+just check whether someone you know is
+
+just check whether someone you know is
+ 
+
+just check whether someone you know is
+in the files. Now, simple web search
+
+in the files. Now, simple web search
+ 
+
+in the files. Now, simple web search
+tools that many AI agents have are not
+
+tools that many AI agents have are not
+ 
+
+tools that many AI agents have are not
+enough. And that's because if you give
+
+enough. And that's because if you give
+ 
+
+enough. And that's because if you give
+your AI a simple URL, and feel free to
+
+your AI a simple URL, and feel free to
+ 
+
+your AI a simple URL, and feel free to
+try this now, it will often run into
+
+try this now, it will often run into
+ 
+
+try this now, it will often run into
+issues getting the contents from that
+
+issues getting the contents from that
+ 
+
+issues getting the contents from that
+website, especially sites like Twitter,
+
+website, especially sites like Twitter,
+ 
+
+website, especially sites like Twitter,
+Reddit, and LinkedIn are actively trying
+
+Reddit, and LinkedIn are actively trying
+ 
+
+Reddit, and LinkedIn are actively trying
+to block AI agents from visiting and
+
+to block AI agents from visiting and
+ 
+
+to block AI agents from visiting and
+reading the contents of their sites. But
+
+reading the contents of their sites. But
+ 
+
+reading the contents of their sites. But
+with a powerful web scraping tool,
+
+with a powerful web scraping tool,
+ 
+
+with a powerful web scraping tool,
+something like aify, you can scrape
+
+something like aify, you can scrape
+ 
+
+something like aify, you can scrape
+literally any website. And if applied
+
+literally any website. And if applied
+ 
+
+literally any website. And if applied
+properly, I would even say that web
+
+properly, I would even say that web
+ 
+
+properly, I would even say that web
+scraping can change your life. Here's
+
+scraping can change your life. Here's
+ 
+
+scraping can change your life. Here's
+what I mean. Your AI agent can literally
+
+what I mean. Your AI agent can literally
+ 
+
+what I mean. Your AI agent can literally
+generate leads for your business on
+
+generate leads for your business on
+ 
+
+generate leads for your business on
+autopilot. You can put him to script
+
+autopilot. You can put him to script
+ 
+
+autopilot. You can put him to script
+potential customers from LinkedIn,
+
+potential customers from LinkedIn,
+ 
+
+potential customers from LinkedIn,
+filter them, and even reach out to them.
+
+filter them, and even reach out to them.
+ 
+
+filter them, and even reach out to them.
+Or you can use an AI agent to track your
+
+Or you can use an AI agent to track your
+ 
+
+Or you can use an AI agent to track your
+competitors, look at their pricing, any
+
+competitors, look at their pricing, any
+ 
+
+competitors, look at their pricing, any
+new features, customer complaints, and
+
+new features, customer complaints, and
+ 
+
+new features, customer complaints, and
+know all of these things before even
+
+know all of these things before even
+ 
+
+know all of these things before even
+their team does. But let's say you don't
+
+their team does. But let's say you don't
+ 
+
+their team does. But let's say you don't
+have a business. Well, web scraping can
+
+have a business. Well, web scraping can
+ 
+
+have a business. Well, web scraping can
+also help you find job opportunities or
+
+also help you find job opportunities or
+ 
+
+also help you find job opportunities or
+you can look for real estate listings
+
+you can look for real estate listings
+ 
+
+you can look for real estate listings
+proactively. Anything that either
+
+proactively. Anything that either
+ 
+
+proactively. Anything that either
+requires a fast response, you know,
+
+requires a fast response, you know,
+ 
+
+requires a fast response, you know,
+checking in a milliseconds, or lots of
+
+checking in a milliseconds, or lots of
+ 
+
+checking in a milliseconds, or lots of
+data that would take forever for a human
+
+data that would take forever for a human
+ 
+
+data that would take forever for a human
+to process. So, here is how scraping and
+
+to process. So, here is how scraping and
+ 
+
+to process. So, here is how scraping and
+AI agents work together nicely. A
+
+AI agents work together nicely. A
+ 
+
+AI agents work together nicely. A
+scraper collects the data, but data
+
+scraper collects the data, but data
+ 
+
+scraper collects the data, but data
+alone doesn't do anything. So then you
+
+alone doesn't do anything. So then you
+ 
+
+alone doesn't do anything. So then you
+have an AI agent. That agent can read
+
+have an AI agent. That agent can read
+ 
+
+have an AI agent. That agent can read
+thousands of results instantly to find
+
+thousands of results instantly to find
+ 
+
+thousands of results instantly to find
+what actually matters to you. But then
+
+what actually matters to you. But then
+ 
+
+what actually matters to you. But then
+let's take it a step further. The AI
+
+let's take it a step further. The AI
+ 
+
+let's take it a step further. The AI
+agent because it's an agent, it can act
+
+agent because it's an agent, it can act
+ 
+
+agent because it's an agent, it can act
+upon that data like a send an email,
+
+upon that data like a send an email,
+ 
+
+upon that data like a send an email,
+update a spreadsheet, send you alert,
+
+update a spreadsheet, send you alert,
+ 
+
+update a spreadsheet, send you alert,
+whatever you need it to do, all without
+
+whatever you need it to do, all without
+ 
+
+whatever you need it to do, all without
+you doing any manual work. And this is
+
+you doing any manual work. And this is
+ 
+
+you doing any manual work. And this is
+the beauty of building a web scraping AI
+
+the beauty of building a web scraping AI
+ 
+
+the beauty of building a web scraping AI
+agent. Now to make this easier, we can
+
+agent. Now to make this easier, we can
+ 
+
+agent. Now to make this easier, we can
+use agent skills. Now, agent skills are
+
+use agent skills. Now, agent skills are
+ 
+
+use agent skills. Now, agent skills are
+pre-built instructions that you can give
+
+pre-built instructions that you can give
+ 
+
+pre-built instructions that you can give
+to your agents like claw code, agent
+
+to your agents like claw code, agent
+ 
+
+to your agents like claw code, agent
+zero, cursor. So, instead of writing and
+
+zero, cursor. So, instead of writing and
+ 
+
+zero, cursor. So, instead of writing and
+describing all of the logic for the
+
+describing all of the logic for the
+ 
+
+describing all of the logic for the
+scraping yourself, you simply install a
+
+scraping yourself, you simply install a
+ 
+
+scraping yourself, you simply install a
+skill and the AI agent instantly gains
+
+skill and the AI agent instantly gains
+ 
+
+skill and the AI agent instantly gains
+the ability to web scrape and then all
+
+the ability to web scrape and then all
+ 
+
+the ability to web scrape and then all
+you need to do is just talk to your AI
+
+you need to do is just talk to your AI
+ 
+
+you need to do is just talk to your AI
+agent in plain English and it will
+
+agent in plain English and it will
+ 
+
+agent in plain English and it will
+already know what to do and how to
+
+already know what to do and how to
+ 
+
+already know what to do and how to
+scrape websites. Yes, this is very OP.
+
+scrape websites. Yes, this is very OP.
+ 
+
+scrape websites. Yes, this is very OP.
+Now, there's a lot of web scraping tools
+
+Now, there's a lot of web scraping tools
+ 
+
+Now, there's a lot of web scraping tools
+on the market, but personally, I choose
+
+on the market, but personally, I choose
+ 
+
+on the market, but personally, I choose
+to use Appify and here's why. First off,
+
+to use Appify and here's why. First off,
+ 
+
+to use Appify and here's why. First off,
+they have over 4,000 scrapers that are
+
+they have over 4,000 scrapers that are
+ 
+
+they have over 4,000 scrapers that are
+already built for LinkedIn, Google Maps,
+
+already built for LinkedIn, Google Maps,
+ 
+
+already built for LinkedIn, Google Maps,
+Instagram, Tik Tok, anything you can
+
+Instagram, Tik Tok, anything you can
+ 
+
+Instagram, Tik Tok, anything you can
+imagine, it's already built. And since
+
+imagine, it's already built. And since
+ 
+
+imagine, it's already built. And since
+Appify is a platform, you have
+
+Appify is a platform, you have
+ 
+
+Appify is a platform, you have
+everything you need in a single place.
+
+everything you need in a single place.
+ 
+
+everything you need in a single place.
+Plus, it's also nicely designed to
+
+Plus, it's also nicely designed to
+ 
+
+Plus, it's also nicely designed to
+integrate with AI. Oh, and thank you to
+
+integrate with AI. Oh, and thank you to
+ 
+
+integrate with AI. Oh, and thank you to
+Appify for agreeing to partner on this
+
+Appify for agreeing to partner on this
+ 
+
+Appify for agreeing to partner on this
+video. With that being said, let's get
+
+video. With that being said, let's get
+ 
+
+video. With that being said, let's get
+to building. The first step is go to
+
+to building. The first step is go to
+ 
+
+to building. The first step is go to
+appify.com and create an account. So,
+
+appify.com and create an account. So,
+ 
+
+appify.com and create an account. So,
+just go to top right and click on sign
+
+just go to top right and click on sign
+ 
+
+just go to top right and click on sign
+up. Super easy. Takes 20 seconds. But if
+
+up. Super easy. Takes 20 seconds. But if
+ 
+
+up. Super easy. Takes 20 seconds. But if
+you already do have an account, you'll
+
+you already do have an account, you'll
+ 
+
+you already do have an account, you'll
+see this go to console button. So click
+
+see this go to console button. So click
+ 
+
+see this go to console button. So click
+on that and this will take you to the
+
+on that and this will take you to the
+ 
+
+on that and this will take you to the
+appy console. Now before we do anything
+
+appy console. Now before we do anything
+ 
+
+appy console. Now before we do anything
+I actually want to show you their GitHub
+
+I actually want to show you their GitHub
+ 
+
+I actually want to show you their GitHub
+for the agent skills because this is
+
+for the agent skills because this is
+ 
+
+for the agent skills because this is
+what lets us use it in cloth code open
+
+what lets us use it in cloth code open
+ 
+
+what lets us use it in cloth code open
+codebot which is also known as moldbot
+
+codebot which is also known as moldbot
+ 
+
+codebot which is also known as moldbot
+or open claw. Anyways anything that
+
+or open claw. Anyways anything that
+ 
+
+or open claw. Anyways anything that
+supports agent skills you can use epify
+
+supports agent skills you can use epify
+ 
+
+supports agent skills you can use epify
+inside of that. And as you can see
+
+inside of that. And as you can see
+ 
+
+inside of that. And as you can see
+they're constantly improving this 4 days
+
+they're constantly improving this 4 days
+ 
+
+they're constantly improving this 4 days
+ago 4 days ago 5 days ago 4 days ago. So
+
+ago 4 days ago 5 days ago 4 days ago. So
+ 
+
+ago 4 days ago 5 days ago 4 days ago. So
+this is a very active repo and it tells
+
+this is a very active repo and it tells
+ 
+
+this is a very active repo and it tells
+you everything about the agent skills
+
+you everything about the agent skills
+ 
+
+you everything about the agent skills
+that API offers and it also helps you
+
+that API offers and it also helps you
+ 
+
+that API offers and it also helps you
+install it which is just a single
+
+install it which is just a single
+ 
+
+install it which is just a single
+command but more on that later. Now
+
+command but more on that later. Now
+ 
+
+command but more on that later. Now
+let's go back to ampify console and let
+
+let's go back to ampify console and let
+ 
+
+let's go back to ampify console and let
+me show you the concept of actors
+
+me show you the concept of actors
+ 
+
+me show you the concept of actors
+because this is a key concept that you
+
+because this is a key concept that you
+ 
+
+because this is a key concept that you
+have to understand. So inside of ampify
+
+have to understand. So inside of ampify
+ 
+
+have to understand. So inside of ampify
+on the left click on actors and here
+
+on the left click on actors and here
+ 
+
+on the left click on actors and here
+you'll see any actors you might have
+
+you'll see any actors you might have
+ 
+
+you'll see any actors you might have
+built. But if you have a new account it
+
+built. But if you have a new account it
+ 
+
+built. But if you have a new account it
+will look like this. So you have two
+
+will look like this. So you have two
+ 
+
+will look like this. So you have two
+options. You can either develop a new
+
+options. You can either develop a new
+ 
+
+options. You can either develop a new
+actor from scratch or you can go to the
+
+actor from scratch or you can go to the
+ 
+
+actor from scratch or you can go to the
+app store and just use one of the
+
+app store and just use one of the
+ 
+
+app store and just use one of the
+pre-built ones. As you can see, they
+
+pre-built ones. As you can see, they
+ 
+
+pre-built ones. As you can see, they
+have a lot of different options. Google
+
+have a lot of different options. Google
+ 
+
+have a lot of different options. Google
+Maps, website content crawler, Tik Tok,
+
+Maps, website content crawler, Tik Tok,
+ 
+
+Maps, website content crawler, Tik Tok,
+e-commerce scraping tool, Facebook post,
+
+e-commerce scraping tool, Facebook post,
+ 
+
+e-commerce scraping tool, Facebook post,
+Twitter, Instagram, YouTube. I mean,
+
+Twitter, Instagram, YouTube. I mean,
+ 
+
+Twitter, Instagram, YouTube. I mean,
+basically anything that you might want
+
+basically anything that you might want
+ 
+
+basically anything that you might want
+to scrape, Appify has it. Now, an Appify
+
+to scrape, Appify has it. Now, an Appify
+ 
+
+to scrape, Appify has it. Now, an Appify
+actor is just a serverless cloud program
+
+actor is just a serverless cloud program
+ 
+
+actor is just a serverless cloud program
+that takes a JSON input, then it runs a
+
+that takes a JSON input, then it runs a
+ 
+
+that takes a JSON input, then it runs a
+task like scrape a website, and at the
+
+task like scrape a website, and at the
+ 
+
+task like scrape a website, and at the
+end it spits out structured data. So,
+
+end it spits out structured data. So,
+ 
+
+end it spits out structured data. So,
+you can see on the left, this could be
+
+you can see on the left, this could be
+ 
+
+you can see on the left, this could be
+calling the actor with the input object.
+
+calling the actor with the input object.
+ 
+
+calling the actor with the input object.
+It runs, boom, it does what it needs to
+
+It runs, boom, it does what it needs to
+ 
+
+It runs, boom, it does what it needs to
+do. So this is a screenshotting actor.
+
+do. So this is a screenshotting actor.
+ 
+
+do. So this is a screenshotting actor.
+So just take a screenshot and then it
+
+So just take a screenshot and then it
+ 
+
+So just take a screenshot and then it
+gives you a clear output structured
+
+gives you a clear output structured
+ 
+
+gives you a clear output structured
+data. Easy to use. Now inside of the
+
+data. Easy to use. Now inside of the
+ 
+
+data. Easy to use. Now inside of the
+appy store you can go to view all and
+
+appy store you can go to view all and
+ 
+
+appy store you can go to view all and
+here some of these actors are developed
+
+here some of these actors are developed
+ 
+
+here some of these actors are developed
+by appy themselves as you can see with
+
+by appy themselves as you can see with
+ 
+
+by appy themselves as you can see with
+the appy logo and the name but others
+
+the appy logo and the name but others
+ 
+
+the appy logo and the name but others
+are developed by thirdparty developers
+
+are developed by thirdparty developers
+ 
+
+are developed by thirdparty developers
+and this means that anybody can create
+
+and this means that anybody can create
+ 
+
+and this means that anybody can create
+their own actors. As you can see there's
+
+their own actors. As you can see there's
+ 
+
+their own actors. As you can see there's
+nearly 16,000 different actors for
+
+nearly 16,000 different actors for
+ 
+
+nearly 16,000 different actors for
+different websites. Or if you are a
+
+different websites. Or if you are a
+ 
+
+different websites. Or if you are a
+developer, you can develop your own and
+
+developer, you can develop your own and
+ 
+
+developer, you can develop your own and
+if it's good, people will use it and it
+
+if it's good, people will use it and it
+ 
+
+if it's good, people will use it and it
+will make you money. So let's get
+
+will make you money. So let's get
+ 
+
+will make you money. So let's get
+started and let's build our web scraping
+
+started and let's build our web scraping
+ 
+
+started and let's build our web scraping
+AI agent. So first off, open your IDE of
+
+AI agent. So first off, open your IDE of
+ 
+
+AI agent. So first off, open your IDE of
+choice. VS code cursor windser doesn't
+
+choice. VS code cursor windser doesn't
+ 
+
+choice. VS code cursor windser doesn't
+matter and click on open project. Going
+
+matter and click on open project. Going
+ 
+
+matter and click on open project. Going
+to create a new folder scraper. Boom.
+
+to create a new folder scraper. Boom.
+ 
+
+to create a new folder scraper. Boom.
+And open. So open an empty folder where
+
+And open. So open an empty folder where
+ 
+
+And open. So open an empty folder where
+we can actually build our AI agent. As
+
+we can actually build our AI agent. As
+ 
+
+we can actually build our AI agent. As
+you can see, there is no files, no
+
+you can see, there is no files, no
+ 
+
+you can see, there is no files, no
+folders in here. It's completely empty.
+
+folders in here. It's completely empty.
+ 
+
+folders in here. It's completely empty.
+And when you're here, go to installation
+
+And when you're here, go to installation
+ 
+
+And when you're here, go to installation
+and copy this command. Then open your
+
+and copy this command. Then open your
+ 
+
+and copy this command. Then open your
+global terminal. So you can install this
+
+global terminal. So you can install this
+ 
+
+global terminal. So you can install this
+globally on your system and just paste
+
+globally on your system and just paste
+ 
+
+globally on your system and just paste
+this in. Boom. It's going to ask which
+
+this in. Boom. It's going to ask which
+ 
+
+this in. Boom. It's going to ask which
+skills to install. There's 11 different
+
+skills to install. There's 11 different
+ 
+
+skills to install. There's 11 different
+ones. So I'm just going to select all of
+
+ones. So I'm just going to select all of
+ 
+
+ones. So I'm just going to select all of
+them cuz why not.
+
+them cuz why not.
+ 
+
+them cuz why not.
+Okay, let's cycle through them. We
+
+Okay, let's cycle through them. We
+ 
+
+Okay, let's cycle through them. We
+should have everything. Enter. For the
+
+should have everything. Enter. For the
+ 
+
+should have everything. Enter. For the
+different agents, we have AMP,
+
+different agents, we have AMP,
+ 
+
+different agents, we have AMP,
+anti-gravity, augment, clot code, open
+
+anti-gravity, augment, clot code, open
+ 
+
+anti-gravity, augment, clot code, open
+claw, also known as moldbot, also known
+
+claw, also known as moldbot, also known
+ 
+
+claw, also known as moldbot, also known
+as clawbot, client, codex, droid,
+
+as clawbot, client, codex, droid,
+ 
+
+as clawbot, client, codex, droid,
+cursor, everything possible. I think I'm
+
+cursor, everything possible. I think I'm
+ 
+
+cursor, everything possible. I think I'm
+going to go with open code, though.
+
+going to go with open code, though.
+ 
+
+going to go with open code, though.
+There we go. Boom. Enter. Let's do
+
+There we go. Boom. Enter. Let's do
+ 
+
+There we go. Boom. Enter. Let's do
+global install. Sim link. Proceed to
+
+global install. Sim link. Proceed to
+ 
+
+global install. Sim link. Proceed to
+installation. Yes. Done. Beautiful.
+
+installation. Yes. Done. Beautiful.
+ 
+
+installation. Yes. Done. Beautiful.
+Let's do clear. Then switch back to our
+
+Let's do clear. Then switch back to our
+ 
+
+Let's do clear. Then switch back to our
+ID and type in open code right here. say
+
+ID and type in open code right here. say
+ 
+
+ID and type in open code right here. say
+list out all agent skills you have
+
+list out all agent skills you have
+ 
+
+list out all agent skills you have
+access to. Let's see if it will showcase
+
+access to. Let's see if it will showcase
+ 
+
+access to. Let's see if it will showcase
+the appy skills. There we go. Find
+
+the appy skills. There we go. Find
+ 
+
+the appy skills. There we go. Find
+skills ampify trend. Yes, beautiful. So
+
+skills ampify trend. Yes, beautiful. So
+ 
+
+skills ampify trend. Yes, beautiful. So
+now open code has access to all of these
+
+now open code has access to all of these
+ 
+
+now open code has access to all of these
+skills from aify. And obviously you can
+
+skills from aify. And obviously you can
+ 
+
+skills from aify. And obviously you can
+use the same agent skills with cloth
+
+use the same agent skills with cloth
+ 
+
+use the same agent skills with cloth
+code or any other agent out of these 40
+
+code or any other agent out of these 40
+ 
+
+code or any other agent out of these 40
+agents that are supported. Okay. So the
+
+agents that are supported. Okay. So the
+ 
+
+agents that are supported. Okay. So the
+next thing we need to do is we need to
+
+next thing we need to do is we need to
+ 
+
+next thing we need to do is we need to
+create an env file environment
+
+create an env file environment
+ 
+
+create an env file environment
+just env here type in apply
+
+just env here type in apply
+ 
+
+just env here type in apply
+token equals
+
+token equals
+ 
+
+token equals
+and then uh we need to get the token. So
+
+and then uh we need to get the token. So
+ 
+
+and then uh we need to get the token. So
+go back to the appy console scroll to
+
+go back to the appy console scroll to
+ 
+
+go back to the appy console scroll to
+the left settings API integration. Here
+
+the left settings API integration. Here
+ 
+
+the left settings API integration. Here
+you have your personal API token. Just
+
+you have your personal API token. Just
+ 
+
+you have your personal API token. Just
+copy it. Go back. Paste it in. Boom.
+
+copy it. Go back. Paste it in. Boom.
+ 
+
+copy it. Go back. Paste it in. Boom.
+That should be good. Now some sources
+
+That should be good. Now some sources
+ 
+
+That should be good. Now some sources
+say that it should be appy_api
+
+say that it should be appy_api
+ 
+
+say that it should be appy_api
+token. So if it doesn't work try that
+
+token. So if it doesn't work try that
+ 
+
+token. So if it doesn't work try that
+but most most of the time it should work
+
+but most most of the time it should work
+ 
+
+but most most of the time it should work
+with ampify token. Now if we tell open
+
+with ampify token. Now if we tell open
+ 
+
+with ampify token. Now if we tell open
+code to use it it should be good. So we
+
+code to use it it should be good. So we
+ 
+
+code to use it it should be good. So we
+need to actually restart open code. So
+
+need to actually restart open code. So
+ 
+
+need to actually restart open code. So
+let me kill it with control c in the
+
+let me kill it with control c in the
+ 
+
+let me kill it with control c in the
+same terminal and type in open code.
+
+same terminal and type in open code.
+ 
+
+same terminal and type in open code.
+Obviously you can use cloth code as
+
+Obviously you can use cloth code as
+ 
+
+Obviously you can use cloth code as
+well. Doesn't matter. It's supported. So
+
+well. Doesn't matter. It's supported. So
+ 
+
+well. Doesn't matter. It's supported. So
+again let's ask this question to make
+
+again let's ask this question to make
+ 
+
+again let's ask this question to make
+sure that the appy skills are still
+
+sure that the appy skills are still
+ 
+
+sure that the appy skills are still
+there. Amazing. They're there. Now, for
+
+there. Amazing. They're there. Now, for
+ 
+
+there. Amazing. They're there. Now, for
+the first test, we're going to start
+
+the first test, we're going to start
+ 
+
+the first test, we're going to start
+with a simple request. Use Appify to
+
+with a simple request. Use Appify to
+ 
+
+with a simple request. Use Appify to
+scrape top 20 coffee shops in Austin,
+
+scrape top 20 coffee shops in Austin,
+ 
+
+scrape top 20 coffee shops in Austin,
+Texas from Google Maps. Get their names,
+
+Texas from Google Maps. Get their names,
+ 
+
+Texas from Google Maps. Get their names,
+ratings, review counts, and addresses.
+
+ratings, review counts, and addresses.
+ 
+
+ratings, review counts, and addresses.
+Save as a CSV. So, you can use it in
+
+Save as a CSV. So, you can use it in
+ 
+
+Save as a CSV. So, you can use it in
+many ways. Maybe you're just lover of
+
+many ways. Maybe you're just lover of
+ 
+
+many ways. Maybe you're just lover of
+coffee shops like one of my friends,
+
+coffee shops like one of my friends,
+ 
+
+coffee shops like one of my friends,
+Jack Roberts, or you want to sell
+
+Jack Roberts, or you want to sell
+ 
+
+Jack Roberts, or you want to sell
+software to coffee shops. You, you know,
+
+software to coffee shops. You, you know,
+ 
+
+software to coffee shops. You, you know,
+maybe coffee shop owners are ideal
+
+maybe coffee shop owners are ideal
+ 
+
+maybe coffee shop owners are ideal
+target avatar. Whatever it is, um, this
+
+target avatar. Whatever it is, um, this
+ 
+
+target avatar. Whatever it is, um, this
+could work. Okay, what's what's the
+
+could work. Okay, what's what's the
+ 
+
+could work. Okay, what's what's the
+issue here?
+
+issue here?
+ 
+
+issue here?
+MCP
+
+MCP
+ 
+
+MCP
+permission access. Yes, allow once. It's
+
+permission access. Yes, allow once. It's
+ 
+
+permission access. Yes, allow once. It's
+trying to install some MCP servers
+
+trying to install some MCP servers
+ 
+
+trying to install some MCP servers
+ampify. Yeah, always allow. Let's click
+
+ampify. Yeah, always allow. Let's click
+ 
+
+ampify. Yeah, always allow. Let's click
+that. Pulling patterns open because
+
+that. Pulling patterns open because
+ 
+
+that. Pulling patterns open because
+restarted. Confirm. Okay, so it fetched
+
+restarted. Confirm. Okay, so it fetched
+ 
+
+restarted. Confirm. Okay, so it fetched
+the actor schema. Now it will run the
+
+the actor schema. Now it will run the
+ 
+
+the actor schema. Now it will run the
+actor status running. We could see it in
+
+actor status running. We could see it in
+ 
+
+actor status running. We could see it in
+our appy. Okay, there we go. Uh, do we
+
+our appy. Okay, there we go. Uh, do we
+ 
+
+our appy. Okay, there we go. Uh, do we
+see the runs? There it is. We can see
+
+see the runs? There it is. We can see
+ 
+
+see the runs? There it is. We can see
+the run. It's waiting for 20 results.
+
+the run. It's waiting for 20 results.
+ 
+
+the run. It's waiting for 20 results.
+It's costing 1 cent. And there it is.
+
+It's costing 1 cent. And there it is.
+ 
+
+It's costing 1 cent. And there it is.
+Finished. 9 cents. Scraping finished.
+
+Finished. 9 cents. Scraping finished.
+ 
+
+Finished. 9 cents. Scraping finished.
+Google map scraper. Let's go back. And
+
+Google map scraper. Let's go back. And
+ 
+
+Google map scraper. Let's go back. And
+it's saved the CSV. Just like that, we
+
+it's saved the CSV. Just like that, we
+ 
+
+it's saved the CSV. Just like that, we
+can open the CSV. And here's all the
+
+can open the CSV. And here's all the
+ 
+
+can open the CSV. And here's all the
+data in a comma separated values.
+
+data in a comma separated values.
+ 
+
+data in a comma separated values.
+Obviously, this is as concise as
+
+Obviously, this is as concise as
+ 
+
+Obviously, this is as concise as
+possible. So, it's really human readable
+
+possible. So, it's really human readable
+ 
+
+possible. So, it's really human readable
+format. But you can see the first uh
+
+format. But you can see the first uh
+ 
+
+format. But you can see the first uh
+names of these coffee shops. And okay,
+
+names of these coffee shops. And okay,
+ 
+
+names of these coffee shops. And okay,
+so open code is giving it us in a better
+
+so open code is giving it us in a better
+ 
+
+so open code is giving it us in a better
+format. But uh yeah, this took like what
+
+format. But uh yeah, this took like what
+ 
+
+format. But uh yeah, this took like what
+one minute to get. Yeah, 1 minute 45
+
+one minute to get. Yeah, 1 minute 45
+ 
+
+one minute to get. Yeah, 1 minute 45
+seconds to get 20 different coffee shops
+
+seconds to get 20 different coffee shops
+ 
+
+seconds to get 20 different coffee shops
+in an actual country using Google Map
+
+in an actual country using Google Map
+ 
+
+in an actual country using Google Map
+Scraper with Appify, which Appify makes
+
+Scraper with Appify, which Appify makes
+ 
+
+Scraper with Appify, which Appify makes
+it super easy. Cost us 9 cents. Doing
+
+it super easy. Cost us 9 cents. Doing
+ 
+
+it super easy. Cost us 9 cents. Doing
+this manually would take you hours. I
+
+this manually would take you hours. I
+ 
+
+this manually would take you hours. I
+mean, not maybe not hours, but at least
+
+mean, not maybe not hours, but at least
+ 
+
+mean, not maybe not hours, but at least
+1 hour, 90 minutes, something like that.
+
+1 hour, 90 minutes, something like that.
+ 
+
+1 hour, 90 minutes, something like that.
+And uh yeah, it took us 1 and 1/2
+
+And uh yeah, it took us 1 and 1/2
+ 
+
+And uh yeah, it took us 1 and 1/2
+minutes, not one and a half hours with
+
+minutes, not one and a half hours with
+ 
+
+minutes, not one and a half hours with
+API, but we're just getting started. The
+
+API, but we're just getting started. The
+ 
+
+API, but we're just getting started. The
+other two use cases I'm going to show
+
+other two use cases I'm going to show
+ 
+
+other two use cases I'm going to show
+you will be much more impressive. Now, I
+
+you will be much more impressive. Now, I
+ 
+
+you will be much more impressive. Now, I
+already showed you the concept of a run.
+
+already showed you the concept of a run.
+ 
+
+already showed you the concept of a run.
+So on the left inside of API console you
+
+So on the left inside of API console you
+ 
+
+So on the left inside of API console you
+can see the runs and this is basically
+
+can see the runs and this is basically
+ 
+
+can see the runs and this is basically
+history of all the executions that
+
+history of all the executions that
+ 
+
+history of all the executions that
+happened inside of API. But another
+
+happened inside of API. But another
+ 
+
+happened inside of API. But another
+thing you need to understand is the
+
+thing you need to understand is the
+ 
+
+thing you need to understand is the
+saved tasks. These are saved
+
+saved tasks. These are saved
+ 
+
+saved tasks. These are saved
+configurations that you can reuse
+
+configurations that you can reuse
+ 
+
+configurations that you can reuse
+multiple times. So when we go to actors
+
+multiple times. So when we go to actors
+ 
+
+multiple times. So when we go to actors
+you'll see that we used this one
+
+you'll see that we used this one
+ 
+
+you'll see that we used this one
+recently. And here when you click on it
+
+recently. And here when you click on it
+ 
+
+recently. And here when you click on it
+you can save it as a new task. So the
+
+you can save it as a new task. So the
+ 
+
+you can save it as a new task. So the
+same configuration could be reused,
+
+same configuration could be reused,
+ 
+
+same configuration could be reused,
+right? Because uh maybe you frequently
+
+right? Because uh maybe you frequently
+ 
+
+right? Because uh maybe you frequently
+look for the same coffee shops or same
+
+look for the same coffee shops or same
+ 
+
+look for the same coffee shops or same
+type of business in the same location.
+
+type of business in the same location.
+ 
+
+type of business in the same location.
+You don't want to be reprompting it
+
+You don't want to be reprompting it
+ 
+
+You don't want to be reprompting it
+every time, which again we it's much
+
+every time, which again we it's much
+ 
+
+every time, which again we it's much
+easier because we connected it to a
+
+easier because we connected it to a
+ 
+
+easier because we connected it to a
+powerful AI agent which is currently
+
+powerful AI agent which is currently
+ 
+
+powerful AI agent which is currently
+open code with cloth open 4.5. But if
+
+open code with cloth open 4.5. But if
+ 
+
+open code with cloth open 4.5. But if
+you want to do something inside of the
+
+you want to do something inside of the
+ 
+
+you want to do something inside of the
+UI of API, then using safe tasks is a
+
+UI of API, then using safe tasks is a
+ 
+
+UI of API, then using safe tasks is a
+very smart thing. All right, the next
+
+very smart thing. All right, the next
+ 
+
+very smart thing. All right, the next
+use case is something that every single
+
+use case is something that every single
+ 
+
+use case is something that every single
+business can do, and that is competitor
+
+business can do, and that is competitor
+ 
+
+business can do, and that is competitor
+analysis. So, here's my prompt. I run a
+
+analysis. So, here's my prompt. I run a
+ 
+
+analysis. So, here's my prompt. I run a
+solar panel installation company in
+
+solar panel installation company in
+ 
+
+solar panel installation company in
+Poland. Use API to script 200 reviews
+
+Poland. Use API to script 200 reviews
+ 
+
+Poland. Use API to script 200 reviews
+across my top 10 competitors from Trust
+
+across my top 10 competitors from Trust
+ 
+
+across my top 10 competitors from Trust
+Pilot. So, we're going to use a
+
+Pilot. So, we're going to use a
+ 
+
+Pilot. So, we're going to use a
+different actor, not Google Maps, Trust
+
+different actor, not Google Maps, Trust
+ 
+
+different actor, not Google Maps, Trust
+Pilot this time. Once API returns the
+
+Pilot this time. Once API returns the
+ 
+
+Pilot this time. Once API returns the
+data, identify the patterns, what people
+
+data, identify the patterns, what people
+ 
+
+data, identify the patterns, what people
+love, what's making them leave, bad
+
+love, what's making them leave, bad
+ 
+
+love, what's making them leave, bad
+reviews, and complaints. Then create a
+
+reviews, and complaints. Then create a
+ 
+
+reviews, and complaints. Then create a
+single page HTML report summarizing your
+
+single page HTML report summarizing your
+ 
+
+single page HTML report summarizing your
+findings with actionable insights I can
+
+findings with actionable insights I can
+ 
+
+findings with actionable insights I can
+use to improve my own business. So the
+
+use to improve my own business. So the
+ 
+
+use to improve my own business. So the
+good news is that you can do this no
+
+good news is that you can do this no
+ 
+
+good news is that you can do this no
+matter what you do. Online business,
+
+matter what you do. Online business,
+ 
+
+matter what you do. Online business,
+in-person business, European, Asian,
+
+in-person business, European, Asian,
+ 
+
+in-person business, European, Asian,
+American business, doesn't matter.
+
+American business, doesn't matter.
+ 
+
+American business, doesn't matter.
+Another good news is that none of your
+
+Another good news is that none of your
+ 
+
+Another good news is that none of your
+competitors will do this, right? This is
+
+competitors will do this, right? This is
+ 
+
+competitors will do this, right? This is
+such a free thing. Like if you just do
+
+such a free thing. Like if you just do
+ 
+
+such a free thing. Like if you just do
+this, your product will improve. You'll
+
+this, your product will improve. You'll
+ 
+
+this, your product will improve. You'll
+have better understanding of where your
+
+have better understanding of where your
+ 
+
+have better understanding of where your
+competitors are failing and where there
+
+competitors are failing and where there
+ 
+
+competitors are failing and where there
+are gaps that you can take advantage of.
+
+are gaps that you can take advantage of.
+ 
+
+are gaps that you can take advantage of.
+No competitors I I can guarantee you
+
+No competitors I I can guarantee you
+ 
+
+No competitors I I can guarantee you
+that easily. None of your competitors
+
+that easily. None of your competitors
+ 
+
+that easily. None of your competitors
+are building appi powered AI agents to
+
+are building appi powered AI agents to
+ 
+
+are building appi powered AI agents to
+analyze the market and to improve their
+
+analyze the market and to improve their
+ 
+
+analyze the market and to improve their
+product. So if you just do this one
+
+product. So if you just do this one
+ 
+
+product. So if you just do this one
+thing, you already have an unfair
+
+thing, you already have an unfair
+ 
+
+thing, you already have an unfair
+advantage in business. Now open code is
+
+advantage in business. Now open code is
+ 
+
+advantage in business. Now open code is
+asking for permission competitor
+
+asking for permission competitor
+ 
+
+asking for permission competitor
+intergener scripts. Okay, let's allow
+
+intergener scripts. Okay, let's allow
+ 
+
+intergener scripts. Okay, let's allow
+that. It's wanting to do a skill. Let's
+
+that. It's wanting to do a skill. Let's
+ 
+
+that. It's wanting to do a skill. Let's
+allow that inside of AP5. If we switch
+
+allow that inside of AP5. If we switch
+ 
+
+allow that inside of AP5. If we switch
+back, we could see uh uh uh another run.
+
+back, we could see uh uh uh another run.
+ 
+
+back, we could see uh uh uh another run.
+Not yet. Just act the schema. Okay. It
+
+Not yet. Just act the schema. Okay. It
+ 
+
+Not yet. Just act the schema. Okay. It
+needs to fetch the schema. It was first
+
+needs to fetch the schema. It was first
+ 
+
+needs to fetch the schema. It was first
+finding the top 10 solar competitors.
+
+finding the top 10 solar competitors.
+ 
+
+finding the top 10 solar competitors.
+Okay. Okay. So, it did another Google
+
+Okay. Okay. So, it did another Google
+ 
+
+Okay. Okay. So, it did another Google
+map scraper to find the competing
+
+map scraper to find the competing
+ 
+
+map scraper to find the competing
+companies, but then it's going to use
+
+companies, but then it's going to use
+ 
+
+companies, but then it's going to use
+Trust Pilot to find the actual reviews.
+
+Trust Pilot to find the actual reviews.
+ 
+
+Trust Pilot to find the actual reviews.
+And look at this. It even pivoted. Since
+
+And look at this. It even pivoted. Since
+ 
+
+And look at this. It even pivoted. Since
+they're limited Polish specific solar
+
+they're limited Polish specific solar
+ 
+
+they're limited Polish specific solar
+companies, I'll scrape reviews from the
+
+companies, I'll scrape reviews from the
+ 
+
+companies, I'll scrape reviews from the
+top European. So, it can solve problems
+
+top European. So, it can solve problems
+ 
+
+top European. So, it can solve problems
+by itself, right? That's why the agent
+
+by itself, right? That's why the agent
+ 
+
+by itself, right? That's why the agent
+skills from Appify are such a huge
+
+skills from Appify are such a huge
+ 
+
+skills from Appify are such a huge
+unlock. That's why this GitHub repo
+
+unlock. That's why this GitHub repo
+ 
+
+unlock. That's why this GitHub repo
+matters a lot because when you when you
+
+matters a lot because when you when you
+ 
+
+matters a lot because when you when you
+give it to a powerful AI agent like open
+
+give it to a powerful AI agent like open
+ 
+
+give it to a powerful AI agent like open
+code or cloth code or agent zero or
+
+code or cloth code or agent zero or
+ 
+
+code or cloth code or agent zero or
+clothbot or cursor you get the point any
+
+clothbot or cursor you get the point any
+ 
+
+clothbot or cursor you get the point any
+AI agent that supports agent skills
+
+AI agent that supports agent skills
+ 
+
+AI agent that supports agent skills
+you'll be able to use ampify super
+
+you'll be able to use ampify super
+ 
+
+you'll be able to use ampify super
+effectively and you don't need to know
+
+effectively and you don't need to know
+ 
+
+effectively and you don't need to know
+anything about web scraping yourself
+
+anything about web scraping yourself
+ 
+
+anything about web scraping yourself
+right you just get a connect it to open
+
+right you just get a connect it to open
+ 
+
+right you just get a connect it to open
+code and let it cook when it runs into a
+
+code and let it cook when it runs into a
+ 
+
+code and let it cook when it runs into a
+problem it will solve it by itself and
+
+problem it will solve it by itself and
+ 
+
+problem it will solve it by itself and
+keep going this is the power of AI
+
+keep going this is the power of AI
+ 
+
+keep going this is the power of AI
+agents with web scraping. By the way,
+
+agents with web scraping. By the way,
+ 
+
+agents with web scraping. By the way,
+another thing you should know inside of
+
+another thing you should know inside of
+ 
+
+another thing you should know inside of
+Appify is schedules. So, you can
+
+Appify is schedules. So, you can
+ 
+
+Appify is schedules. So, you can
+automatically start your actors on a
+
+automatically start your actors on a
+ 
+
+automatically start your actors on a
+schedule, right? So, this is even
+
+schedule, right? So, this is even
+ 
+
+schedule, right? So, this is even
+simpler than creating a chrome job or
+
+simpler than creating a chrome job or
+ 
+
+simpler than creating a chrome job or
+anything automation. You can do that
+
+anything automation. You can do that
+ 
+
+anything automation. You can do that
+right inside of Appify console. So, you
+
+right inside of Appify console. So, you
+ 
+
+right inside of Appify console. So, you
+can click on create a schedule and
+
+can click on create a schedule and
+ 
+
+can click on create a schedule and
+either do a Chrome or just set it
+
+either do a Chrome or just set it
+ 
+
+either do a Chrome or just set it
+manually like every 10 minutes and
+
+manually like every 10 minutes and
+ 
+
+manually like every 10 minutes and
+create some powerful workflows that run,
+
+create some powerful workflows that run,
+ 
+
+create some powerful workflows that run,
+you know, hourly, daily, weekly,
+
+you know, hourly, daily, weekly,
+ 
+
+you know, hourly, daily, weekly,
+whatever you need. at a specific time
+
+whatever you need. at a specific time
+ 
+
+whatever you need. at a specific time
+zone with some other settings as well,
+
+zone with some other settings as well,
+ 
+
+zone with some other settings as well,
+right from the Ampify dashboard. So,
+
+right from the Ampify dashboard. So,
+ 
+
+right from the Ampify dashboard. So,
+this is really a whole platform, right?
+
+this is really a whole platform, right?
+ 
+
+this is really a whole platform, right?
+It's not just a web scraper. It's a
+
+It's not just a web scraper. It's a
+ 
+
+It's not just a web scraper. It's a
+whole platform for web scraping that
+
+whole platform for web scraping that
+ 
+
+whole platform for web scraping that
+nicely integrates with AI agents thanks
+
+nicely integrates with AI agents thanks
+ 
+
+nicely integrates with AI agents thanks
+to their new agent skills. And again,
+
+to their new agent skills. And again,
+ 
+
+to their new agent skills. And again,
+I'm going to link this GitHub repo below
+
+I'm going to link this GitHub repo below
+ 
+
+I'm going to link this GitHub repo below
+the video as well as ampify. Okay, let's
+
+the video as well as ampify. Okay, let's
+ 
+
+the video as well as ampify. Okay, let's
+check on our runs. What's happening
+
+check on our runs. What's happening
+ 
+
+check on our runs. What's happening
+here? And even though we had to start
+
+here? And even though we had to start
+ 
+
+here? And even though we had to start
+multiple actors at the same time, look
+
+multiple actors at the same time, look
+ 
+
+multiple actors at the same time, look
+at this usage. 200 reviews from this
+
+at this usage. 200 reviews from this
+ 
+
+at this usage. 200 reviews from this
+company was 0.03. actually 3 cents and
+
+company was 0.03. actually 3 cents and
+ 
+
+company was 0.03. actually 3 cents and
+you can see the breakdown when you hover
+
+you can see the breakdown when you hover
+ 
+
+you can see the breakdown when you hover
+over it. Appify gives you a detailed
+
+over it. Appify gives you a detailed
+ 
+
+over it. Appify gives you a detailed
+breakdown of the cost of the usage. So
+
+breakdown of the cost of the usage. So
+ 
+
+breakdown of the cost of the usage. So
+you can see where the money goes. Very
+
+you can see where the money goes. Very
+ 
+
+you can see where the money goes. Very
+very nice. And now it's going two. Okay,
+
+very nice. And now it's going two. Okay,
+ 
+
+very nice. And now it's going two. Okay,
+it's going for 200 results per each
+
+it's going for 200 results per each
+ 
+
+it's going for 200 results per each
+company. Uh that's not what I asked for.
+
+company. Uh that's not what I asked for.
+ 
+
+company. Uh that's not what I asked for.
+I asked 200 reviews in total. But hey,
+
+I asked 200 reviews in total. But hey,
+ 
+
+I asked 200 reviews in total. But hey,
+we're going to have a abundance of
+
+we're going to have a abundance of
+ 
+
+we're going to have a abundance of
+reviews, like 1.2,000 reviews. We'll see
+
+reviews, like 1.2,000 reviews. We'll see
+ 
+
+reviews, like 1.2,000 reviews. We'll see
+how open code handles that. All right,
+
+how open code handles that. All right,
+ 
+
+how open code handles that. All right,
+it's finished. That took a few minutes.
+
+it's finished. That took a few minutes.
+ 
+
+it's finished. That took a few minutes.
+Let's go back.
+
+Let's go back.
+ 
+
+Let's go back.
+Let's see what Excel have collected
+
+Let's see what Excel have collected
+ 
+
+Let's see what Excel have collected
+views to five companies. They download
+
+views to five companies. They download
+ 
+
+views to five companies. They download
+all the data, consolidate it. Yeah,
+
+all the data, consolidate it. Yeah,
+ 
+
+all the data, consolidate it. Yeah,
+because it's 200 per company. So, it's
+
+because it's 200 per company. So, it's
+ 
+
+because it's 200 per company. So, it's
+going to be a lot more than I expected,
+
+going to be a lot more than I expected,
+ 
+
+going to be a lot more than I expected,
+but I think Opus 4.5 should handle this.
+
+but I think Opus 4.5 should handle this.
+ 
+
+but I think Opus 4.5 should handle this.
+No problem. I have now 1,130 reviews
+
+No problem. I have now 1,130 reviews
+ 
+
+No problem. I have now 1,130 reviews
+total, more than the 200 requested. Let
+
+total, more than the 200 requested. Let
+ 
+
+total, more than the 200 requested. Let
+me scrape a few more complete. What?
+
+me scrape a few more complete. What?
+ 
+
+me scrape a few more complete. What?
+Okay. Okay. Enough scraping.
+
+Okay. Okay. Enough scraping.
+ 
+
+Okay. Okay. Enough scraping.
+You have all the reviews you reviews you
+
+You have all the reviews you reviews you
+ 
+
+You have all the reviews you reviews you
+need. Finish my request. That's crazy. I
+
+need. Finish my request. That's crazy. I
+ 
+
+need. Finish my request. That's crazy. I
+I had to interrupt it because uh I don't
+
+I had to interrupt it because uh I don't
+ 
+
+I had to interrupt it because uh I don't
+know why it's ask it's going for more
+
+know why it's ask it's going for more
+ 
+
+know why it's ask it's going for more
+reviews. 1,00 1 1,000 reviews is enough
+
+reviews. 1,00 1 1,000 reviews is enough
+ 
+
+reviews. 1,00 1 1,000 reviews is enough
+for this. Okay. I just wanted to do a
+
+for this. Okay. I just wanted to do a
+ 
+
+for this. Okay. I just wanted to do a
+quick demo, but it's going overboard.
+
+quick demo, but it's going overboard.
+ 
+
+quick demo, but it's going overboard.
+But hey, we're pushing uh Ampify to its
+
+But hey, we're pushing uh Ampify to its
+ 
+
+But hey, we're pushing uh Ampify to its
+limits, showing what it's capable of.
+
+limits, showing what it's capable of.
+ 
+
+limits, showing what it's capable of.
+And again, I want to stress this, like
+
+And again, I want to stress this, like
+ 
+
+And again, I want to stress this, like
+our total cost is $0.2. $2 for all the
+
+our total cost is $0.2. $2 for all the
+ 
+
+our total cost is $0.2. $2 for all the
+scraping. Thousands of different reviews
+
+scraping. Thousands of different reviews
+ 
+
+scraping. Thousands of different reviews
+of scraping. Like $0.2 to save
+
+of scraping. Like $0.2 to save
+ 
+
+of scraping. Like $0.2 to save
+yourselves dozens of hours, maybe even
+
+yourselves dozens of hours, maybe even
+ 
+
+yourselves dozens of hours, maybe even
+hundreds of hours. It's pretty
+
+hundreds of hours. It's pretty
+ 
+
+hundreds of hours. It's pretty
+incredible. Let's see the distribution.
+
+incredible. Let's see the distribution.
+ 
+
+incredible. Let's see the distribution.
+Okay, so most are five star, then one
+
+Okay, so most are five star, then one
+ 
+
+Okay, so most are five star, then one
+star, four star. Nobody does two or
+
+star, four star. Nobody does two or
+ 
+
+star, four star. Nobody does two or
+three stars. Interesting. Human nature,
+
+three stars. Interesting. Human nature,
+ 
+
+three stars. Interesting. Human nature,
+I guess. All right. Analyze review
+
+I guess. All right. Analyze review
+ 
+
+I guess. All right. Analyze review
+patterns, negative themes and
+
+patterns, negative themes and
+ 
+
+patterns, negative themes and
+complaints. Create an HTML report with
+
+complaints. Create an HTML report with
+ 
+
+complaints. Create an HTML report with
+actionable insights. And by the way,
+
+actionable insights. And by the way,
+ 
+
+actionable insights. And by the way,
+this is the power of agent skills. I
+
+this is the power of agent skills. I
+ 
+
+this is the power of agent skills. I
+didn't have to code anything for open
+
+didn't have to code anything for open
+ 
+
+didn't have to code anything for open
+code to interact with ampify. All we
+
+code to interact with ampify. All we
+ 
+
+code to interact with ampify. All we
+did, remember, all we did is we gave it
+
+did, remember, all we did is we gave it
+ 
+
+did, remember, all we did is we gave it
+this agent skill. So, it knows the
+
+this agent skill. So, it knows the
+ 
+
+this agent skill. So, it knows the
+schema for ampify and it can use it,
+
+schema for ampify and it can use it,
+ 
+
+schema for ampify and it can use it,
+right? Like we didn't have to do any
+
+right? Like we didn't have to do any
+ 
+
+right? Like we didn't have to do any
+coding here, any crazy setup. This is
+
+coding here, any crazy setup. This is
+ 
+
+coding here, any crazy setup. This is
+the power of agent skills. Brilliant. Of
+
+the power of agent skills. Brilliant. Of
+ 
+
+the power of agent skills. Brilliant. Of
+course, now it's going to write a long
+
+course, now it's going to write a long
+ 
+
+course, now it's going to write a long
+HTML file because I told it to do a
+
+HTML file because I told it to do a
+ 
+
+HTML file because I told it to do a
+single HTML file. There it is. 600 lines
+
+single HTML file. There it is. 600 lines
+ 
+
+single HTML file. There it is. 600 lines
+of HTML. We should now be able to open
+
+of HTML. We should now be able to open
+ 
+
+of HTML. We should now be able to open
+that folder
+
+that folder
+ 
+
+that folder
+and just uh look at this HTML file.
+
+and just uh look at this HTML file.
+ 
+
+and just uh look at this HTML file.
+Me switch. There we go. Solar panel
+
+Me switch. There we go. Solar panel
+ 
+
+Me switch. There we go. Solar panel
+industry analysis. 1,130 reviews
+
+industry analysis. 1,130 reviews
+ 
+
+industry analysis. 1,130 reviews
+analyzed. Six companies studied. 4.25
+
+analyzed. Six companies studied. 4.25
+ 
+
+analyzed. Six companies studied. 4.25
+average rating. 75% of five star
+
+average rating. 75% of five star
+ 
+
+average rating. 75% of five star
+reviews. These are the companies
+
+reviews. These are the companies
+ 
+
+reviews. These are the companies
+analyzed.
+
+analyzed.
+ 
+
+analyzed.
+Rating distribution. What customers
+
+Rating distribution. What customers
+ 
+
+Rating distribution. What customers
+love? Customer support. Product
+
+love? Customer support. Product
+ 
+
+love? Customer support. Product
+reliability quality. professional
+
+reliability quality. professional
+ 
+
+reliability quality. professional
+installation, fast and reliable
+
+installation, fast and reliable
+ 
+
+installation, fast and reliable
+delivery, what drives bad reviews, pain
+
+delivery, what drives bad reviews, pain
+ 
+
+delivery, what drives bad reviews, pain
+points, warranty and return nightmares,
+
+points, warranty and return nightmares,
+ 
+
+points, warranty and return nightmares,
+slow and unresponsive support. So even
+
+slow and unresponsive support. So even
+ 
+
+slow and unresponsive support. So even
+if you just fix these in your company,
+
+if you just fix these in your company,
+ 
+
+if you just fix these in your company,
+assuming you were their competitor, you
+
+assuming you were their competitor, you
+ 
+
+assuming you were their competitor, you
+would probably already have the best
+
+would probably already have the best
+ 
+
+would probably already have the best
+product on the market. Recurring
+
+product on the market. Recurring
+ 
+
+product on the market. Recurring
+complaint patterns, the stalling tactic,
+
+complaint patterns, the stalling tactic,
+ 
+
+complaint patterns, the stalling tactic,
+multiple customers report companies
+
+multiple customers report companies
+ 
+
+multiple customers report companies
+deliberately delaying warranty claims
+
+deliberately delaying warranty claims
+ 
+
+deliberately delaying warranty claims
+until the warranty period expires.
+
+until the warranty period expires.
+ 
+
+until the warranty period expires.
+Shady, shady offshore support
+
+Shady, shady offshore support
+ 
+
+Shady, shady offshore support
+frustration. Oh my god. Customers in
+
+frustration. Oh my god. Customers in
+ 
+
+frustration. Oh my god. Customers in
+Europe complain about support being run
+
+Europe complain about support being run
+ 
+
+Europe complain about support being run
+to Philippines or India. Asia is a code
+
+to Philippines or India. Asia is a code
+ 
+
+to Philippines or India. Asia is a code
+word for South Asia, which is India.
+
+word for South Asia, which is India.
+ 
+
+word for South Asia, which is India.
+Incomplete system solutions.
+
+Incomplete system solutions.
+ 
+
+Incomplete system solutions.
+Yeah. So, if you just have a European
+
+Yeah. So, if you just have a European
+ 
+
+Yeah. So, if you just have a European
+customer rep, you already probably have
+
+customer rep, you already probably have
+ 
+
+customer rep, you already probably have
+the best uh best company. Incomplete
+
+the best uh best company. Incomplete
+ 
+
+the best uh best company. Incomplete
+system solutions equipment for providing
+
+system solutions equipment for providing
+ 
+
+system solutions equipment for providing
+installation guidance. Okay, it's also
+
+installation guidance. Okay, it's also
+ 
+
+installation guidance. Okay, it's also
+easy fix. Software app problems. Yikes.
+
+easy fix. Software app problems. Yikes.
+ 
+
+easy fix. Software app problems. Yikes.
+They're probably not using uh latest AI
+
+They're probably not using uh latest AI
+ 
+
+They're probably not using uh latest AI
+agents. They're probably not subscribed
+
+agents. They're probably not subscribed
+ 
+
+agents. They're probably not subscribed
+to my channel. So, if you don't want to
+
+to my channel. So, if you don't want to
+ 
+
+to my channel. So, if you don't want to
+have these issues in your company, make
+
+have these issues in your company, make
+ 
+
+have these issues in your company, make
+sure to subscribe to stay on the cutting
+
+sure to subscribe to stay on the cutting
+ 
+
+sure to subscribe to stay on the cutting
+edge of AI. It's completely free. It
+
+edge of AI. It's completely free. It
+ 
+
+edge of AI. It's completely free. It
+takes two seconds and it helps out a
+
+takes two seconds and it helps out a
+ 
+
+takes two seconds and it helps out a
+lot. So, go below the video and click
+
+lot. So, go below the video and click
+ 
+
+lot. So, go below the video and click
+subscribe. Okay. And some actionable
+
+subscribe. Okay. And some actionable
+ 
+
+subscribe. Okay. And some actionable
+insights from our business. Very nice
+
+insights from our business. Very nice
+ 
+
+insights from our business. Very nice
+report. I mean, guys, just do this for
+
+report. I mean, guys, just do this for
+ 
+
+report. I mean, guys, just do this for
+your own business. Trust me, you'll be
+
+your own business. Trust me, you'll be
+ 
+
+your own business. Trust me, you'll be
+surprised what it shows. Now, lastly,
+
+surprised what it shows. Now, lastly,
+ 
+
+surprised what it shows. Now, lastly,
+we're going to do one more. Clear the
+
+we're going to do one more. Clear the
+ 
+
+we're going to do one more. Clear the
+clear. Let's start a separate open code
+
+clear. Let's start a separate open code
+ 
+
+clear. Let's start a separate open code
+and we're going to take it to the next
+
+and we're going to take it to the next
+ 
+
+and we're going to take it to the next
+level with the famously difficult
+
+level with the famously difficult
+ 
+
+level with the famously difficult
+Twitter scraping. So, we're going to
+
+Twitter scraping. So, we're going to
+ 
+
+Twitter scraping. So, we're going to
+test how Appify handles Twitter, which
+
+test how Appify handles Twitter, which
+ 
+
+test how Appify handles Twitter, which
+is like one of the hardest sites to
+
+is like one of the hardest sites to
+ 
+
+is like one of the hardest sites to
+scrape. So, here's the prompt. Using
+
+scrape. So, here's the prompt. Using
+ 
+
+scrape. So, here's the prompt. Using
+Appify, scraped 50 highest engagement AI
+
+Appify, scraped 50 highest engagement AI
+ 
+
+Appify, scraped 50 highest engagement AI
+related tweets from the top AI
+
+related tweets from the top AI
+ 
+
+related tweets from the top AI
+influencers over the past seven days.
+
+influencers over the past seven days.
+ 
+
+influencers over the past seven days.
+Build a web app where I can filter by
+
+Build a web app where I can filter by
+ 
+
+Build a web app where I can filter by
+engagement, see what formats are
+
+engagement, see what formats are
+ 
+
+engagement, see what formats are
+working, and save ideas to a swipe file.
+
+working, and save ideas to a swipe file.
+ 
+
+working, and save ideas to a swipe file.
+The fewer lines of code, the better. So
+
+The fewer lines of code, the better. So
+ 
+
+The fewer lines of code, the better. So
+this is actually something I want
+
+this is actually something I want
+ 
+
+this is actually something I want
+myself. So let's see
+
+myself. So let's see
+ 
+
+myself. So let's see
+what it comes up with. Skills ampify
+
+what it comes up with. Skills ampify
+ 
+
+what it comes up with. Skills ampify
+always allow
+
+always allow
+ 
+
+always allow
+wants to access that skill. Let's see
+
+wants to access that skill. Let's see
+ 
+
+wants to access that skill. Let's see
+what we're looking like in our runs.
+
+what we're looking like in our runs.
+ 
+
+what we're looking like in our runs.
+Refresh this. I have the API token. Yes,
+
+Refresh this. I have the API token. Yes,
+ 
+
+Refresh this. I have the API token. Yes,
+you have it. Right. Do not share a token
+
+you have it. Right. Do not share a token
+ 
+
+you have it. Right. Do not share a token
+with anybody. I'm going to delete my
+
+with anybody. I'm going to delete my
+ 
+
+with anybody. I'm going to delete my
+token before uploading the video. Treat
+
+token before uploading the video. Treat
+ 
+
+token before uploading the video. Treat
+your API tokens as passwords. Okay. do
+
+your API tokens as passwords. Okay. do
+ 
+
+your API tokens as passwords. Okay. do
+not share them publicly. And if you're
+
+not share them publicly. And if you're
+ 
+
+not share them publicly. And if you're
+uploading to GitHub, make sure you
+
+uploading to GitHub, make sure you
+ 
+
+uploading to GitHub, make sure you
+create a git ignore file, right? And you
+
+create a git ignore file, right? And you
+ 
+
+create a git ignore file, right? And you
+include that env ignore so it doesn't
+
+include that env ignore so it doesn't
+ 
+
+include that env ignore so it doesn't
+get leaked. And if you want, if you're
+
+get leaked. And if you want, if you're
+ 
+
+get leaked. And if you want, if you're
+not sure, you can just do a launch open
+
+not sure, you can just do a launch open
+ 
+
+not sure, you can just do a launch open
+code or clo say like update the git
+
+code or clo say like update the git
+ 
+
+code or clo say like update the git
+ignore to cover 20 most likely things in
+
+ignore to cover 20 most likely things in
+ 
+
+ignore to cover 20 most likely things in
+our directory that
+
+our directory that
+ 
+
+our directory that
+should not leak to public. You can ask
+
+should not leak to public. You can ask
+ 
+
+should not leak to public. You can ask
+agents to protect you, right? But just
+
+agents to protect you, right? But just
+ 
+
+agents to protect you, right? But just
+don't be irresponsible with this. It's
+
+don't be irresponsible with this. It's
+ 
+
+don't be irresponsible with this. It's
+going to analyze the directory and it's
+
+going to analyze the directory and it's
+ 
+
+going to analyze the directory and it's
+going to update the env file. I mean not
+
+going to update the env file. I mean not
+ 
+
+going to update the env file. I mean not
+the ENV file the get ignore right so
+
+the ENV file the get ignore right so
+ 
+
+the ENV file the get ignore right so
+let's look at it boom we just put env
+
+let's look at it boom we just put env
+ 
+
+let's look at it boom we just put env
+going to structure it much better
+
+going to structure it much better
+ 
+
+going to structure it much better
+environment variables and secrets API is
+
+environment variables and secrets API is
+ 
+
+environment variables and secrets API is
+credentials scrape data files and see
+
+credentials scrape data files and see
+ 
+
+credentials scrape data files and see
+much more detailed and yeah we have a
+
+much more detailed and yeah we have a
+ 
+
+much more detailed and yeah we have a
+pretty nice git ignore that protects as
+
+pretty nice git ignore that protects as
+ 
+
+pretty nice git ignore that protects as
+well so if we needed to
+
+well so if we needed to
+ 
+
+well so if we needed to
+throw this up on GitHub we wouldn't leak
+
+throw this up on GitHub we wouldn't leak
+ 
+
+throw this up on GitHub we wouldn't leak
+anything so do not share API keys
+
+
+ 
+
+
+I was building the minimal web app with
+
+I was building the minimal web app with
+ 
+
+I was building the minimal web app with
+filtering format analysis is five. Okay,
+
+filtering format analysis is five. Okay,
+ 
+
+filtering format analysis is five. Okay,
+so it did it wrote we got 83 tweets. So
+
+so it did it wrote we got 83 tweets. So
+ 
+
+so it did it wrote we got 83 tweets. So
+that's more than 50. It used this
+
+that's more than 50. It used this
+ 
+
+that's more than 50. It used this
+scraper tweet. Let's look at it. Tweet
+
+scraper tweet. Let's look at it. Tweet
+ 
+
+scraper tweet. Let's look at it. Tweet
+scraper v2.
+
+scraper v2.
+ 
+
+scraper v2.
+This probably one of the more expensive
+
+This probably one of the more expensive
+ 
+
+This probably one of the more expensive
+ones because of how difficult it is.
+
+ones because of how difficult it is.
+ 
+
+ones because of how difficult it is.
+Lightning fast jur scraping. I It's not
+
+Lightning fast jur scraping. I It's not
+ 
+
+Lightning fast jur scraping. I It's not
+that expensive. Like $0.4,000 ft is uh
+
+that expensive. Like $0.4,000 ft is uh
+ 
+
+that expensive. Like $0.4,000 ft is uh
+pretty pretty solid.
+
+pretty pretty solid.
+ 
+
+pretty pretty solid.
+Let's go back.
+
+Let's go back.
+ 
+
+Let's go back.
+But actually it's not really accurate.
+
+But actually it's not really accurate.
+ 
+
+But actually it's not really accurate.
+Look at this. 3.3283.
+
+Look at this. 3.3283.
+ 
+
+Look at this. 3.3283.
+So yeah, this pricing on this scraper is
+
+So yeah, this pricing on this scraper is
+ 
+
+So yeah, this pricing on this scraper is
+uh it's not the most accurate. But hey,
+
+uh it's not the most accurate. But hey,
+ 
+
+uh it's not the most accurate. But hey,
+here we have the here we have the file.
+
+here we have the here we have the file.
+ 
+
+here we have the here we have the file.
+It created the file. Let's look at all
+
+It created the file. Let's look at all
+ 
+
+It created the file. Let's look at all
+tweets. Tweets are not loaded there.
+
+tweets. Tweets are not loaded there.
+ 
+
+tweets. Tweets are not loaded there.
+Tweets are not loaded there. Swipe file
+
+Tweets are not loaded there. Swipe file
+ 
+
+Tweets are not loaded there. Swipe file
+zero.
+
+zero.
+ 
+
+zero.
+Okay. So I'm going to take a screenshot.
+
+Okay. So I'm going to take a screenshot.
+ 
+
+Okay. So I'm going to take a screenshot.
+Give it to open code. Boom.
+
+Give it to open code. Boom.
+ 
+
+Give it to open code. Boom.
+Um
+
+Um
+ 
+
+Um
+the site
+
+the site
+ 
+
+the site
+is empty. The data does
+
+is empty. The data does
+ 
+
+is empty. The data does
+does not get loaded. Fix this. Providing
+
+does not get loaded. Fix this. Providing
+ 
+
+does not get loaded. Fix this. Providing
+screenshots is very good for your agents
+
+screenshots is very good for your agents
+ 
+
+screenshots is very good for your agents
+to fix any issues. Always do that.
+
+to fix any issues. Always do that.
+ 
+
+to fix any issues. Always do that.
+While it's fixing the issue, I also
+
+While it's fixing the issue, I also
+ 
+
+While it's fixing the issue, I also
+should mention that on the store when
+
+should mention that on the store when
+ 
+
+should mention that on the store when
+you go to actors inside of a console and
+
+you go to actors inside of a console and
+ 
+
+you go to actors inside of a console and
+go to the store, you can deploy your own
+
+go to the store, you can deploy your own
+ 
+
+go to the store, you can deploy your own
+actor, right? So, if you are expert
+
+actor, right? So, if you are expert
+ 
+
+actor, right? So, if you are expert
+scraping or if you if you know some
+
+scraping or if you if you know some
+ 
+
+scraping or if you if you know some
+website that has like really good data
+
+website that has like really good data
+ 
+
+website that has like really good data
+but doesn't have any appy scrapers, you
+
+but doesn't have any appy scrapers, you
+ 
+
+but doesn't have any appy scrapers, you
+can develop a new one link, you know,
+
+can develop a new one link, you know,
+ 
+
+can develop a new one link, you know,
+through GitHub or wherever it's deployed
+
+through GitHub or wherever it's deployed
+ 
+
+through GitHub or wherever it's deployed
+and make money when people use it,
+
+and make money when people use it,
+ 
+
+and make money when people use it,
+right? This is the beauty of the Appify
+
+right? This is the beauty of the Appify
+ 
+
+right? This is the beauty of the Appify
+store.
+
+store.
+ 
+
+store.
+All of these people who develop their
+
+All of these people who develop their
+ 
+
+All of these people who develop their
+actors, they get paid when others use
+
+actors, they get paid when others use
+ 
+
+actors, they get paid when others use
+it. So if you have a really good idea
+
+it. So if you have a really good idea
+ 
+
+it. So if you have a really good idea
+for a scraper, just throw it up on the
+
+for a scraper, just throw it up on the
+ 
+
+for a scraper, just throw it up on the
+Appify store and if people use it,
+
+Appify store and if people use it,
+ 
+
+Appify store and if people use it,
+you'll make some money. Now let's go
+
+you'll make some money. Now let's go
+ 
+
+you'll make some money. Now let's go
+back to open code. Let's see what's
+
+back to open code. Let's see what's
+ 
+
+back to open code. Let's see what's
+happening.
+
+happening.
+ 
+
+happening.
+Okay, the embedded data isn't loading. I
+
+Okay, the embedded data isn't loading. I
+ 
+
+Okay, the embedded data isn't loading. I
+don't know why. Let's reload. While this
+
+don't know why. Let's reload. While this
+ 
+
+don't know why. Let's reload. While this
+is going, I'm going to do another open
+
+is going, I'm going to do another open
+ 
+
+is going, I'm going to do another open
+code.
+
+code.
+ 
+
+code.
+Boom. Throw it up in here. Here I'm
+
+Boom. Throw it up in here. Here I'm
+ 
+
+Boom. Throw it up in here. Here I'm
+going to do model and switch it to kimi
+
+going to do model and switch it to kimi
+ 
+
+going to do model and switch it to kimi
+k2.5. Here I'll say update the design of
+
+k2.5. Here I'll say update the design of
+ 
+
+k2.5. Here I'll say update the design of
+index html so that
+
+index html so that
+ 
+
+index html so that
+it follows
+
+it follows
+ 
+
+it follows
+uh midcentury modern
+
+uh midcentury modern
+ 
+
+uh midcentury modern
+design theme. Okay, wait. It opened in
+
+design theme. Okay, wait. It opened in
+ 
+
+design theme. Okay, wait. It opened in
+my second window.
+
+my second window.
+ 
+
+my second window.
+Look at this. Boom. AI tweet swap file.
+
+Look at this. Boom. AI tweet swap file.
+ 
+
+Look at this. Boom. AI tweet swap file.
+20 total tweets. Average engagement
+
+20 total tweets. Average engagement
+ 
+
+20 total tweets. Average engagement
+total likes. Let's see. the top offer
+
+total likes. Let's see. the top offer
+ 
+
+total likes. Let's see. the top offer
+list. All right, let's see. All tweets.
+
+list. All right, let's see. All tweets.
+ 
+
+list. All right, let's see. All tweets.
+UK labor government is threatening to
+
+UK labor government is threatening to
+ 
+
+UK labor government is threatening to
+block X but will say word about GIGBD
+
+block X but will say word about GIGBD
+ 
+
+block X but will say word about GIGBD
+67 likes paid courses.
+
+67 likes paid courses.
+ 
+
+67 likes paid courses.
+Okay. Programming states on math. All
+
+Okay. Programming states on math. All
+ 
+
+Okay. Programming states on math. All
+right. Interesting. So 10 is list
+
+right. Interesting. So 10 is list
+ 
+
+right. Interesting. So 10 is list
+format. Okay. So list format works
+
+format. Okay. So list format works
+ 
+
+format. Okay. So list format works
+really well. Interesting. If you
+
+really well. Interesting. If you
+ 
+
+really well. Interesting. If you
+want to perform on Twitter, you should
+
+want to perform on Twitter, you should
+ 
+
+want to perform on Twitter, you should
+try a list format or a question format.
+
+try a list format or a question format.
+ 
+
+try a list format or a question format.
+You probably shouldn't do announcements,
+
+You probably shouldn't do announcements,
+ 
+
+You probably shouldn't do announcements,
+whole text statements. Sometimes they
+
+whole text statements. Sometimes they
+ 
+
+whole text statements. Sometimes they
+can work for sure. But again, do this
+
+can work for sure. But again, do this
+ 
+
+can work for sure. But again, do this
+analysis for your own field. If you're
+
+analysis for your own field. If you're
+ 
+
+analysis for your own field. If you're
+marketing on Twitter, it would be very
+
+marketing on Twitter, it would be very
+ 
+
+marketing on Twitter, it would be very
+wise to use API to scrape some posts on
+
+wise to use API to scrape some posts on
+ 
+
+wise to use API to scrape some posts on
+Twitter and see what's working, see what
+
+Twitter and see what's working, see what
+ 
+
+Twitter and see what's working, see what
+isn't working. That way, you can upgrade
+
+isn't working. That way, you can upgrade
+ 
+
+isn't working. That way, you can upgrade
+your marketing and social media. See, a
+
+your marketing and social media. See, a
+ 
+
+your marketing and social media. See, a
+lot of people think AI is only useful
+
+lot of people think AI is only useful
+ 
+
+lot of people think AI is only useful
+for building and coding. That's not
+
+for building and coding. That's not
+ 
+
+for building and coding. That's not
+true. If you that's very limiting,
+
+true. If you that's very limiting,
+ 
+
+true. If you that's very limiting,
+right? That's that's the obvious use
+
+right? That's that's the obvious use
+ 
+
+right? That's that's the obvious use
+case. With tools like Ampify
+
+case. With tools like Ampify
+ 
+
+case. With tools like Ampify
+connected to powerful AI agents, you can
+
+connected to powerful AI agents, you can
+ 
+
+connected to powerful AI agents, you can
+actually take your marketing to the next
+
+actually take your marketing to the next
+ 
+
+actually take your marketing to the next
+level and get more customers, get higher
+
+level and get more customers, get higher
+ 
+
+level and get more customers, get higher
+reach, grow your social media with the
+
+reach, grow your social media with the
+ 
+
+reach, grow your social media with the
+use of AI agents. So, if you want to try
+
+use of AI agents. So, if you want to try
+ 
+
+use of AI agents. So, if you want to try
+this yourself, click the first link
+
+this yourself, click the first link
+ 
+
+this yourself, click the first link
+below the video, try Appify, and begin
+
+below the video, try Appify, and begin
+ 
+
+below the video, try Appify, and begin
+your journey into the world of web
+
+your journey into the world of web
+ 
+
+your journey into the world of web
+scraping. With that being said, thank
+
+scraping. With that being said, thank
+ 
+
+scraping. With that being said, thank
+you guys for watching, and I wish you a
+
+you guys for watching, and I wish you a
+ 
+
+you guys for watching, and I wish you a
+wonderful, productive week. See you.
+

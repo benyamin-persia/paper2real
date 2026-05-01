@@ -1,0 +1,14 @@
+{
+  "last_updated": "2026-05-01T17:03:19.503006+00:00",
+  "strategy_used": "twitter_direct",
+  "accounts_scraped": 24,
+  "tweets_found": 0,
+  "alerts_found": 0,
+  "timing": {
+    "nitter_rss_seconds": 3.67,
+    "nitter_html_seconds": 22.57,
+    "twitter_direct_seconds": 75.5
+  },
+  "alerts": [],
+  "recent_tweets": []
+}
