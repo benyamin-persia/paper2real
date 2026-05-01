@@ -1,0 +1,26 @@
+.env
+.env.*
+!.env.example
+
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+
+.venv/
+venv/
+env/
+
+.vscode/
+.specstory/
+
+*.db
+*.sqlite
+*.sqlite3
+*.log
+
+data/raw/
+data/processed/
+data/reports/
+
+Web Scraping, and how it gives AI Agents 100x more power.txt

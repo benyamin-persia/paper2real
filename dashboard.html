@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paper2Real BTC Trader</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', sans-serif; padding: 24px; }
+  h1 { color: #f7931a; font-size: 1.6rem; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 0.85rem; margin-bottom: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 16px; }
+  .card .label { color: #8b949e; font-size: 0.72rem; text-transform: uppercase; letter-spacing:.05em; margin-bottom:5px; }
+  .card .value { font-size: 1.3rem; font-weight: 600; }
+  .positive { color: #3fb950; } .negative { color: #f85149; } .neutral { color: #e6edf3; } .orange { color: #f7931a; }
+  .section { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .section h2 { font-size: 0.85rem; color: #8b949e; text-transform: uppercase; letter-spacing:.05em; margin-bottom:14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #21262d; color: #8b949e; font-size: 0.72rem; text-transform: uppercase; padding: 10px 14px; text-align: left; }
+  td { padding: 10px 14px; border-top: 1px solid #21262d; font-size: 0.85rem; }
+  .badge { padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+  .badge.buy  { background:#1a3a1a; color:#3fb950; }
+  .badge.sell { background:#3a1a1a; color:#f85149; }
+  .badge.hold { background:#2a2a1a; color:#f0c040; }
+  .scan-btn { background:#f7931a; border:none; color:#000; padding:10px 24px; border-radius:8px; cursor:pointer; font-size:0.9rem; font-weight:700; margin-right:10px; }
+  .scan-btn:hover { background:#e07810; }
+  .refresh-btn { background:#21262d; border:1px solid #30363d; color:#e6edf3; padding:10px 16px; border-radius:8px; cursor:pointer; font-size:0.85rem; }
+  .refresh-btn:hover { background:#30363d; }
+  .conf-bar { height:6px; border-radius:3px; background:#21262d; margin-top:6px; }
+  .conf-fill { height:6px; border-radius:3px; background:#f7931a; transition: width 0.4s; }
+  .indicators { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .ind { background:#21262d; border-radius:8px; padding:10px 12px; }
+  .ind .k { color:#8b949e; font-size:0.7rem; text-transform:uppercase; }
+  .ind .v { font-size:0.95rem; font-weight:600; margin-top:2px; }
+  .decision-box { border-radius:10px; padding:18px; margin-bottom:16px; border:1px solid #30363d; }
+  #last-decision { font-size:0.88rem; color:#8b949e; font-style:italic; }
+</style>
+</head>
+<body>
+
+<h1>⚡ Paper2Real BTC Trader</h1>
+<p class="subtitle">Claude-powered paper trading — real data, zero risk</p>
+
+<div style="margin-bottom:20px;">
+  <button class="scan-btn" onclick="scan()">🔍 Scan Market Now</button>
+  <button class="refresh-btn" onclick="load()">↻ Refresh Portfolio</button>
+</div>
+
+<!-- last decision -->
+<div class="decision-box" id="decision-box" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <span style="font-size:0.8rem;color:#8b949e;text-transform:uppercase;">Last Claude Decision</span>
+    <span id="decision-badge" class="badge">—</span>
+  </div>
+  <div id="decision-reason" style="margin-bottom:10px;font-size:0.88rem;"></div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:0.75rem;color:#8b949e;">Confidence</span>
+    <div class="conf-bar" style="flex:1"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
+    <span id="conf-pct" style="font-size:0.8rem;color:#f7931a;">0%</span>
+  </div>
+  <div id="hist-summary" style="margin-top:12px;font-size:0.78rem;color:#8b949e;"></div>
+</div>
+
+<!-- portfolio cards -->
+<div class="grid">
+  <div class="card"><div class="label">BTC Price</div><div class="value orange" id="btc-price">—</div></div>
+  <div class="card"><div class="label">Portfolio Value</div><div class="value neutral" id="total-value">—</div></div>
+  <div class="card"><div class="label">Cash Balance</div><div class="value neutral" id="cash">—</div></div>
+  <div class="card"><div class="label">BTC Held</div><div class="value orange" id="btc-held">—</div></div>
+  <div class="card"><div class="label">Total Return</div><div class="value" id="return-pct">—</div></div>
+  <div class="card"><div class="label">Unrealized PnL</div><div class="value" id="unrealized-pnl">—</div></div>
+  <div class="card"><div class="label">Realized PnL</div><div class="value" id="realized-pnl">—</div></div>
+  <div class="card"><div class="label">Open Trades</div><div class="value neutral" id="open-trades">—</div></div>
+</div>
+
+<!-- live indicators -->
+<div class="section" id="indicators-section" style="display:none">
+  <h2>Live Market Indicators</h2>
+  <div class="indicators" id="indicators-grid"></div>
+</div>
+
+<!-- trade history -->
+<div class="section">
+  <h2>Trade History</h2>
+  <table>
+    <thead><tr><th>Side</th><th>BTC</th><th>Buy Price</th><th>Close Price</th><th>PnL</th><th>Status</th><th>Reason</th></tr></thead>
+    <tbody id="trades-body"><tr><td colspan="7" style="color:#8b949e;text-align:center">Loading...</td></tr></tbody>
+  </table>
+</div>
+
+<script>
+const fmt   = n => n==null ? '—' : '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct   = n => n==null ? '—' : (n>=0?'+':'')+n.toFixed(2)+'%';
+const cls   = n => n==null ? 'neutral' : n>0?'positive':n<0?'negative':'neutral';
+const round2= n => n==null ? '—' : Number(n).toFixed(2);
+
+async function load() {
+  try {
+    const [p, t] = await Promise.all([
+      fetch('/portfolio').then(r=>r.json()),
+      fetch('/trades').then(r=>r.json()),
+    ]);
+
+    const price = p.btc_held > 0 ? p.btc_value_usd / p.btc_held : 0;
+    document.getElementById('btc-price').textContent    = fmt(price);
+    document.getElementById('total-value').textContent  = fmt(p.total_portfolio_usd);
+    document.getElementById('cash').textContent         = fmt(p.cash_balance_usd);
+    document.getElementById('btc-held').textContent     = p.btc_held + ' BTC';
+    const retEl = document.getElementById('return-pct');
+    retEl.textContent = pct(p.return_pct); retEl.className='value '+cls(p.return_pct);
+    const uPnl = document.getElementById('unrealized-pnl');
+    uPnl.textContent = fmt(p.unrealized_pnl_usd); uPnl.className='value '+cls(p.unrealized_pnl_usd);
+    const rPnl = document.getElementById('realized-pnl');
+    rPnl.textContent = fmt(p.realized_pnl_usd); rPnl.className='value '+cls(p.realized_pnl_usd);
+    document.getElementById('open-trades').textContent = p.open_trades;
+
+    const tbody = document.getElementById('trades-body');
+    if (!t.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="color:#8b949e;text-align:center">No trades yet. Click "Scan Market Now" to start.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = t.map(tr=>`
+      <tr>
+        <td><span class="badge ${tr.side.toLowerCase()}">${tr.side}</span></td>
+        <td>${tr.btc_amount} BTC</td>
+        <td>${fmt(tr.price)}</td>
+        <td>${tr.close_price?fmt(tr.close_price):'—'}</td>
+        <td class="${cls(tr.pnl)}">${tr.pnl!=null?fmt(tr.pnl):'—'}</td>
+        <td style="color:${tr.closed?'#3fb950':'#f7931a'}">${tr.closed?'Closed':'Open'}</td>
+        <td style="color:#8b949e;font-size:0.78rem">${tr.reason||'—'}</td>
+      </tr>`).join('');
+  } catch(e) { console.error(e); }
+}
+
+function showDecision(data) {
+  const d = data.decision;
+  const box = document.getElementById('decision-box');
+  box.style.display = 'block';
+
+  const badge = document.getElementById('decision-badge');
+  badge.textContent = d.action;
+  badge.className = 'badge ' + d.action.toLowerCase();
+
+  document.getElementById('decision-reason').textContent = d.reason;
+
+  const conf = d.confidence || 0;
+  document.getElementById('conf-fill').style.width = conf + '%';
+  document.getElementById('conf-pct').textContent = conf + '%';
+
+  const hs = d.historical_summary;
+  if (hs && hs.matches_found) {
+    document.getElementById('hist-summary').innerHTML =
+      `📊 Based on <strong>${hs.matches_found}</strong> similar past moments — ` +
+      `historical win rate: <strong style="color:${hs.historical_win_rate_pct>=60?'#3fb950':'#f85149'}">${hs.historical_win_rate_pct}%</strong> | ` +
+      `avg 4h return: <strong class="${cls(hs.avg_return_4h)}">${pct(hs.avg_return_4h)}</strong>`;
+  }
+
+  // show indicators
+  const ctx = data.market_context;
+  if (ctx) {
+    const grid = document.getElementById('indicators-grid');
+    const indItems = [
+      {k:'RSI 14', v: ctx.rsi_14, color: ctx.rsi_14<30?'#3fb950':ctx.rsi_14>70?'#f85149':'#e6edf3'},
+      {k:'MACD', v: ctx.macd_bullish?'Bullish':'Bearish', color: ctx.macd_bullish?'#3fb950':'#f85149'},
+      {k:'EMA Trend', v: ctx.ema_bullish?'Bullish':'Bearish', color: ctx.ema_bullish?'#3fb950':'#f85149'},
+      {k:'Above EMA200', v: ctx.above_ema200?'Yes':'No', color: ctx.above_ema200?'#3fb950':'#f85149'},
+      {k:'Volume', v: ctx.volume_ratio+'x', color: ctx.high_volume?'#3fb950':'#8b949e'},
+      {k:'BB Width', v: round2(ctx.bb_width), color:'#e6edf3'},
+      {k:'Stoch K', v: round2(ctx.stoch_k), color:'#e6edf3'},
+      {k:'Fear & Greed', v: (ctx.fear_greed_index||'—')+' ('+ctx.fear_greed_label+')', color:'#f7931a'},
+    ];
+    grid.innerHTML = indItems.map(i=>`
+      <div class="ind">
+        <div class="k">${i.k}</div>
+        <div class="v" style="color:${i.color}">${i.v}</div>
+      </div>`).join('');
+    document.getElementById('indicators-section').style.display='block';
+  }
+}
+
+async function scan() {
+  const btn = document.querySelector('.scan-btn');
+  btn.textContent = '⏳ Scanning...';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/scan', {method:'POST'});
+    const data = await r.json();
+    showDecision(data);
+    await load();
+  } catch(e) {
+    alert('Scan failed: ' + e.message);
+  } finally {
+    btn.textContent = '🔍 Scan Market Now';
+    btn.disabled = false;
+  }
+}
+
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>
