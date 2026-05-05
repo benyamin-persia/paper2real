@@ -1,0 +1,12 @@
+[Unit]
+Description=Paper2Real AI decision evaluator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=paper2real
+Group=paper2real
+WorkingDirectory=/opt/paper2real
+EnvironmentFile=/opt/paper2real/.env
+ExecStart=/opt/paper2real/venv/bin/python decision_evaluator.py

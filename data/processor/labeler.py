@@ -47,11 +47,12 @@ def label(df: pd.DataFrame = None) -> pd.DataFrame:
         hit_tp.append(int(tp_hit))
 
         # signal label
-        rsi  = df["rsi_14"].iloc[i]
-        macd_bull  = df["macd_bullish"].iloc[i]
-        above_ema  = df["above_ema200"].iloc[i]
+        rsi       = df["rsi_14"].iloc[i]
+        macd_bull = df["macd_bullish"].iloc[i]
+        above_ema = df["above_ema200"].iloc[i]
+        stoch_k   = df["stoch_k"].iloc[i]
 
-        if rsi < 45 and above_ema:
+        if rsi < 45 and above_ema and stoch_k < 30:
             signal.append("BUY")
         elif rsi > 60 and not macd_bull:
             signal.append("SELL")

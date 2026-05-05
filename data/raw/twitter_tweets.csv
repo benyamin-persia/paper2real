@@ -1,12 +1,33 @@
-﻿scraped_at,handle,rank,tweet_id,timestamp,text,url,is_pinned,comments,replies,retweets,reposts,quotes,likes,views,bookmarks,account_elapsed_s,account_error
-2026-05-01T17:59:31.980419+00:00,Cointelegraph,1,2049940566306144319,2026-04-30T19:54:51.000Z,"Binance has begun its ascent back to the top of the US market. They have all the pieces in place, an ambitious plan, and now a new CEO...
+﻿scraped_at,handle,rank,tweet_id,timestamp,text,full_text,url,is_pinned,has_show_more,detail_hydrated,has_media,media_urls,media_alt_text,comments,replies,retweets,reposts,quotes,likes,views,bookmarks,engagement_raw,engagement_rate_per_1k_views,impact_score,account_elapsed_s,account_error,detail_error
+2026-05-05T14:08:50.579621+00:00,WuBlockchain,1,2051661450142499287,2026-05-05T13:53:02.000Z,Crypto venture firm Dragonfly partner Omar Kanji commented that Coinbase’s planned ~14% workforce reduction could save around $225 million in annual compensation.,Crypto venture firm Dragonfly partner Omar Kanji commented that Coinbase’s planned ~14% workforce reduction could save around $225 million in annual compensation.,https://x.com/WuBlockchain/status/2051661450142499287,0,0,0,0,[],[],0,0,1,1,0,2,1509,0,4,2.65,13.53,22.68,,
+2026-05-05T14:08:50.579621+00:00,WuBlockchain,2,2051658828153049453,2026-05-05T13:42:37.000Z,"Source: 
+https://
+coindesk.com/business/2026/
+05/05/andreessen-horowitz-raises-usd2-2-billion-in-a-new-fund-saying-crypto-fundamentals-are-at-an-all-time-high
+…","Source: 
+https://
+coindesk.com/business/2026/
+05/05/andreessen-horowitz-raises-usd2-2-billion-in-a-new-fund-saying-crypto-fundamentals-are-at-an-all-time-high
+…",https://x.com/WuBlockchain/status/2051658828153049453,0,1,0,0,[],[],0,0,0,0,0,0,1372,0,0,0.0,6.09,22.68,,
+2026-05-05T14:08:50.579621+00:00,WuBlockchain,3,2051658652701126658,2026-05-05T13:41:55.000Z,"a16z Raises $2.2B Crypto Fund 5, Targets Stablecoins and Onchain Finance  
 
+Andreessen Horowitz’s crypto arm, one of the industry’s largest venture investors, announced a $2.2 billion Crypto Fund 5 to back crypto startups over the next decade across stages. The firm said the fund will focus on stablecoins, payments and financial services, decentralized systems, and onchain markets such as perpetuals, lending, prediction markets, and tokenized assets, arguing crypto fundamentals are at “all-time highs” even as sentiment remains weak and capital crowds into AI.","a16z Raises $2.2B Crypto Fund 5, Targets Stablecoins and Onchain Finance  
 
-@rkbaggs
- sat down with new 
-@BinanceUS
- CEO, Stephen Gregory (
-@Stevie_Satoshi
-) to ask the big questions.
+Andreessen Horowitz’s crypto arm, one of the industry’s largest venture investors, announced a $2.2 billion Crypto Fund 5 to back crypto startups over the next decade across stages. The firm said the fund will focus on stablecoins, payments and financial services, decentralized systems, and onchain markets such as perpetuals, lending, prediction markets, and tokenized assets, arguing crypto fundamentals are at “all-time highs” even as sentiment remains weak and capital crowds into AI.",https://x.com/WuBlockchain/status/2051658652701126658,0,0,0,1,"[""https://pbs.twimg.com/media/HHj0qkGaAAA8M35?format=png&name=large""]","[""Image""]",11,11,3,3,0,14,2866,4,65,22.68,50.38,22.68,,
+2026-05-05T14:08:50.579621+00:00,WuBlockchain,4,2051654543583392150,2026-05-05T13:25:35.000Z,"ZachXBT: $150M Ponzi Collapses, $41.5 M Frozen Across Chains 
 
-#CHAINREACTION",https://x.com/Cointelegraph/status/2049940566306144319,1,23,23,44,44,0,111,25888,10,5.59,
+On-chain investigator ZachXBT said the DSJ Exchange (DSJEX) / BG Wealth Sharing Ponzi scheme collapsed last week, involving more than $150 million.  
+
+Between April 27 and May 3, over $92 million in illicit funds was laundered across chains to obscure the trail, with around $63 million routed to custody provider Cobo. ZachXBT said he assisted Tether, Binance security team, OKX, and U.S. law enforcement, with over $41.5 million frozen so far. 
+https://
+x.com/zachxbt/status
+/2051645869968248843?s=20
+…","ZachXBT: $150M Ponzi Collapses, $41.5 M Frozen Across Chains 
+
+On-chain investigator ZachXBT said the DSJ Exchange (DSJEX) / BG Wealth Sharing Ponzi scheme collapsed last week, involving more than $150 million.  
+
+Between April 27 and May 3, over $92 million in illicit funds was laundered across chains to obscure the trail, with around $63 million routed to custody provider Cobo. ZachXBT said he assisted Tether, Binance security team, OKX, and U.S. law enforcement, with over $41.5 million frozen so far. 
+https://
+x.com/zachxbt/status
+/2051645869968248843?s=20
+…",https://x.com/WuBlockchain/status/2051654543583392150,0,1,0,1,"[""https://pbs.twimg.com/media/HHjwzLSbMAAatKN?format=jpg&name=large""]","[""Image""]",11,11,9,9,0,29,3512,2,86,24.49,51.97,22.68,,

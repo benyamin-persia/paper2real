@@ -1,6 +1,9 @@
 # Paper2Real Agreement Between Claude And ChatGPT
 
-Last verified from the codebase: 2026-05-01 (session 6)
+Last verified from the codebase: 2026-05-05
+
+For operational handoff, deployment, current API cost, Twitter account rationale,
+and provider-switch instructions, read `PROJECT_RUNBOOK.md` first.
 
 This file is the shared agreement for future conversations with Claude or
 ChatGPT. Treat it as the current source of truth when discussing the trading
@@ -78,12 +81,13 @@ This rule is about reliability and access. It does not mean every useful public 
 - Event-driven scan loop exists in `main.py`: 2 percent BTC move in about 30 minutes, max 3 per day, 30 minute cooldown.
 - Backtest engine exists in `backtest.py`.
 - Latest backtest reports are saved under `data/reports/`.
+- `main.py` caches latest live candles to `data/raw/live_btc_15m.csv` for future decision evaluation.
 - Clean live X account list in `data/raw/account_tiers.json`.
 
 ### Not Built Yet
 
-- Twitter/Nitter scraper.
-- Twitter Tier 1 live alert ingestion.
+- ~~Tier 1 X/Twitter crawler wiring into `brain.py`.~~ DONE — `_get_twitter_context()` in `main.py` reads `twitter_playwright.json`; `_twitter_refresh_loop()` scrapes Tier 1 every 30 min; `brain.py` shows alerts + context to Claude.
+- ~~Twitter Tier 1 live alert ingestion.~~ DONE — see above.
 - `daily_context.json` file. Current daily context is loaded directly from CSVs, not saved as JSON.
 - Options max pain / put-call ratio.
 - Reddit sentiment.
@@ -91,7 +95,19 @@ This rule is about reliability and access. It does not mean every useful public 
 - Whale movement tracker.
 - Exchange reserves.
 - Miner revenue / Puell Multiple.
-- Trade feedback loop where Claude learns from our own closed trades.
+- AI decision feedback loop exists in `decision_evaluator.py`; it scores Claude/final actions once enough future price data exists and writes reports under `data/reports/`.
+- Current blocker: `paper_trader.db` has no decisions yet, so the evaluator is built but needs live paper scans before it can produce useful learning.
+
+### Deployment Agreement
+
+- A VPS is the preferred always-on host.
+- TrueNAS is acceptable if Paper2Real runs inside an Ubuntu VM, not directly on the TrueNAS host shell.
+- Minimum live-trader VPS: 2 vCPU, 4 GB RAM, 30 GB SSD.
+- Preferred full-scraping VPS: 4 vCPU, 8 GB RAM, 50+ GB SSD.
+- The live app should run continuously under `systemd`.
+- Heavy jobs (`collect.py`, full 84-account X/Twitter scrape, large backtests) should run as scheduled jobs, not inside every trade scan.
+- Deployment files exist under `deploy/`, including TrueNAS VM notes and systemd units.
+- Real-money execution remains blocked until the system has profitable backtest evidence plus at least 30 days of positive paper trading.
 
 ### Already Enough For Testing
 
@@ -190,13 +206,152 @@ Layer C is useful but must never override Layer A.
 Current status:
 
 - X account list exists.
-- Twitter/Nitter scraper is not built.
+- CSV crawler prototype exists in `data/collector/twitter_playwright.py`.
+- Puppeteer CSV crawler exists in `data/collector/twitter_puppeteer.js`.
+- Tier 1 crawler is wired into `main.py` and `brain.py`: background refresh every 30 minutes, latest tweets/alerts passed into Claude context.
+- Full 84-account scraping remains offline/daily research only, not part of every trade scan.
 
 Future rule:
 
 - Tier 1 tweets can become alerts.
 - Tier 2 and Tier 3 tweets are context.
 - Influencer sentiment should not become an automatic trade trigger.
+
+## Resource Priority Agreement
+
+This section answers: which resources matter now, which matter later, and which should not distract the project.
+
+### Critical Now
+
+These resources directly affect whether the bot is safe or dangerous.
+
+1. BTC live price and 15-minute candles.
+   - Purpose: every scan depends on current price and indicators.
+   - Failure behavior: if BTC price/candles are missing or stale, skip the scan.
+   - Current code: `main.py` uses Yahoo Finance 15-minute candles with Coinbase fallback.
+
+2. `risk_engine.py`.
+   - Purpose: deterministic veto layer after Claude.
+   - Why critical: Claude can be wrong or overconfident; the risk engine protects capital.
+   - Current status: built with 13 checks.
+
+3. Decision logs.
+   - Purpose: prove what Claude wanted, what the risk engine allowed/blocked, and why.
+   - Why critical: without logs, there is no way to diagnose overtrading, excessive blocking, or bad signals.
+   - Current status: SQLite `decisions` table and `/decisions` endpoint.
+
+4. Backtest engine.
+   - Purpose: test strategy changes before live paper trading or real money.
+   - Why critical: no strategy change should be trusted without replaying it through fees, slippage, stops, and risk limits.
+   - Current status: `backtest.py` exists and writes reports to `data/reports/`.
+
+5. Critical events.
+   - Purpose: block or reduce risk during hacks, collapses, bans, enforcement shocks, and stablecoin depegs.
+   - Why critical: these can invalidate technical signals immediately.
+   - Current status: CryptoPanic events scraper plus stablecoin depeg check.
+
+6. Tier 1 latest X/Twitter posts.
+   - Purpose: catch high-impact public statements from institutions, regulators, exchanges, security accounts, and major Bitcoin actors.
+   - Why critical: these are alert/context signals, not automatic trade triggers.
+   - Current status: Tier 1 crawler is wired into `main.py` and `brain.py`; full 84-account scans remain offline/daily only.
+
+Critical Tier 1 categories:
+
+- President / White House.
+- Federal Reserve.
+- SEC / CFTC / Treasury / DOJ.
+- Major exchanges: Binance and Coinbase.
+- ETF/institutional accounts: BlackRock, iShares, Fidelity, Grayscale.
+- MicroStrategy and Saylor.
+- Tether and Paolo Ardoino.
+- Security alerts: ZachXBT, PeckShield, SlowMist, CertiK.
+- WuBlockchain.
+
+### Critical For Strategy Quality
+
+These resources help decide whether a BUY signal is good. Most already exist. The current task is to use them better, not blindly add more data.
+
+- Funding rate.
+- Open interest.
+- Long/short ratio.
+- Liquidations.
+- ETF flows.
+- BTC dominance.
+- USDT market cap.
+- S&P 500.
+- DXY.
+- VIX.
+- Gold.
+- Fear and Greed.
+- ATR, RSI, MACD, EMA, Bollinger Bands, and volume.
+
+Agreement:
+
+- These resources should adjust confidence and filter weak entries.
+- They should not force BUY alone.
+- Strategy changes must be measured by `backtest.py`.
+
+### Critical For Future
+
+These become important after the base strategy is profitable or after Tier 1 social alerts are wired cleanly.
+
+1. Options max pain and put/call ratio.
+   - Best use: context near options expiry.
+   - Priority: medium.
+
+2. Exchange reserves.
+   - Best use: BTC leaving exchanges is bullish context; BTC entering exchanges is sell-pressure context.
+   - Priority: medium if a stable source exists.
+
+3. Tier 2 and Tier 3 X/Twitter sentiment.
+   - Best use: daily/weekly context, not live trade trigger.
+   - Priority: later, after Tier 1 works.
+
+4. AI decision feedback loop.
+   - Best use: learn from Claude's own BUY/SELL/HOLD decisions, including blocked trades and missed moves.
+   - Current status: built in `decision_evaluator.py`; needs live decision history before it becomes useful.
+
+5. Dashboard for decision logs.
+   - Best use: monitor blocks, Claude bias, execution rate, and PnL.
+   - Priority: useful for long-running paper trading.
+
+6. Weekly data refresh scheduler.
+   - Best use: hands-off refresh of `collect.py`.
+   - Priority: operations, not strategy.
+
+### Not Critical Now
+
+Skip these until the current strategy has positive expectancy or there is a specific measured reason to add them.
+
+- Reddit sentiment.
+- Google Trends.
+- Whale movement tracker.
+- More technical indicators.
+- Full 84-account live X/Twitter scan before every trade.
+- Random influencer sentiment.
+
+Reason:
+
+- These sources are noisy, delayed, manipulated, slow, or easy to overfit.
+- Adding them now can hide weak strategy logic.
+- The immediate problem is BUY quality, not lack of raw data.
+
+### Highest Priority Resource Stack
+
+If the system had to be reduced to essentials, keep these:
+
+- BTC candles.
+- Risk engine.
+- Decision logs.
+- Backtest.
+- Critical events.
+- Stablecoin depeg.
+- Funding, open interest, and liquidations.
+- ETF flows.
+- Macro: DXY, VIX, S&P 500.
+- Tier 1 latest X/Twitter posts.
+
+Everything else is secondary until the backtest improves.
 
 ## Risk Engine Agreement
 
@@ -305,10 +460,11 @@ Do these before adding random new sentiment sources:
 5. ~~Build proper backtest engine.~~ DONE
 6. ~~Add event-driven scan trigger for large BTC moves.~~ DONE
 7. Improve strategy profitability before real money.
-8. Build Tier 1 Twitter/Nitter scraper only.
+8. ~~Finish Tier 1 X/Twitter crawler reliability and wire into context.~~ DONE — background loop every 30 min, alerts and context fed to Claude.
 9. Add options max pain and put-call ratio.
 10. Add exchange reserves if a stable Playwright source is found.
-11. Add trade feedback loop after enough paper trades exist.
+11. ~~Build AI decision feedback evaluator.~~ DONE — `decision_evaluator.py` writes JSON/CSV/MD reports and `brain.py` reads the latest summary.
+12. Collect enough live paper decisions for the evaluator to become useful.
 
 ## Explicit Skip For Now
 
@@ -344,6 +500,6 @@ Freshness gate:               built, shared across all scan paths
 Decision logging layer:       built, stored in SQLite
 Backtesting layer:            built, latest result not profitable
 Event-driven scan layer:      built
-Twitter/social live layer:    not built
-Overall implementation vs agreement: about 94 percent
+Twitter/social live layer:    built — background loop every 30 min, alerts + context wired into Claude
+Overall implementation vs agreement: about 97 percent
 ```

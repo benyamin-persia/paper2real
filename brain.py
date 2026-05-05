@@ -1,9 +1,11 @@
 import json
+from pathlib import Path
 import anthropic
 from config import ANTHROPIC_API_KEY
 from data.processor.matcher import find_similar, summarize_similar
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+AI_MODEL = "claude-sonnet-4-6"
 
 SYSTEM_PROMPT = """You are a Bitcoin market analyst. Your default answer is HOLD.
 
@@ -20,14 +22,77 @@ STRICT RULES:
     "invalid_if": ["list", "of", "conditions", "that", "would", "cancel", "this"]
   }
 - If confidence < 60, action MUST be HOLD — do not force a trade.
-- If any key data is missing, stale, or contradictory, action MUST be HOLD.
-- If historical win rate < 55%, action MUST be HOLD.
+- If critical market data is missing, stale, or contradictory, action MUST be HOLD.
+- Tier 1 Twitter is context/alert data. Missing or stale Twitter alone is not enough to force HOLD.
+- Historical evidence is weighted evidence, not an automatic wall.
+- Only treat history as a hard HOLD when historical win rate < 35% AND avg 4h return < 0 AND avg 24h return < 0.
 - Never BUY into extreme greed (Fear & Greed > 80) without very strong confirmation.
 - Never SELL into extreme fear (Fear & Greed < 20) without very strong confirmation.
 - A missed trade is acceptable. A weak trade is not.
 - Never chase a pump. Never panic sell.
 - Challenge every signal — look for reasons it could fail before reasons to enter.
 """
+
+
+def _build_twitter_section(signal: dict) -> str:
+    """Render Tier 1 Twitter alerts and recent context for Claude's prompt."""
+    if signal.get("twitter_unavailable"):
+        return "- Status: data unavailable (scraper not run yet or stale)"
+
+    lines = []
+    alerts = signal.get("twitter_alerts") or []
+    recent = signal.get("twitter_recent") or []
+
+    if alerts:
+        lines.append(f"- ALERTS ({len(alerts)} flagged):")
+        for a in alerts[:5]:
+            kws = ", ".join(a.get("alert_keywords", []))
+            lines.append(
+                f"    @{a['handle']} [{kws}] "
+                f"likes={a.get('likes', 0)} views={a.get('views', 0)} comments={a.get('comments', 0)}: "
+                f"{a['text'][:150]}"
+            )
+    else:
+        lines.append("- Alerts: none detected")
+
+    if recent:
+        lines.append("- Recent context (Tier 1):")
+        for t in recent[:5]:
+            lines.append(
+                f"    @{t['handle']} "
+                f"likes={t.get('likes', 0)} views={t.get('views', 0)} comments={t.get('comments', 0)}: "
+                f"{t['text'][:120]}"
+            )
+
+    return "\n".join(lines) if lines else "- No tweets available"
+
+
+def _build_ai_feedback_section() -> str:
+    """Load recent decision-evaluator output for Claude's self-correction loop."""
+    path = Path("data/reports/ai_feedback_summary.json")
+    if not path.exists():
+        return "- Status: no AI feedback report yet"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return "- Status: AI feedback report unreadable"
+
+    lines = [
+        f"- Decisions evaluated: {data.get('decisions_total', 0)}",
+        f"- Scored outcomes: {data.get('rows_scored', 0)}",
+        f"- Recommendation: {data.get('recommendation') or 'N/A'}",
+    ]
+    h4 = (data.get("horizons") or {}).get("4h") or {}
+    if h4:
+        lines.append(f"- 4h Claude BUY accuracy: {h4.get('claude_buy_accuracy_pct')}")
+        lines.append(f"- 4h missed-upside HOLDs: {h4.get('missed_upside_holds')}")
+        risk = h4.get("risk_engine") or {}
+        lines.append(
+            "- 4h risk engine: "
+            f"saved_losses={risk.get('risk_engine_saved_losses', 0)}, "
+            f"blocked_winners={risk.get('risk_engine_blocked_winners', 0)}"
+        )
+    return "\n".join(lines)
 
 
 def decide(signal: dict, portfolio: dict) -> dict:
@@ -48,6 +113,8 @@ def decide(signal: dict, portfolio: dict) -> dict:
             "reason": "ANTHROPIC_API_KEY is missing - holding to avoid unmanaged trades",
             "confidence": 0,
             "historical_summary": summary,
+            "_api_usage": {"input_tokens": 0, "output_tokens": 0},
+            "_audit": {"model": None, "prompt": "", "response": "ANTHROPIC_API_KEY missing"},
         }
 
     # build historical evidence section
@@ -81,6 +148,7 @@ LIVE TECHNICALS:
 - ATR (14):       {_fmt(signal.get('atr_14'))}
 - Stoch K:        {_fmt(signal.get('stoch_k'))}
 - Volume ratio:   {_fmt(signal.get('volume_ratio'))} (>1.5 = high volume)
+- Volume quality: {signal.get('volume_quality', 'unknown')} (if unreliable, do NOT treat missing/zero volume as bearish evidence)
 
 MARKET STRUCTURE (daily):
 - Fear & Greed:       {_fmt(signal.get('fear_greed_index'))} — {signal.get('fear_greed_label', 'N/A')}
@@ -112,6 +180,11 @@ ALERT STATUS:
 - Stablecoin depeg: {signal.get('stablecoin_depeg') or 'None'}
 - Exchange alert:   {signal.get('exchange_hack_alert') or 'None'}
 
+TIER 1 TWITTER (last scraped: {signal.get('twitter_last_updated') or 'never'}, {signal.get('twitter_accounts_scraped', 0)} accounts):
+{_build_twitter_section(signal)}
+
+AI FEEDBACK LOOP:
+{_build_ai_feedback_section()}
 {evidence}
 
 PORTFOLIO:
@@ -136,13 +209,24 @@ Respond ONLY with this exact JSON (no markdown, no extra text):
 """
 
     message = client.messages.create(
-        model="claude-haiku-4-5-20251001",
+        model=AI_MODEL,
         max_tokens=300,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": user_message}],
     )
 
     text = message.content[0].text.strip()
+    usage = getattr(message, "usage", None)
+    api_usage = {
+        "input_tokens": getattr(usage, "input_tokens", 0) if usage else 0,
+        "output_tokens": getattr(usage, "output_tokens", 0) if usage else 0,
+    }
+    audit = {
+        "model": AI_MODEL,
+        "system_prompt": SYSTEM_PROMPT,
+        "prompt": user_message,
+        "response": text,
+    }
 
     # strip markdown code fences if present
     if "```" in text:
@@ -170,6 +254,8 @@ Respond ONLY with this exact JSON (no markdown, no extra text):
             "risk_summary":     result.get("risk_summary", ""),
             "invalid_if":       result.get("invalid_if", []),
             "historical_summary": summary,
+            "_api_usage":          api_usage,
+            "_audit":              audit,
         }
     except (json.JSONDecodeError, ValueError):
         return {

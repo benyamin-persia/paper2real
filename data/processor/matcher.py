@@ -49,7 +49,7 @@ def find_similar(current: dict, n: int = 20) -> list[dict]:
         return []
 
     # build feature vectors
-    available = [f for f in MATCH_FEATURES if f in df.columns and f in current]
+    available = [f for f in MATCH_FEATURES if f in df.columns and f in current and current.get(f) is not None]
     if not available:
         return []
 

@@ -52,6 +52,32 @@ CRITICAL_EXCHANGES = {
 }
 
 
+def _valid_headline(headline: str) -> bool:
+    text = (headline or "").strip()
+    if len(text) < 18:
+        return False
+    if re.fullmatch(r"\d+\s*(min|mins|h|hr|hrs|hour|hours|d|day|days)", text.lower()):
+        return False
+    if text.lower() in {"relevant", "view quotes", "bullish", "bearish", "important"}:
+        return False
+    return any(c.isalpha() for c in text)
+
+
+def _category(headline: str, alert_type: str | None = None) -> str:
+    text = (headline or "").lower()
+    if alert_type == "stablecoin_depeg":
+        return "STABLECOIN_RISK"
+    if any(x in text for x in ("bitcoin", "btc", "$btc", "spot bitcoin", "bitcoin etf")):
+        return "BTC_DIRECT"
+    if any(x in text for x in ("sec", "cftc", "doj", "treasury", "irs", "ban", "lawsuit", "enforcement")):
+        return "REGULATORY_CRYPTO" if any(x in text for x in ("bitcoin", "btc", "crypto", "exchange", "stablecoin", "etf")) else "REGULATORY_OTHER"
+    if any(x in text for x in ("binance", "coinbase", "kraken", "okx", "bybit", "withdrawals", "halted")):
+        return "EXCHANGE_RISK"
+    if any(x in text for x in ("hack", "exploit", "breach", "compromised", "stolen")):
+        return "CRYPTO_SECURITY"
+    return "NEWS_CONTEXT"
+
+
 def _is_critical(headline: str) -> tuple[str | None, str]:
     """
     Returns (alert_type, matched_keyword) if headline is critical.
@@ -103,13 +129,14 @@ async def _fetch_news_via_api(page) -> list[dict]:
             if data and isinstance(data, dict) and data.get("results"):
                 return [
                     {
-                        "headline": item.get("title", ""),
+                        "headline": item.get("title", "").strip(),
                         "url":      item.get("url", ""),
                         "published_at": item.get("published_at", ""),
                         "importance": item.get("votes", {}).get("important", 0),
-                        "source": "api",
+                        "source": item.get("source", {}).get("title") or "api",
                     }
                     for item in data["results"][:30]
+                    if _valid_headline(item.get("title", ""))
                 ]
         except Exception:
             continue
@@ -123,7 +150,15 @@ async def _fetch_news_via_html(page) -> list[dict]:
             const results = [];
             const rows = document.querySelectorAll('.news-row, [class*="news_item"], article');
             rows.forEach(row => {
-                const link = row.querySelector('a[href*="/news/"]');
+                const candidates = Array.from(row.querySelectorAll('a[href*="/news/"], a[href*="/post/"], a'));
+                let link = null;
+                for (const a of candidates) {
+                    const txt = (a.textContent || '').trim();
+                    if (txt.length > 18 && /[A-Za-z]/.test(txt) && !/^\\d+\\s*(min|mins|h|hr|hrs)$/i.test(txt)) {
+                        link = a;
+                        break;
+                    }
+                }
                 const timeEl = row.querySelector('time');
                 if (link && link.textContent.trim()) {
                     results.push({
@@ -131,13 +166,13 @@ async def _fetch_news_via_html(page) -> list[dict]:
                         url: link.href || '',
                         published_at: timeEl ? timeEl.getAttribute('datetime') : '',
                         importance: row.classList.contains('is-important') ? 1 : 0,
-                        source: 'html',
+                        source: row.querySelector('[class*="source"], [class*="domain"]')?.textContent?.trim() || 'html',
                     });
                 }
             });
             return results.slice(0, 30);
         }""")
-        return items if items else []
+        return [item for item in (items or []) if _valid_headline(item.get("headline", ""))]
     except Exception:
         return []
 
@@ -190,13 +225,17 @@ async def _scrape() -> dict:
             continue
 
         alert_type, keyword = _is_critical(headline)
+        category = _category(headline, alert_type)
         if alert_type:
             alert = {
                 "headline":   headline,
                 "url":        item.get("url", ""),
                 "published_at": item.get("published_at", ""),
+                "source":     item.get("source", ""),
+                "category":   category,
                 "alert_type": alert_type,
-                "keyword":    keyword,
+                "matched_keywords": [keyword] if keyword else [],
+                "is_critical": True,
             }
             result["critical_alerts"].append(alert)
             result["has_critical"] = True
@@ -209,7 +248,11 @@ async def _scrape() -> dict:
                 "headline":     headline,
                 "url":          item.get("url", ""),
                 "published_at": item.get("published_at", ""),
+                "source":       item.get("source", ""),
+                "category":     category,
                 "importance":   item.get("importance", 0),
+                "matched_keywords": [],
+                "is_critical": False,
             })
 
     return result

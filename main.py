@@ -1,6 +1,12 @@
 import asyncio
+import csv
+import io
+import json
 import logging
 import os
+import re
+import zipfile
+from collections import deque
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -9,11 +15,14 @@ import httpx
 import pandas as pd
 import pandas_ta as ta
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 
 import trader
 import brain
 import risk_engine
+import notifier
+import decision_evaluator
+import trade_quality
 from data.collector import events as events_collector
 from config import WEBHOOK_SECRET
 
@@ -21,6 +30,116 @@ EVENTS_REFRESH_MINUTES = 15    # how often to re-scrape CryptoPanic
 EVENTS_MAX_AGE_MINUTES = 20    # older than this → treat as missing
 MASTER_DATASET_MAX_AGE_HOURS = 36  # warn if training data is very stale
 PRICE_MAX_AGE_MINUTES = 20     # warn if latest candle is old
+LIVE_CANDLES_FILE = Path("data/raw/live_btc_15m.csv")
+EVALUATOR_REFRESH_MINUTES = 60  # refresh AI feedback from completed decisions
+SCHEDULED_SCAN_COOLDOWN_MINUTES = 30
+
+TWITTER_REFRESH_MINUTES = 30   # how often to re-scrape Tier 1 Twitter accounts
+TWITTER_MAX_AGE_MINUTES = 60   # older than this → mark unavailable
+TWITTER_TWEET_MAX_AGE_HOURS = 24  # only recent tweets are useful live context
+
+_TWITTER_ALERT_KEYWORDS = {
+    "ban", "bans", "banned", "hack", "hacked", "exploit", "breach", "seized",
+    "insolvent", "bankrupt", "collapse", "depeg", "emergency", "shutdown",
+    "arrested", "indicted", "enforcement action", "cease and desist",
+    "sec sues", "cftc charges", "doj", "criminal charges",
+    "exchange down", "exchange halted", "trading suspended",
+}
+
+
+def _twitter_keyword_matches(text: str) -> list[str]:
+    lower = (text or "").lower()
+    matches: list[str] = []
+    for kw in sorted(_TWITTER_ALERT_KEYWORDS, key=len, reverse=True):
+        if " " in kw:
+            if kw in lower:
+                matches.append(kw)
+        elif re.search(rf"\b{re.escape(kw)}\b", lower):
+            matches.append(kw)
+    return matches
+
+
+def _classify_twitter_alert(text: str) -> tuple[str, bool]:
+    lower = (text or "").lower()
+    btc_terms = {"bitcoin", "btc", "$btc", "satoshi", "bitcoin etf", "spot bitcoin"}
+    exchange_terms = {"binance", "coinbase", "kraken", "okx", "bybit", "gemini", "withdrawals", "halted"}
+    stable_terms = {"usdt", "usdc", "tether", "stablecoin", "depeg", "peg"}
+    regulatory_terms = {"sec", "cftc", "doj", "treasury", "irs", "fincen", "ban", "lawsuit", "enforcement", "etf approved", "etf rejected"}
+    macro_terms = {"fed", "fomc", "cpi", "inflation", "rates", "treasury yield", "jobs report"}
+    security_terms = {"hack", "exploit", "breach", "compromised", "stolen", "drained"}
+
+    if any(t in lower for t in stable_terms) and any(t in lower for t in {"depeg", "peg", "below $1", "lost peg"}):
+        return "STABLECOIN_RISK", True
+    if any(t in lower for t in exchange_terms) and any(t in lower for t in security_terms | {"withdrawals", "halted", "bankrupt", "insolvent"}):
+        return "EXCHANGE_RISK", True
+    if any(t in lower for t in btc_terms):
+        return "BTC_DIRECT", True
+    if any(t in lower for t in regulatory_terms) and any(t in lower for t in {"crypto", "bitcoin", "btc", "exchange", "stablecoin", "etf"}):
+        return "REGULATORY_CRYPTO", True
+    if any(t in lower for t in macro_terms):
+        return "MACRO_MARKET", False
+    if any(t in lower for t in security_terms) and any(t in lower for t in {"crypto", "defi", "protocol", "wallet", "chain"}):
+        return "CRYPTO_SECURITY", False
+    return "IRRELEVANT", False
+
+
+def _tweet_sentiment(text: str) -> dict:
+    lower = (text or "").lower()
+    bullish = {
+        "approved", "approval", "buy", "bought", "bull", "bullish", "adopt",
+        "reserve", "inflow", "ath", "surge", "rally", "support", "accumulate",
+    }
+    bearish = {
+        "ban", "banned", "hack", "hacked", "exploit", "sell", "sold", "bear",
+        "bearish", "fraud", "lawsuit", "sues", "collapse", "bankrupt", "depeg",
+        "outflow", "crash", "seized",
+    }
+    pos = sum(1 for w in bullish if re.search(rf"\b{re.escape(w)}\b", lower))
+    neg = sum(1 for w in bearish if re.search(rf"\b{re.escape(w)}\b", lower))
+    score = max(-100, min(100, (pos - neg) * 25))
+    label = "bullish" if score > 0 else "bearish" if score < 0 else "neutral"
+    return {"sentiment_score": score, "sentiment_label": label, "positive_hits": pos, "negative_hits": neg}
+
+
+def _tweet_engagement(row: dict) -> dict:
+    comments = int(row.get("comments") or row.get("replies") or 0)
+    retweets = int(row.get("retweets") or row.get("reposts") or 0)
+    quotes = int(row.get("quotes") or 0)
+    likes = int(row.get("likes") or 0)
+    bookmarks = int(row.get("bookmarks") or 0)
+    views = int(row.get("views") or 0)
+    raw = likes + (2 * retweets) + (2 * quotes) + (3 * comments) + (3 * bookmarks)
+    rate = round(raw / views * 1000, 2) if views > 0 else 0.0
+    score = min(100.0, round((raw ** 0.5) + min(35, rate * 2) + min(25, views ** 0.25), 2))
+    return {
+        "engagement_raw": raw,
+        "engagement_rate_per_1k_views": rate,
+        "impact_score": score,
+    }
+
+
+def _json_list(value) -> list:
+    if isinstance(value, list):
+        return value
+    if not value:
+        return []
+    try:
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, list) else []
+    except Exception:
+        return []
+
+
+def _save_live_candles(df: pd.DataFrame) -> None:
+    """Cache latest live 15m candles so decision_evaluator.py can score outcomes."""
+    try:
+        LIVE_CANDLES_FILE.parent.mkdir(parents=True, exist_ok=True)
+        out = df[["timestamp", "open", "high", "low", "close", "volume"]].copy()
+        out["timestamp"] = pd.to_datetime(out["timestamp"], errors="coerce")
+        out = out.dropna(subset=["timestamp", "close"])
+        out.to_csv(LIVE_CANDLES_FILE, index=False)
+    except Exception as e:
+        log.warning("Could not save live candle cache: %s", e)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -28,6 +147,26 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 log = logging.getLogger("paper2real")
+LOG_BUFFER = deque(maxlen=500)
+
+
+class _DashboardLogHandler(logging.Handler):
+    def emit(self, record):
+        try:
+            LOG_BUFFER.append(
+                {
+                    "time": datetime.fromtimestamp(record.created).isoformat(timespec="seconds"),
+                    "level": record.levelname,
+                    "message": self.format(record),
+                }
+            )
+        except Exception:
+            pass
+
+
+_dash_handler = _DashboardLogHandler()
+_dash_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s", "%H:%M:%S"))
+log.addHandler(_dash_handler)
 
 SCAN_INTERVAL_HOURS = 4
 EVENT_MOVE_TRIGGER_PCT = 2.0
@@ -35,6 +174,42 @@ EVENT_SCAN_CHECK_MINUTES = 5
 EVENT_SCAN_COOLDOWN_MINUTES = 30
 EVENT_SCAN_MAX_PER_DAY = 3
 SCAN_LOCK = asyncio.Lock()
+
+
+async def _notify_scan_result(trigger: str, context: dict, claude_out: dict, final: dict, trade_result: dict | None = None):
+    blocked = final.get("blocked_by")
+    trade_executed = bool(trade_result and "error" not in trade_result and "blocked" not in trade_result)
+    severity = "INFO"
+    event_type = "scan_completed"
+    if blocked:
+        severity = "WARNING"
+        event_type = "trade_blocked_by_risk_engine"
+    if trade_executed:
+        severity = "CRITICAL"
+        event_type = "trade_executed"
+    msg = (
+        f"BTC: ${context.get('price', 0):,.2f}\n"
+        f"Claude: {claude_out.get('action')} {claude_out.get('confidence')}%\n"
+        f"Final: {final.get('action')}\n"
+        f"Reason: {final.get('reason') or claude_out.get('reason')}\n"
+        f"Risk block: {blocked or 'none'}"
+    )
+    await notifier.notify(
+        severity,
+        event_type,
+        msg,
+        source=trigger,
+        status_text="executed" if trade_executed else "blocked" if blocked else "completed",
+        metadata={
+            "price": context.get("price"),
+            "rsi": context.get("rsi_14"),
+            "fear_greed": context.get("fear_greed_index"),
+            "final_action": final.get("action"),
+            "blocked_by": blocked,
+            "position_usd": final.get("position_usd"),
+            "api_cost_today": trader.api_usage_summary().get("today_cost_usd"),
+        },
+    )
 
 
 def _check_data_freshness(context: dict) -> list[str]:
@@ -67,6 +242,8 @@ def _check_data_freshness(context: dict) -> list[str]:
     # ── Warnings: enrichment data ─────────────────────────────────────────────
     if context.get("fear_greed_index") is None:
         issues.append("WARNING: Fear & Greed unavailable — proceeding without sentiment")
+    if context.get("volume_quality") != "reliable":
+        issues.append("WARNING: Live BTC volume is unreliable - volume_ratio ignored as bearish evidence")
 
     # Check master_dataset.csv age (training data for pattern matching)
     master = Path("data/processed/master_dataset.csv")
@@ -115,6 +292,14 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
         issues = _check_data_freshness(context)
         for w in issues:
             log.warning("DATA: %s", w)
+            await notifier.notify(
+                "CRITICAL" if w.startswith("CRITICAL") else "WARNING",
+                "data_freshness_failure" if w.startswith(("CRITICAL", "BUY_BLOCK")) else "data_freshness_warning",
+                w,
+                source="freshness_check",
+                status_text="failed" if w.startswith("CRITICAL") else "warning",
+                metadata={"trigger": trigger, "price": context.get("price")},
+            )
         if any(w.startswith("CRITICAL") for w in issues):
             log.warning("SCAN SKIPPED — critical data missing")
             return
@@ -130,12 +315,23 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
                 s.get("peak_price", "?"),
                 s.get("pnl_usd", "?"),
             )
+            await notifier.notify(
+                "CRITICAL",
+                "trailing_stop_hit",
+                f"Trailing stop closed trade at ${price:,.2f}. P&L: ${s.get('pnl_usd', '?')}",
+                source="trailing_stop",
+                status_text="executed",
+                metadata=s,
+            )
 
         # 3. Run brain → risk engine → execute
         summary    = trader.portfolio_summary(price)
         claude_out = brain.decide(context, summary)
         closed     = [t for t in trader.get_all_trades() if t["closed"]]
         final      = risk_engine.evaluate(claude_out, context, summary, closed)
+        context["trade_quality"] = trade_quality.score(
+            context, claude_out.get("historical_summary"), final
+        )
 
         action  = final["action"]
         reason  = final["reason"]
@@ -155,6 +351,7 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
         )
 
         trade_executed = False
+        result = None
         if action == "BUY":
             result = trader.buy(
                 price, reason,
@@ -169,16 +366,28 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
             log.info("SELL executed: %s", result)
 
         trader.log_decision(context, claude_out, final, trade_executed, trigger=trigger)
+        await _notify_scan_result(trigger, context, claude_out, final, result)
 
     except Exception as e:
         log.error("Scan failed: %s", e)
+        await notifier.notify("CRITICAL", "app_scan_failed", f"Scan failed: {e}", source=trigger, status_text="failed")
 
 
 async def _auto_scan_loop():
     """Background loop — scans every SCAN_INTERVAL_HOURS hours."""
     log.info("Auto-scan started — interval: %sh", SCAN_INTERVAL_HOURS)
     while True:
-        await _run_scan(trigger="scheduled")
+        recent = trader.get_decisions(limit=1)
+        last_ts = recent[0]["timestamp"] if recent else 0
+        age_min = (datetime.now().timestamp() - last_ts) / 60 if last_ts else None
+        if age_min is not None and age_min < SCHEDULED_SCAN_COOLDOWN_MINUTES:
+            log.info(
+                "Scheduled scan skipped - last scan %.1f min ago (cooldown %s min)",
+                age_min,
+                SCHEDULED_SCAN_COOLDOWN_MINUTES,
+            )
+        else:
+            await _run_scan(trigger="scheduled")
         next_scan = datetime.now().strftime("%H:%M")
         log.info("Next scan in %sh (started at %s)", SCAN_INTERVAL_HOURS, next_scan)
         await asyncio.sleep(SCAN_INTERVAL_HOURS * 3600)
@@ -226,11 +435,20 @@ async def _event_price_move_loop():
                         f"{old_price:,.0f}",
                         f"{new_price:,.0f}",
                     )
+                    await notifier.notify(
+                        "WARNING",
+                        "price_move_trigger",
+                        f"BTC moved {move_pct:.2f}% in about 30 minutes. Emergency scan triggered.",
+                        source="event_price_move_loop",
+                        status_text="triggered",
+                        metadata={"old_price": old_price, "new_price": new_price, "move_pct": round(move_pct, 3)},
+                    )
                     await _run_scan(trigger="event_price_move")
                     scans_today += 1
                     last_event_scan_ts = datetime.now().timestamp()
         except Exception as e:
             log.error("Event-driven scan check failed: %s", e)
+            await notifier.notify("WARNING", "scraper_failure", f"Event-driven scan check failed: {e}", source="event_price_move_loop", status_text="failed")
 
         await asyncio.sleep(EVENT_SCAN_CHECK_MINUTES * 60)
 
@@ -244,22 +462,167 @@ async def _events_refresh_loop():
             if data.get("has_critical"):
                 for alert in data.get("critical_alerts", []):
                     log.warning("CRITICAL EVENT: [%s] %s", alert["alert_type"], alert["headline"][:120])
+                    await notifier.notify(
+                        "CRITICAL",
+                        "critical_market_alert",
+                        f"{alert.get('alert_type')}: {alert.get('headline')}",
+                        source="events_collector",
+                        status_text="active",
+                        metadata=alert,
+                    )
             else:
                 log.info("Events refreshed — no critical alerts")
         except Exception as e:
             log.error("Events refresh failed: %s", e)
+            await notifier.notify("WARNING", "scraper_failure", f"Events refresh failed: {e}", source="events_collector", status_text="failed")
         await asyncio.sleep(EVENTS_REFRESH_MINUTES * 60)
+
+
+async def _twitter_refresh_loop():
+    """Background task — scrapes Tier 1 Twitter accounts every TWITTER_REFRESH_MINUTES."""
+    log.info("Twitter refresh loop started — interval: %sm", TWITTER_REFRESH_MINUTES)
+
+    try:
+        import argparse as _ap
+        from data.collector.twitter_playwright import run as _twitter_run
+    except ImportError:
+        log.warning("twitter_playwright not importable — Twitter refresh loop disabled")
+        return
+
+    args = _ap.Namespace(
+        account=None,
+        tier="tier1",
+        workers=4,
+        max_tweets=4,
+        max_scrolls=5,
+        timeout_ms=30000,
+        no_retry_missing=False,
+        skip_pinned=False,
+        no_detail_hydration=False,
+        hydrate_all_details=True,
+        hydrate_media_details=True,
+        block_images=False,
+        headed=False,
+    )
+
+    while True:
+        try:
+            data = await _twitter_run(args)
+            total = data.get("tweets_total", 0)
+            # check for alert keywords in fresh tweets
+            alert_tweets = [
+                (acc.get("handle", "?"), tw.get("text", ""))
+                for acc in data.get("results", [])
+                for tw in acc.get("tweets", [])
+                if _twitter_keyword_matches(tw.get("text", ""))
+            ]
+            if alert_tweets:
+                for handle, text in alert_tweets[:5]:
+                    category, trading_relevant = _classify_twitter_alert(text)
+                    log.warning("TWITTER ALERT [%s]: @%s: %s", category, handle, text[:120])
+                    if trading_relevant:
+                        await notifier.notify(
+                            "WARNING",
+                            "critical_market_alert",
+                            f"Twitter alert [{category}] @{handle}: {text[:500]}",
+                            source="twitter_playwright",
+                            status_text="active",
+                            metadata={"category": category, "trading_relevant": trading_relevant},
+                        )
+            else:
+                log.info("Twitter refreshed — %d tweets, no alerts", total)
+        except Exception as e:
+            log.error("Twitter refresh failed: %s", e)
+            await notifier.notify("WARNING", "scraper_failure", f"Twitter refresh failed: {e}", source="twitter_playwright", status_text="failed")
+        await asyncio.sleep(TWITTER_REFRESH_MINUTES * 60)
+
+
+async def _summary_notification_loop():
+    """Periodic Telegram summaries. Local event is recorded even if Telegram is disabled."""
+    await asyncio.sleep(60)
+    last_week = None
+    while True:
+        try:
+            price = await get_btc_price()
+            portfolio = trader.portfolio_summary(price)
+            usage = trader.api_usage_summary()
+            perf = {
+                "portfolio": portfolio.get("total_portfolio_usd"),
+                "return_pct": portfolio.get("return_pct"),
+                "open_trades": portfolio.get("open_trades"),
+                "api_cost_today": usage.get("today_cost_usd"),
+                "api_cost_month": usage.get("month_cost_usd"),
+                "api_calls_today": usage.get("today_calls"),
+            }
+            await notifier.notify(
+                "INFO",
+                "daily_summary",
+                (
+                    f"Daily Paper2Real summary\n"
+                    f"Portfolio: ${portfolio.get('total_portfolio_usd', 0):,.2f}\n"
+                    f"Return: {portfolio.get('return_pct')}%\n"
+                    f"Open trades: {portfolio.get('open_trades')}\n"
+                    f"API cost today: ${usage.get('today_cost_usd', 0):.4f}\n"
+                    f"API cost month: ${usage.get('month_cost_usd', 0):.4f}"
+                ),
+                source="summary_loop",
+                status_text="completed",
+                metadata=perf,
+            )
+            week = datetime.utcnow().isocalendar().week
+            if week != last_week and datetime.utcnow().weekday() == 0:
+                last_week = week
+                await notifier.notify("INFO", "weekly_summary", "Weekly Paper2Real summary generated.", source="summary_loop", status_text="completed", metadata=perf)
+        except Exception as e:
+            log.error("Summary notification failed: %s", e)
+        await asyncio.sleep(24 * 3600)
+
+
+async def _decision_evaluator_loop():
+    """Keep the AI feedback report fresh so future Claude prompts can use it."""
+    await asyncio.sleep(120)
+    while True:
+        try:
+            summary = await asyncio.to_thread(decision_evaluator.run)
+            await notifier.notify(
+                "INFO",
+                "ai_feedback_refreshed",
+                (
+                    f"AI feedback refreshed: {summary.get('decisions_total', 0)} decisions, "
+                    f"{summary.get('rows_scored', 0)} scored outcome rows."
+                ),
+                source="decision_evaluator",
+                status_text="completed",
+                metadata={
+                    "decisions_total": summary.get("decisions_total"),
+                    "rows_scored": summary.get("rows_scored"),
+                    "rows_pending": summary.get("rows_pending"),
+                    "recommendation": summary.get("recommendation"),
+                },
+            )
+        except Exception as e:
+            log.error("Decision evaluator failed: %s", e)
+            await notifier.notify("WARNING", "scraper_failure", f"Decision evaluator failed: {e}", source="decision_evaluator", status_text="failed")
+        await asyncio.sleep(EVALUATOR_REFRESH_MINUTES * 60)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    scan_task   = asyncio.create_task(_auto_scan_loop())
-    events_task = asyncio.create_task(_events_refresh_loop())
-    event_scan_task = asyncio.create_task(_event_price_move_loop())
+    await notifier.notify("INFO", "app_startup", "Paper2Real app started.", source="lifespan", status_text="started")
+    scan_task        = asyncio.create_task(_auto_scan_loop())
+    events_task      = asyncio.create_task(_events_refresh_loop())
+    event_scan_task  = asyncio.create_task(_event_price_move_loop())
+    twitter_task     = asyncio.create_task(_twitter_refresh_loop())
+    summary_task     = asyncio.create_task(_summary_notification_loop())
+    evaluator_task   = asyncio.create_task(_decision_evaluator_loop())
     yield
+    await notifier.notify("INFO", "app_shutdown", "Paper2Real app shutting down.", source="lifespan", status_text="shutdown")
     scan_task.cancel()
     events_task.cancel()
     event_scan_task.cancel()
+    twitter_task.cancel()
+    summary_task.cancel()
+    evaluator_task.cancel()
 
 
 app = FastAPI(title="Paper2Real BTC Trader", lifespan=lifespan)
@@ -391,6 +754,80 @@ def _get_events_alert() -> tuple[str | None, str | None]:
     return data.get("exchange_hack_alert"), data.get("stablecoin_depeg")
 
 
+def _get_twitter_context() -> dict:
+    """
+    Reads cached twitter_playwright.json written by the background refresh loop.
+    Returns scored alert tweets + recent context tweets from Tier 1 accounts.
+    twitter_unavailable=True if file is missing or older than TWITTER_MAX_AGE_MINUTES.
+    """
+    _empty = {"twitter_unavailable": True, "twitter_alerts": [], "twitter_recent": [],
+               "twitter_last_updated": None, "twitter_accounts_scraped": 0}
+
+    twitter_file = Path("data/raw/twitter_playwright.json")
+    if not twitter_file.exists():
+        return _empty
+
+    age_minutes = (datetime.now().timestamp() - os.path.getmtime(twitter_file)) / 60
+    if age_minutes > TWITTER_MAX_AGE_MINUTES:
+        return {**_empty, "twitter_age_minutes": round(age_minutes)}
+
+    try:
+        data = json.loads(twitter_file.read_text(encoding="utf-8"))
+    except Exception:
+        return _empty
+
+    alerts: list[dict] = []
+    recent: list[dict] = []
+    seen: set[str] = set()
+    newest_allowed_ts = datetime.now().timestamp() - (TWITTER_TWEET_MAX_AGE_HOURS * 3600)
+
+    for account in data.get("results", []):
+        handle = account.get("handle", "")
+        for tweet in account.get("tweets", []):
+            text = (tweet.get("text") or "").strip()
+            if not text or text in seen:
+                continue
+            ts = tweet.get("timestamp", "")
+            if ts:
+                try:
+                    tweet_ts = datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
+                    if tweet_ts < newest_allowed_ts:
+                        continue
+                except ValueError:
+                    continue
+            seen.add(text)
+            row = {
+                "handle": handle,
+                "text": text,
+                "timestamp": ts,
+                "url": tweet.get("url", ""),
+                "is_pinned": tweet.get("is_pinned", 0),
+                "comments": tweet.get("comments", tweet.get("replies", 0)),
+                "replies": tweet.get("replies", 0),
+                "likes": tweet.get("likes", 0),
+                "retweets": tweet.get("retweets", 0),
+                "reposts": tweet.get("reposts", 0),
+                "quotes": tweet.get("quotes", 0),
+                "views": tweet.get("views", 0),
+                "bookmarks": tweet.get("bookmarks", 0),
+            }
+            matched = _twitter_keyword_matches(text)
+            if matched:
+                row["alert_keywords"] = matched
+                alerts.append(row)
+            else:
+                recent.append(row)
+
+    return {
+        "twitter_unavailable": False,
+        "twitter_alerts": alerts[:10],
+        "twitter_recent": recent[:10],
+        "twitter_last_updated": data.get("finished_at"),
+        "twitter_accounts_scraped": data.get("accounts_with_tweets", 0),
+        "twitter_age_minutes": round(age_minutes),
+    }
+
+
 async def get_btc_price() -> float:
     try:
         df = await get_15m_candles()
@@ -460,11 +897,19 @@ async def get_market_context() -> dict:
         df = df.dropna(subset=["open", "high", "low", "close", "volume"])
         if len(df) < 200:
             raise HTTPException(status_code=503, detail="Not enough BTC candle data")
+        _save_live_candles(df)
 
         close  = df["close"]
         high   = df["high"]
         low    = df["low"]
         volume = df["volume"]
+        zero_volume_ratio = float((volume.fillna(0) <= 0).mean())
+        recent_zero_volume_ratio = float((volume.tail(50).fillna(0) <= 0).mean())
+        volume_quality = (
+            "unreliable"
+            if zero_volume_ratio > 0.10 or recent_zero_volume_ratio > 0.20
+            else "reliable"
+        )
 
         rsi    = ta.rsi(close, length=14).iloc[-1]
         macd_r = ta.macd(close, fast=12, slow=26, signal=9)
@@ -484,6 +929,8 @@ async def get_market_context() -> dict:
         stk    = stoch["STOCHk_14_3_3"].iloc[-1]
         vol_sma = ta.sma(volume, length=20).iloc[-1]
         vol_r   = volume.iloc[-1] / vol_sma if vol_sma else 1.0
+        if volume_quality != "reliable":
+            vol_r = None
         price   = close.iloc[-1]
 
         # timestamp of the latest candle — used by freshness check
@@ -511,8 +958,11 @@ async def get_market_context() -> dict:
             "bb_width":         round(bb_w, 4),
             "atr_14":           round(atr, 2),
             "stoch_k":          round(stk, 1),
-            "volume_ratio":     round(vol_r, 2),
-            "high_volume":      int(vol_r > 1.5),
+            "volume_ratio":     round(vol_r, 2) if vol_r is not None else None,
+            "high_volume":      int(vol_r is not None and vol_r > 1.5),
+            "volume_quality":   volume_quality,
+            "zero_volume_ratio": round(zero_volume_ratio, 3),
+            "recent_zero_volume_ratio": round(recent_zero_volume_ratio, 3),
             # critical override hooks — populated below
             "exchange_hack_alert": None,
             "stablecoin_depeg":    None,
@@ -530,6 +980,9 @@ async def get_market_context() -> dict:
 
         # Daily context — derivatives, macro, market structure from existing CSVs
         context.update(_load_daily_context())
+
+        # Tier 1 Twitter — read cached scrape output (written by background loop)
+        context.update(_get_twitter_context())
 
         # Stablecoin depeg — live httpx price check
         depeg = await _get_stablecoin_status(client)
@@ -571,6 +1024,7 @@ async def tradingview_webhook(request: Request):
     claude_out = brain.decide(context, summary)
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
     final      = risk_engine.evaluate(claude_out, context, summary, closed)
+    context["trade_quality"] = trade_quality.score(context, claude_out.get("historical_summary"), final)
     action     = final["action"]
     reason     = final["reason"]
 
@@ -598,6 +1052,7 @@ async def tradingview_webhook(request: Request):
         bool(result.get("trade")) and "error" not in result["trade"] and "blocked" not in result["trade"],
         trigger="webhook",
     )
+    await _notify_scan_result("webhook", context, claude_out, final, result.get("trade"))
 
     return result
 
@@ -614,6 +1069,7 @@ async def manual_scan():
     claude_out = brain.decide(context, summary)
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
     final      = risk_engine.evaluate(claude_out, context, summary, closed)
+    context["trade_quality"] = trade_quality.score(context, claude_out.get("historical_summary"), final)
     action     = final["action"]
     reason     = final["reason"]
 
@@ -641,6 +1097,7 @@ async def manual_scan():
         bool(result.get("trade")) and "error" not in result["trade"] and "blocked" not in result["trade"],
         trigger="manual",
     )
+    await _notify_scan_result("manual", context, claude_out, final, result.get("trade"))
 
     return result
 
@@ -649,6 +1106,12 @@ async def manual_scan():
 async def portfolio():
     price = await get_btc_price()
     return trader.portfolio_summary(price)
+
+
+@app.get("/market-context")
+async def market_context():
+    """Live market context for the dashboard. No Claude call, no trade execution."""
+    return await get_market_context()
 
 
 @app.get("/trades")
@@ -692,6 +1155,613 @@ async def decisions():
         },
         "decisions": rows,
     }
+
+
+@app.get("/ai-audit")
+async def ai_audit(limit: int = 25):
+    rows = trader.get_decisions(limit=limit)
+    out = []
+    for r in rows:
+        item = dict(r)
+        for key in ("invalid_if_json", "historical_summary_json", "trade_quality_json"):
+            try:
+                item[key.replace("_json", "")] = json.loads(item.get(key) or "null")
+            except Exception:
+                item[key.replace("_json", "")] = None
+        item["note"] = (
+            "This is the visible audit trail: model input, model output, final reason, "
+            "historical evidence, and risk-engine result. Hidden chain-of-thought is not exposed."
+        )
+        out.append(item)
+    return {"audits": out}
+
+
+@app.get("/api-usage")
+async def api_usage():
+    return trader.api_usage_summary()
+
+
+@app.get("/settings")
+async def settings():
+    return trader.get_settings()
+
+
+@app.post("/settings")
+async def update_settings(request: Request):
+    payload = await request.json()
+    return trader.update_settings(payload or {})
+
+
+@app.get("/price-history")
+async def price_history(limit: int = 250):
+    def _num(v):
+        if v is None or pd.isna(v):
+            return None
+        return float(v)
+
+    path = LIVE_CANDLES_FILE if LIVE_CANDLES_FILE.exists() else Path("data/raw/btc_15m_raw.csv")
+    if not path.exists():
+        return {"source": None, "rows": []}
+    df = pd.read_csv(path)
+    if "timestamp" not in df.columns and "date" in df.columns:
+        df = df.rename(columns={"date": "timestamp"})
+    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+    df = df.dropna(subset=["timestamp", "close"]).sort_values("timestamp").tail(limit)
+    df = df.where(pd.notna(df), None)
+    return {
+        "source": str(path),
+        "count": len(df),
+        "rows": [
+            {
+                "timestamp": r["timestamp"].isoformat(),
+                "open": _num(r.get("open")),
+                "high": _num(r.get("high")),
+                "low": _num(r.get("low")),
+                "close": _num(r.get("close")),
+                "volume": _num(r.get("volume")),
+            }
+            for _, r in df.iterrows()
+        ],
+    }
+
+
+@app.get("/twitter-data")
+async def twitter_data(limit: int = 120):
+    def _clean(value):
+        if isinstance(value, dict):
+            return {k: _clean(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [_clean(v) for v in value]
+        try:
+            if pd.isna(value):
+                return None
+        except Exception:
+            pass
+        return value
+
+    json_file = Path("data/raw/twitter_playwright.json")
+    csv_file = Path("data/raw/twitter_tweets.csv")
+    meta = {}
+    if json_file.exists():
+        try:
+            meta = json.loads(json_file.read_text(encoding="utf-8"))
+        except Exception:
+            meta = {}
+    rows = []
+    if csv_file.exists():
+        df = pd.read_csv(csv_file).tail(limit).astype(object)
+        df = df.where(pd.notna(df), None)
+        rows = df.to_dict(orient="records")
+    elif meta.get("results"):
+        for account in meta.get("results", []):
+            for rank, tweet in enumerate(account.get("tweets", []), start=1):
+                rows.append({"handle": account.get("handle"), "rank": rank, **tweet})
+        rows = rows[-limit:]
+
+    for row in rows:
+        if row.get("full_text"):
+            row["text"] = row["full_text"]
+        row["media_urls"] = _json_list(row.get("media_urls"))
+        row["media_alt_text"] = _json_list(row.get("media_alt_text"))
+        text_for_sentiment = str(row.get("text") or "")
+        media_alt = " ".join(str(x) for x in row.get("media_alt_text", []))
+        row.update(_tweet_sentiment(" ".join([text_for_sentiment, media_alt])))
+        if not row.get("impact_score"):
+            row.update(_tweet_engagement(row))
+        row["alert_keywords"] = _twitter_keyword_matches(row.get("text", ""))
+
+    avg_sentiment = round(sum(r["sentiment_score"] for r in rows) / len(rows), 2) if rows else 0
+    avg_impact = round(sum(float(r.get("impact_score") or 0) for r in rows) / len(rows), 2) if rows else 0
+    return {
+        "meta": _clean({
+            "finished_at": meta.get("finished_at"),
+            "accounts_total": meta.get("accounts_total"),
+            "accounts_with_tweets": meta.get("accounts_with_tweets"),
+            "tweets_total": meta.get("tweets_total", len(rows)),
+            "workers": meta.get("workers"),
+            "total_s": meta.get("total_s"),
+            "avg_per_account_s": meta.get("avg_per_account_s"),
+            "errors": meta.get("errors"),
+            "avg_sentiment": avg_sentiment,
+            "avg_impact_score": avg_impact,
+            "bullish_count": sum(1 for r in rows if r["sentiment_score"] > 0),
+            "bearish_count": sum(1 for r in rows if r["sentiment_score"] < 0),
+            "neutral_count": sum(1 for r in rows if r["sentiment_score"] == 0),
+        }),
+        "tweets": _clean(rows),
+    }
+
+
+@app.get("/twitter-accounts")
+async def twitter_accounts():
+    data = await twitter_data(limit=5000)
+    tweets = data.get("tweets", [])
+    tiers_file = Path("data/raw/account_tiers.json")
+    tiers = {}
+    if tiers_file.exists():
+        try:
+            tiers = json.loads(tiers_file.read_text(encoding="utf-8"))
+        except Exception:
+            tiers = {}
+
+    reasons = {
+        "POTUS": "Official US President account; executive policy can move crypto risk sentiment.",
+        "WhiteHouse": "Official White House policy announcements; regulation and executive orders.",
+        "realDonaldTrump": "US President personal account; crypto policy and market sentiment impact.",
+        "federalreserve": "Federal Reserve policy; rates and liquidity drive BTC risk appetite.",
+        "SECGov": "SEC enforcement and ETF/regulatory announcements.",
+        "USTreasury": "Treasury sanctions, tax, stablecoin, and financial policy.",
+        "CFTC": "Derivatives regulator; crypto futures/enforcement relevance.",
+        "TheJusticeDept": "DOJ enforcement; exchange/criminal cases can create market shocks.",
+        "JPMorgan": "Major bank/institutional sentiment and custody/market commentary.",
+        "BlackRock": "Largest asset manager; ETF and institutional Bitcoin flow signal.",
+        "iShares": "BlackRock ETF brand; ETF flow and product announcements.",
+        "Fidelity": "Major Bitcoin ETF/institutional custody provider.",
+        "MicroStrategy": "Largest public corporate BTC treasury buyer.",
+        "saylor": "Michael Saylor; MicroStrategy BTC strategy and market-moving commentary.",
+        "binance": "Largest crypto exchange; outages, listings, enforcement, reserves.",
+        "coinbase": "Major US exchange; regulatory and market structure signal.",
+        "Grayscale": "Major crypto fund/ETF issuer.",
+        "Tether": "USDT issuer; stablecoin liquidity and depeg/reserve relevance.",
+        "paoloardoino": "Tether CEO; direct USDT liquidity/security statements.",
+        "zachxbt": "Crypto security investigator; early hacks/scams/exploit alerts.",
+        "PeckShieldAlert": "Security alerts for exploits, hacks, suspicious flows.",
+        "SlowMist_Team": "Security intelligence and exploit alerts.",
+        "CertiKAlert": "Security alerts and phishing/exploit monitoring.",
+        "WuBlockchain": "Fast Asia/China crypto news; exchange/regulatory signal.",
+    }
+    tier_lookup = {}
+    for name in tiers.get("tier1_permanent", []):
+        tier_lookup[name] = "tier1_permanent"
+    for name in tiers.get("tier2_roles", []):
+        tier_lookup[name] = "tier2_roles"
+    for name in tiers.get("tier3_dynamic", []):
+        tier_lookup[name] = "tier3_dynamic"
+
+    by_account = {}
+    for t in tweets:
+        handle = t.get("handle") or "unknown"
+        row = by_account.setdefault(
+            handle,
+            {
+                "handle": handle,
+                "tier": tier_lookup.get(handle, "unknown"),
+                "why_selected": reasons.get(handle, "Tracked because it is in account_tiers.json and may affect BTC sentiment, policy, security, liquidity, or market structure."),
+                "extraction_frequency": f"Every {TWITTER_REFRESH_MINUTES} minutes for Tier 1 live scrape.",
+                "data_extracted": ["tweet text", "timestamp", "url", "likes", "retweets/reposts", "comments/replies", "quotes", "views", "bookmarks", "local keyword sentiment", "alert keywords"],
+                "paid_api_calls": 0,
+                "paid_api_cost_usd": 0,
+                "tweets": 0,
+                "avg_sentiment": 0,
+                "total_likes": 0,
+                "total_retweets": 0,
+                "total_comments": 0,
+                "total_views": 0,
+                "latest_tweet_time": None,
+                "sentiment_series": [],
+            },
+        )
+        row["tweets"] += 1
+        row["total_likes"] += int(t.get("likes") or 0)
+        row["total_retweets"] += int(t.get("retweets") or t.get("reposts") or 0)
+        row["total_comments"] += int(t.get("comments") or t.get("replies") or 0)
+        row["total_views"] += int(t.get("views") or 0)
+        row["sentiment_series"].append(
+            {
+                "timestamp": t.get("timestamp"),
+                "sentiment_score": t.get("sentiment_score", 0),
+                "likes": t.get("likes") or 0,
+                "retweets": t.get("retweets") or t.get("reposts") or 0,
+                "comments": t.get("comments") or t.get("replies") or 0,
+                "views": t.get("views") or 0,
+            }
+        )
+        if t.get("timestamp") and (row["latest_tweet_time"] is None or str(t["timestamp"]) > str(row["latest_tweet_time"])):
+            row["latest_tweet_time"] = t["timestamp"]
+
+    for row in by_account.values():
+        scores = [x["sentiment_score"] for x in row["sentiment_series"]]
+        row["avg_sentiment"] = round(sum(scores) / len(scores), 2) if scores else 0
+        row["api_usage_assessment"] = "normal: this uses Playwright scraping and local sentiment, not paid Twitter API or paid AI per account"
+
+    return {
+        "accounts": sorted(by_account.values(), key=lambda x: (x["tier"], x["handle"].lower())),
+        "source_accounts": tiers,
+        "summary": {
+            "accounts_with_data": len(by_account),
+            "twitter_paid_api_calls": 0,
+            "twitter_paid_api_cost_usd": 0,
+            "scrape_frequency_minutes": TWITTER_REFRESH_MINUTES,
+            "note": "Twitter/X extraction does not call Claude per account. Only selected alert/recent tweets are included in the trade-decision prompt.",
+        },
+    }
+
+
+@app.get("/logs")
+async def logs(limit: int = 200):
+    return {"logs": list(LOG_BUFFER)[-limit:]}
+
+
+@app.get("/events")
+async def events(limit: int = 200):
+    return {"events": trader.get_events(limit=limit)}
+
+
+def _table_csv_response(table: str, filename: str):
+    allowed = {"decisions", "events", "trades"}
+    if table not in allowed:
+        raise HTTPException(status_code=404, detail="Unknown export")
+    con = trader.sqlite3.connect(trader.DB_FILE)
+    con.row_factory = trader.sqlite3.Row
+    try:
+        rows = con.execute(f"SELECT * FROM {table} ORDER BY id DESC").fetchall()
+    finally:
+        con.close()
+
+    out = io.StringIO()
+    if rows:
+        writer = csv.DictWriter(out, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows([dict(r) for r in rows])
+    else:
+        out.write("")
+    return StreamingResponse(
+        iter([out.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@app.get("/download/paper-trader.db")
+async def download_paper_trader_db():
+    path = Path(trader.DB_FILE)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Database not found")
+    return FileResponse(path, filename="paper_trader.db", media_type="application/octet-stream")
+
+
+@app.get("/download/decisions.csv")
+async def download_decisions_csv():
+    return _table_csv_response("decisions", "paper2real_decisions.csv")
+
+
+@app.get("/download/events.csv")
+async def download_events_csv():
+    return _table_csv_response("events", "paper2real_events.csv")
+
+
+@app.get("/download/trades.csv")
+async def download_trades_csv():
+    return _table_csv_response("trades", "paper2real_trades.csv")
+
+
+@app.get("/download/logs.json")
+async def download_logs_json():
+    data = json.dumps({"logs": list(LOG_BUFFER)}, indent=2)
+    return StreamingResponse(
+        iter([data]),
+        media_type="application/json",
+        headers={"Content-Disposition": 'attachment; filename="paper2real_live_logs.json"'},
+    )
+
+
+@app.get("/download/all.zip")
+async def download_all_artifacts():
+    """Download safe audit/learning artifacts. Secrets and .env are intentionally excluded."""
+    files = [
+        "paper_trader.db",
+        "data/reports/ai_feedback_summary.json",
+        "data/reports/ai_feedback_summary.md",
+        "data/reports/decision_evaluations.csv",
+        "data/reports/backtest_latest.json",
+        "data/reports/backtest_equity.csv",
+        "data/reports/backtest_trades.csv",
+        "data/raw/live_btc_15m.csv",
+        "data/raw/twitter_playwright.json",
+        "data/raw/twitter_tweets.csv",
+        "data/raw/twitter_timing.csv",
+        "data/raw/events.json",
+        "data/processed/master_dataset.csv",
+        "data/processed/btc_15m_labeled.csv",
+    ]
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        manifest = {
+            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "excluded": [".env", "tokens", "API keys", "cookies", "private secrets"],
+            "included_files": [],
+        }
+        for rel in files:
+            path = Path(rel)
+            if path.exists() and path.is_file():
+                zf.write(path, rel)
+                manifest["included_files"].append(rel)
+        zf.writestr("runtime/live_logs.json", json.dumps({"logs": list(LOG_BUFFER)}, indent=2))
+        zf.writestr("manifest.json", json.dumps(manifest, indent=2))
+    buffer.seek(0)
+    return StreamingResponse(
+        buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": 'attachment; filename="paper2real_audit_learning_artifacts.zip"'},
+    )
+
+
+@app.get("/telegram/status")
+async def telegram_status():
+    return notifier.status()
+
+
+@app.post("/telegram/test")
+async def telegram_test():
+    return await notifier.notify(
+        "INFO",
+        "telegram_test",
+        "Safe Paper2Real Telegram test message. No secrets included.",
+        source="dashboard",
+        status_text="test",
+        metadata={"safe": True},
+        force=True,
+    )
+
+
+@app.get("/risk-status")
+async def risk_status():
+    price = await get_btc_price()
+    portfolio = trader.portfolio_summary(price)
+    closed = [t for t in trader.get_all_trades() if t["closed"] and t["pnl"] is not None]
+    last_decisions = trader.get_decisions(limit=50)
+    consecutive_losses = 0
+    for t in sorted(closed, key=lambda r: r["timestamp"], reverse=True):
+        if t.get("pnl", 0) < 0:
+            consecutive_losses += 1
+        else:
+            break
+    today_start = int(datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+    daily_pnl = sum(t.get("pnl", 0) for t in closed if t.get("timestamp", 0) >= today_start)
+    recent_blocks = {}
+    for d in last_decisions:
+        if d.get("blocked_by"):
+            recent_blocks[d["blocked_by"]] = recent_blocks.get(d["blocked_by"], 0) + 1
+    return {
+        "portfolio": portfolio,
+        "daily_pnl": round(daily_pnl, 2),
+        "daily_loss_pct": round(abs(min(daily_pnl, 0)) / portfolio.get("starting_balance", 10000) * 100, 2),
+        "consecutive_losses": consecutive_losses,
+        "recent_risk_blocks": recent_blocks,
+        "open_trades": trader.get_open_trades(),
+    }
+
+
+@app.get("/system-health")
+async def system_health():
+    context = await get_market_context()
+    issues = _check_data_freshness(context)
+    files = {}
+    for path in [
+        "data/raw/events.json",
+        "data/raw/twitter_playwright.json",
+        "data/raw/live_btc_15m.csv",
+        "data/processed/master_dataset.csv",
+        "data/reports/ai_feedback_summary.json",
+    ]:
+        p = Path(path)
+        files[path] = {
+            "exists": p.exists(),
+            "age_minutes": round((datetime.now().timestamp() - os.path.getmtime(p)) / 60, 1) if p.exists() else None,
+        }
+    return {
+        "status": "critical" if any(i.startswith("CRITICAL") for i in issues) else "warning" if issues else "ok",
+        "issues": issues,
+        "files": files,
+        "telegram": notifier.status(),
+    }
+
+
+@app.get("/reports")
+async def reports():
+    def _read_json(path: str):
+        p = Path(path)
+        if not p.exists():
+            return None
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return None
+
+    return {
+        "backtest": _read_json("data/reports/backtest_latest.json"),
+        "ai_feedback": _read_json("data/reports/ai_feedback_summary.json"),
+        "api_usage": trader.api_usage_summary(),
+    }
+
+
+@app.get("/learning-status")
+async def learning_status():
+    """Live status of the feedback loop that turns paper scans into better prompts."""
+    def _read_json(path: str):
+        p = Path(path)
+        if not p.exists():
+            return None
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return None
+
+    def _age_minutes(path: str) -> float | None:
+        p = Path(path)
+        if not p.exists():
+            return None
+        return round((datetime.now().timestamp() - os.path.getmtime(p)) / 60, 1)
+
+    decisions = trader.get_decisions(limit=1000)
+    trades = trader.get_all_trades()
+    events = trader.get_events(limit=1000)
+    usage = trader.api_usage_summary()
+    feedback = _read_json("data/reports/ai_feedback_summary.json") or {}
+    eval_path = Path("data/reports/decision_evaluations.csv")
+
+    latest_decision_ts = max((d.get("timestamp") or 0 for d in decisions), default=0)
+    latest_decision_time = datetime.fromtimestamp(latest_decision_ts).isoformat() if latest_decision_ts else None
+    feedback_decisions = int(feedback.get("decisions_total") or 0)
+    evaluator_stale = bool(decisions and feedback_decisions < len(decisions))
+
+    evaluation_rows = 0
+    scored_rows = int(feedback.get("rows_scored") or 0)
+    pending_rows = int(feedback.get("rows_pending") or 0)
+    if eval_path.exists() and eval_path.stat().st_size > 0:
+        try:
+            evaluation_rows = int(len(pd.read_csv(eval_path)))
+        except Exception:
+            evaluation_rows = 0
+
+    claude_buy = sum(1 for d in decisions if d.get("claude_action") == "BUY")
+    claude_sell = sum(1 for d in decisions if d.get("claude_action") == "SELL")
+    claude_hold = sum(1 for d in decisions if d.get("claude_action") == "HOLD")
+    executed = sum(1 for d in decisions if d.get("trade_executed"))
+    blocked = sum(1 for d in decisions if d.get("blocked_by"))
+
+    h4 = (feedback.get("horizons") or {}).get("4h") or {}
+    risk = h4.get("risk_engine") or {}
+    missed_summary = {"missed_upside_holds": 0, "avoided_downside_holds": 0}
+    if eval_path.exists() and eval_path.stat().st_size > 0:
+        try:
+            eval_df = pd.read_csv(eval_path)
+            scored_holds = eval_df[
+                eval_df["status"].eq("SCORED")
+                & eval_df["final_action"].astype(str).str.upper().eq("HOLD")
+            ].copy()
+            scored_holds["return_pct"] = pd.to_numeric(scored_holds["return_pct"], errors="coerce")
+            missed_summary = {
+                "scored_holds": int(len(scored_holds)),
+                "missed_upside_holds": int((scored_holds["return_pct"] > 1.5).sum()),
+                "avoided_downside_holds": int((scored_holds["return_pct"] < -1.5).sum()),
+            }
+        except Exception:
+            pass
+    status = "collecting"
+    if not decisions:
+        status = "waiting_for_decisions"
+    elif evaluator_stale:
+        status = "feedback_stale"
+    elif scored_rows == 0:
+        status = "waiting_for_future_price"
+    elif scored_rows < 30:
+        status = "low_sample_size"
+    else:
+        status = "learning_active"
+
+    return {
+        "status": status,
+        "auto_refresh_minutes": EVALUATOR_REFRESH_MINUTES,
+        "logs_used": {
+            "paper_trader_db": "paper_trader.db",
+            "decisions_table": len(decisions),
+            "trades_table": len(trades),
+            "events_table": len(events),
+            "api_usage_source": "decisions.input_tokens/output_tokens/api_cost_usd",
+        },
+        "data_used": {
+            "live_future_prices": "data/raw/live_btc_15m.csv",
+            "historical_daily_prices": "data/raw/btc_15m_raw.csv",
+            "master_dataset": "data/processed/master_dataset.csv",
+            "twitter_context": "data/raw/twitter_playwright.json",
+            "critical_events": "data/raw/events.json",
+            "feedback_json": "data/reports/ai_feedback_summary.json",
+            "feedback_csv": "data/reports/decision_evaluations.csv",
+        },
+        "decision_counts": {
+            "total": len(decisions),
+            "claude_buy": claude_buy,
+            "claude_sell": claude_sell,
+            "claude_hold": claude_hold,
+            "risk_blocked": blocked,
+            "trades_executed": executed,
+            "latest_decision_time": latest_decision_time,
+        },
+        "evaluation": {
+            "feedback_decisions_total": feedback_decisions,
+            "evaluation_rows": evaluation_rows,
+            "rows_scored": scored_rows,
+            "rows_pending": pending_rows,
+            "evaluator_stale": evaluator_stale,
+            "feedback_age_minutes": _age_minutes("data/reports/ai_feedback_summary.json"),
+            "recommendation": feedback.get("recommendation"),
+            "four_hour": {
+                "claude_buy_accuracy_pct": h4.get("claude_buy_accuracy_pct"),
+                "missed_upside_holds": h4.get("missed_upside_holds"),
+                "risk_engine_saved_losses": risk.get("risk_engine_saved_losses"),
+                "risk_engine_blocked_winners": risk.get("risk_engine_blocked_winners"),
+            },
+            "missed_opportunity": missed_summary,
+        },
+        "api_cost": {
+            "total_calls": usage.get("total_calls"),
+            "today_calls": usage.get("today_calls"),
+            "today_cost_usd": usage.get("today_cost_usd"),
+            "month_cost_usd": usage.get("month_cost_usd"),
+        },
+        "how_it_improves": [
+            "Each scan writes Claude input/output, indicators, action, confidence, risk result, tokens, and cost to SQLite decisions.",
+            "decision_evaluator.py compares those decisions against future BTC prices at 1h, 4h, and 24h.",
+            "It writes ai_feedback_summary.json and decision_evaluations.csv under data/reports.",
+            "brain.py reads ai_feedback_summary.json into the next Claude prompt, so future decisions see what worked or failed.",
+            "The dashboard displays decisions, AI audit, reports, API usage, events, and this learning status.",
+        ],
+    }
+
+
+@app.get("/missed-opportunities")
+async def missed_opportunities(limit: int = 100):
+    path = Path("data/reports/decision_evaluations.csv")
+    if not path.exists() or path.stat().st_size == 0:
+        return {"rows": [], "summary": {"missed_upside_holds": 0, "avoided_downside_holds": 0}}
+    df = pd.read_csv(path)
+    if df.empty:
+        return {"rows": [], "summary": {"missed_upside_holds": 0, "avoided_downside_holds": 0}}
+    scored = df[df.get("status").eq("SCORED")].copy()
+    holds = scored[scored.get("final_action").astype(str).str.upper().eq("HOLD")].copy()
+    holds["return_pct"] = pd.to_numeric(holds["return_pct"], errors="coerce")
+    missed = holds[holds["return_pct"] > 1.5].sort_values("return_pct", ascending=False)
+    avoided = holds[holds["return_pct"] < -1.5].sort_values("return_pct")
+    return {
+        "summary": {
+            "scored_holds": int(len(holds)),
+            "missed_upside_holds": int(len(missed)),
+            "avoided_downside_holds": int(len(avoided)),
+            "avg_hold_return_pct": round(float(holds["return_pct"].mean()), 4) if len(holds) else None,
+        },
+        "rows": missed.head(limit).where(pd.notna(missed), None).to_dict(orient="records"),
+    }
+
+
+@app.get("/backtest-equity")
+async def backtest_equity(limit: int = 800):
+    path = Path("data/reports/backtest_equity.csv")
+    if not path.exists():
+        return {"source": None, "rows": []}
+    df = pd.read_csv(path).tail(limit)
+    df = df.where(pd.notna(df), None)
+    return {"source": str(path), "rows": df.to_dict(orient="records")}
 
 
 @app.get("/performance")

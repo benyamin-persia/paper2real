@@ -1,0 +1,74 @@
+{
+  "generated_at": "2026-05-01T23:24:12.393309+00:00",
+  "db_file": "paper_trader.db",
+  "decisions_total": 0,
+  "price_points_total": 730,
+  "latest_price_time": "2026-04-30T00:00:00+00:00",
+  "rows_total": 0,
+  "rows_scored": 0,
+  "rows_pending": 0,
+  "rows_no_price_at_horizon": 0,
+  "horizons": {
+    "1h": {
+      "total": 0,
+      "scored": 0,
+      "pending": 0,
+      "no_price_at_horizon": 0,
+      "claude_accuracy": {},
+      "final_accuracy": {},
+      "claude_buy_accuracy_pct": null,
+      "missed_upside_holds": 0,
+      "risk_engine": {
+        "claude_buy_blocked": 0,
+        "risk_engine_saved_losses": 0,
+        "risk_engine_blocked_winners": 0,
+        "block_breakdown": {}
+      },
+      "conditions": {
+        "best_conditions": [],
+        "worst_conditions": []
+      }
+    },
+    "4h": {
+      "total": 0,
+      "scored": 0,
+      "pending": 0,
+      "no_price_at_horizon": 0,
+      "claude_accuracy": {},
+      "final_accuracy": {},
+      "claude_buy_accuracy_pct": null,
+      "missed_upside_holds": 0,
+      "risk_engine": {
+        "claude_buy_blocked": 0,
+        "risk_engine_saved_losses": 0,
+        "risk_engine_blocked_winners": 0,
+        "block_breakdown": {}
+      },
+      "conditions": {
+        "best_conditions": [],
+        "worst_conditions": []
+      }
+    },
+    "24h": {
+      "total": 0,
+      "scored": 0,
+      "pending": 0,
+      "no_price_at_horizon": 0,
+      "claude_accuracy": {},
+      "final_accuracy": {},
+      "claude_buy_accuracy_pct": null,
+      "missed_upside_holds": 0,
+      "risk_engine": {
+        "claude_buy_blocked": 0,
+        "risk_engine_saved_losses": 0,
+        "risk_engine_blocked_winners": 0,
+        "block_breakdown": {}
+      },
+      "conditions": {
+        "best_conditions": [],
+        "worst_conditions": []
+      }
+    }
+  },
+  "recommendation": "No decisions logged yet. Run paper trading scans first."
+}

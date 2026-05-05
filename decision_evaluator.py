@@ -1,0 +1,502 @@
+"""
+Evaluate Claude decisions after future BTC price movement.
+
+This is the AI feedback loop. It reads the SQLite decisions table, scores each
+Claude/final action at 1h, 4h, and 24h, then writes reports Claude can read.
+
+Run:
+  python decision_evaluator.py
+
+Outputs:
+  data/reports/decision_evaluations.csv
+  data/reports/ai_feedback_summary.json
+  data/reports/ai_feedback_summary.md
+"""
+
+from __future__ import annotations
+
+import csv
+import json
+import sqlite3
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from statistics import mean
+
+import pandas as pd
+
+from config import DB_FILE
+
+
+REPORT_DIR = Path("data/reports")
+EVAL_CSV = REPORT_DIR / "decision_evaluations.csv"
+SUMMARY_JSON = REPORT_DIR / "ai_feedback_summary.json"
+SUMMARY_MD = REPORT_DIR / "ai_feedback_summary.md"
+
+LIVE_CANDLES = Path("data/raw/live_btc_15m.csv")
+DAILY_CANDLES = Path("data/raw/btc_15m_raw.csv")
+
+HORIZONS = {
+    "1h": 3600,
+    "4h": 4 * 3600,
+    "24h": 24 * 3600,
+}
+
+HORIZON_TOLERANCE = {
+    "1h": 90 * 60,
+    "4h": 6 * 3600,
+    "24h": 36 * 3600,
+}
+
+HOLD_MISSED_MOVE_PCT = 1.5
+
+
+@dataclass(frozen=True)
+class PricePoint:
+    ts: int
+    close: float
+    source: str
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _to_epoch(value) -> int | None:
+    if value is None or value == "":
+        return None
+    try:
+        if isinstance(value, (int, float)):
+            return int(value)
+        ts = pd.to_datetime(value, utc=True, errors="coerce")
+        if pd.isna(ts):
+            return None
+        return int(ts.timestamp())
+    except Exception:
+        return None
+
+
+def _read_decisions() -> list[dict]:
+    db = Path(DB_FILE)
+    if not db.exists():
+        return []
+
+    con = sqlite3.connect(db)
+    con.row_factory = sqlite3.Row
+    try:
+        rows = con.execute("SELECT * FROM decisions ORDER BY timestamp ASC").fetchall()
+    except sqlite3.OperationalError:
+        rows = []
+    finally:
+        con.close()
+    return [dict(r) for r in rows]
+
+
+def _load_csv_prices(path: Path, source: str) -> list[PricePoint]:
+    if not path.exists():
+        return []
+    try:
+        df = pd.read_csv(path)
+    except Exception:
+        return []
+    if "timestamp" not in df.columns or "close" not in df.columns:
+        return []
+
+    points: list[PricePoint] = []
+    for _, row in df.iterrows():
+        ts = _to_epoch(row.get("timestamp"))
+        try:
+            close = float(row.get("close"))
+        except Exception:
+            continue
+        if ts and close > 0:
+            points.append(PricePoint(ts=ts, close=close, source=source))
+    return points
+
+
+def _load_decision_prices(decisions: list[dict]) -> list[PricePoint]:
+    points: list[PricePoint] = []
+    for row in decisions:
+        ts = _to_epoch(row.get("timestamp"))
+        try:
+            close = float(row.get("btc_price"))
+        except Exception:
+            continue
+        if ts and close > 0:
+            points.append(PricePoint(ts=ts, close=close, source="decisions"))
+    return points
+
+
+def _load_price_series(decisions: list[dict]) -> list[PricePoint]:
+    points = []
+    points.extend(_load_csv_prices(DAILY_CANDLES, "daily_csv"))
+    points.extend(_load_csv_prices(LIVE_CANDLES, "live_15m_csv"))
+    points.extend(_load_decision_prices(decisions))
+
+    by_ts: dict[int, PricePoint] = {}
+    source_rank = {"daily_csv": 1, "decisions": 2, "live_15m_csv": 3}
+    for p in points:
+        old = by_ts.get(p.ts)
+        if old is None or source_rank[p.source] >= source_rank[old.source]:
+            by_ts[p.ts] = p
+    return sorted(by_ts.values(), key=lambda p: p.ts)
+
+
+def _first_price_at_or_after(prices: list[PricePoint], target_ts: int, max_lag_s: int) -> PricePoint | None:
+    for p in prices:
+        if p.ts >= target_ts and p.ts - target_ts <= max_lag_s:
+            return p
+    return None
+
+
+def _score_action(action: str, return_pct: float) -> tuple[str, bool | None]:
+    action = (action or "HOLD").upper()
+    if action == "BUY":
+        return ("GOOD_BUY" if return_pct > 0 else "BAD_BUY", return_pct > 0)
+    if action == "SELL":
+        return ("GOOD_SELL" if return_pct < 0 else "BAD_SELL", return_pct < 0)
+    if action == "HOLD":
+        if return_pct >= HOLD_MISSED_MOVE_PCT:
+            return "MISSED_UPSIDE", False
+        if return_pct <= -HOLD_MISSED_MOVE_PCT:
+            return "AVOIDED_DOWNSIDE", True
+        return "OK_HOLD", None
+    return "UNKNOWN_ACTION", None
+
+
+def _bucket_rsi(value) -> str:
+    try:
+        v = float(value)
+    except Exception:
+        return "rsi_unknown"
+    if v < 35:
+        return "rsi_lt_35"
+    if v < 45:
+        return "rsi_35_45"
+    if v < 55:
+        return "rsi_45_55"
+    if v < 65:
+        return "rsi_55_65"
+    return "rsi_gte_65"
+
+
+def _bucket_fear_greed(value) -> str:
+    try:
+        v = float(value)
+    except Exception:
+        return "fg_unknown"
+    if v < 25:
+        return "fg_extreme_fear"
+    if v < 45:
+        return "fg_fear"
+    if v < 60:
+        return "fg_neutral"
+    if v < 80:
+        return "fg_greed"
+    return "fg_extreme_greed"
+
+
+def _funding_state(value) -> str:
+    try:
+        v = float(value)
+    except Exception:
+        return "funding_unknown"
+    if v > 0.03:
+        return "funding_hot_positive"
+    if v > 0:
+        return "funding_positive"
+    if v < -0.01:
+        return "funding_negative"
+    return "funding_neutral"
+
+
+def _condition_tags(row: dict) -> list[str]:
+    return [
+        _bucket_rsi(row.get("rsi_14")),
+        _bucket_fear_greed(row.get("fear_greed")),
+        _funding_state(row.get("funding_rate")),
+        f"trigger_{row.get('trigger') or 'unknown'}",
+        f"final_{(row.get('final_action') or 'UNKNOWN').upper()}",
+        f"claude_{(row.get('claude_action') or 'UNKNOWN').upper()}",
+    ]
+
+
+def _evaluate_rows(decisions: list[dict], prices: list[PricePoint]) -> list[dict]:
+    rows: list[dict] = []
+    latest_price_ts = max((p.ts for p in prices), default=0)
+
+    for d in decisions:
+        decision_ts = _to_epoch(d.get("timestamp"))
+        try:
+            entry_price = float(d.get("btc_price"))
+        except Exception:
+            entry_price = 0
+        if not decision_ts or entry_price <= 0:
+            continue
+
+        for horizon, seconds in HORIZONS.items():
+            target_ts = decision_ts + seconds
+            if latest_price_ts < target_ts:
+                status = "PENDING"
+                future = None
+                return_pct = None
+                claude_score = "PENDING"
+                final_score = "PENDING"
+                claude_good = None
+                final_good = None
+            else:
+                future = _first_price_at_or_after(prices, target_ts, HORIZON_TOLERANCE[horizon])
+                if future is None:
+                    status = "NO_PRICE_AT_HORIZON"
+                    return_pct = None
+                    claude_score = "NO_PRICE"
+                    final_score = "NO_PRICE"
+                    claude_good = None
+                    final_good = None
+                else:
+                    status = "SCORED"
+                    return_pct = (future.close - entry_price) / entry_price * 100
+                    claude_score, claude_good = _score_action(d.get("claude_action"), return_pct)
+                    final_score, final_good = _score_action(d.get("final_action"), return_pct)
+
+            rows.append(
+                {
+                    "decision_id": d.get("id"),
+                    "decision_time": datetime.fromtimestamp(decision_ts, timezone.utc).isoformat(),
+                    "horizon": horizon,
+                    "status": status,
+                    "entry_price": round(entry_price, 2),
+                    "future_time": (
+                        datetime.fromtimestamp(future.ts, timezone.utc).isoformat()
+                        if future else ""
+                    ),
+                    "future_price": round(future.close, 2) if future else "",
+                    "future_price_source": future.source if future else "",
+                    "return_pct": round(return_pct, 4) if return_pct is not None else "",
+                    "trigger": d.get("trigger"),
+                    "rsi_14": d.get("rsi_14"),
+                    "fear_greed": d.get("fear_greed"),
+                    "funding_rate": d.get("funding_rate"),
+                    "claude_action": d.get("claude_action"),
+                    "claude_conf": d.get("claude_conf"),
+                    "claude_score": claude_score,
+                    "claude_good": claude_good,
+                    "final_action": d.get("final_action"),
+                    "blocked_by": d.get("blocked_by"),
+                    "block_reason": d.get("block_reason"),
+                    "final_score": final_score,
+                    "final_good": final_good,
+                    "trade_executed": d.get("trade_executed"),
+                    "condition_tags": "|".join(_condition_tags(d)),
+                    "claude_reason": d.get("claude_reason"),
+                }
+            )
+    return rows
+
+
+def _pct(part: int, total: int) -> float | None:
+    if total <= 0:
+        return None
+    return round(part / total * 100, 2)
+
+
+def _action_accuracy(rows: list[dict], action_field: str, good_field: str, horizon: str) -> dict:
+    scoped = [
+        r for r in rows
+        if r["horizon"] == horizon and r["status"] == "SCORED" and r[good_field] is not None
+    ]
+    by_action: dict[str, dict] = {}
+    for r in scoped:
+        action = (r.get(action_field) or "UNKNOWN").upper()
+        item = by_action.setdefault(action, {"count": 0, "good": 0, "avg_return_pct": []})
+        item["count"] += 1
+        item["good"] += int(bool(r[good_field]))
+        if r["return_pct"] != "":
+            item["avg_return_pct"].append(float(r["return_pct"]))
+    for item in by_action.values():
+        item["accuracy_pct"] = _pct(item["good"], item["count"])
+        vals = item.pop("avg_return_pct")
+        item["avg_return_pct"] = round(mean(vals), 4) if vals else None
+    return by_action
+
+
+def _risk_engine_summary(rows: list[dict], horizon: str) -> dict:
+    scoped = [
+        r for r in rows
+        if r["horizon"] == horizon
+        and r["status"] == "SCORED"
+        and (r.get("claude_action") or "").upper() == "BUY"
+        and (r.get("final_action") or "").upper() == "HOLD"
+    ]
+    saved_losses = [r for r in scoped if r["return_pct"] != "" and float(r["return_pct"]) < 0]
+    blocked_winners = [r for r in scoped if r["return_pct"] != "" and float(r["return_pct"]) > 0]
+    block_counts: dict[str, int] = {}
+    for r in scoped:
+        key = r.get("blocked_by") or "unknown"
+        block_counts[key] = block_counts.get(key, 0) + 1
+    return {
+        "claude_buy_blocked": len(scoped),
+        "risk_engine_saved_losses": len(saved_losses),
+        "risk_engine_blocked_winners": len(blocked_winners),
+        "block_breakdown": dict(sorted(block_counts.items(), key=lambda x: x[1], reverse=True)),
+    }
+
+
+def _condition_summary(rows: list[dict], horizon: str) -> dict:
+    scored = [
+        r for r in rows
+        if r["horizon"] == horizon and r["status"] == "SCORED" and r["return_pct"] != ""
+    ]
+    tag_stats: dict[str, dict] = {}
+    for r in scored:
+        ret = float(r["return_pct"])
+        for tag in str(r.get("condition_tags") or "").split("|"):
+            if not tag:
+                continue
+            item = tag_stats.setdefault(tag, {"count": 0, "returns": []})
+            item["count"] += 1
+            item["returns"].append(ret)
+
+    summarized = []
+    for tag, item in tag_stats.items():
+        if item["count"] < 2:
+            continue
+        summarized.append(
+            {
+                "condition": tag,
+                "count": item["count"],
+                "avg_return_pct": round(mean(item["returns"]), 4),
+            }
+        )
+
+    best = sorted(summarized, key=lambda x: x["avg_return_pct"], reverse=True)[:8]
+    worst = sorted(summarized, key=lambda x: x["avg_return_pct"])[:8]
+    return {"best_conditions": best, "worst_conditions": worst}
+
+
+def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[dict]) -> dict:
+    scored = [r for r in rows if r["status"] == "SCORED"]
+    pending = [r for r in rows if r["status"] == "PENDING"]
+    no_price = [r for r in rows if r["status"] == "NO_PRICE_AT_HORIZON"]
+    latest_price_ts = max((p.ts for p in prices), default=None)
+
+    summary = {
+        "generated_at": _utc_now(),
+        "db_file": DB_FILE,
+        "decisions_total": len(decisions),
+        "price_points_total": len(prices),
+        "latest_price_time": (
+            datetime.fromtimestamp(latest_price_ts, timezone.utc).isoformat()
+            if latest_price_ts else None
+        ),
+        "rows_total": len(rows),
+        "rows_scored": len(scored),
+        "rows_pending": len(pending),
+        "rows_no_price_at_horizon": len(no_price),
+        "horizons": {},
+        "recommendation": None,
+    }
+
+    for horizon in HORIZONS:
+        hrows = [r for r in rows if r["horizon"] == horizon]
+        hscored = [r for r in hrows if r["status"] == "SCORED"]
+        buy_rows = [
+            r for r in hscored
+            if (r.get("claude_action") or "").upper() == "BUY" and r["claude_good"] is not None
+        ]
+        hold_rows = [
+            r for r in hscored
+            if (r.get("claude_action") or "").upper() == "HOLD" and r["claude_score"] == "MISSED_UPSIDE"
+        ]
+        summary["horizons"][horizon] = {
+            "total": len(hrows),
+            "scored": len(hscored),
+            "pending": sum(1 for r in hrows if r["status"] == "PENDING"),
+            "no_price_at_horizon": sum(1 for r in hrows if r["status"] == "NO_PRICE_AT_HORIZON"),
+            "claude_accuracy": _action_accuracy(hrows, "claude_action", "claude_good", horizon),
+            "final_accuracy": _action_accuracy(hrows, "final_action", "final_good", horizon),
+            "claude_buy_accuracy_pct": _pct(sum(1 for r in buy_rows if r["claude_good"]), len(buy_rows)),
+            "missed_upside_holds": len(hold_rows),
+            "risk_engine": _risk_engine_summary(hrows, horizon),
+            "conditions": _condition_summary(hrows, horizon),
+        }
+
+    if not decisions:
+        summary["recommendation"] = "No decisions logged yet. Run paper trading scans first."
+    elif not scored:
+        summary["recommendation"] = (
+            "Decisions exist, but not enough future price data exists yet. "
+            "Keep paper trading and rerun this evaluator after 4-24 hours."
+        )
+    else:
+        buy_4h = summary["horizons"]["4h"]["claude_buy_accuracy_pct"]
+        if buy_4h is not None and buy_4h < 50:
+            summary["recommendation"] = "Claude BUY calls are weak at 4h. Tighten BUY prompt/risk filters before increasing trade frequency."
+        else:
+            summary["recommendation"] = "Keep collecting decisions. Do not change strategy until sample size is larger."
+    return summary
+
+
+def _write_csv(path: Path, rows: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not rows:
+        path.write_text("", encoding="utf-8")
+        return
+    with path.open("w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _write_markdown(summary: dict) -> None:
+    lines = [
+        "# AI Feedback Summary",
+        "",
+        f"Generated: {summary['generated_at']}",
+        f"Decisions: {summary['decisions_total']}",
+        f"Scored rows: {summary['rows_scored']}",
+        f"Pending rows: {summary['rows_pending']}",
+        f"Recommendation: {summary['recommendation']}",
+        "",
+        "## Horizons",
+    ]
+    for horizon, data in summary["horizons"].items():
+        lines.extend(
+            [
+                "",
+                f"### {horizon}",
+                f"- Scored: {data['scored']} / {data['total']}",
+                f"- Claude BUY accuracy: {data['claude_buy_accuracy_pct']}",
+                f"- Missed upside HOLDs: {data['missed_upside_holds']}",
+                f"- Risk engine saved losses: {data['risk_engine']['risk_engine_saved_losses']}",
+                f"- Risk engine blocked winners: {data['risk_engine']['risk_engine_blocked_winners']}",
+            ]
+        )
+    SUMMARY_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def run() -> dict:
+    decisions = _read_decisions()
+    prices = _load_price_series(decisions)
+    rows = _evaluate_rows(decisions, prices)
+    summary = _build_summary(decisions, prices, rows)
+
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    _write_csv(EVAL_CSV, rows)
+    SUMMARY_JSON.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    _write_markdown(summary)
+
+    print("Decision evaluation complete")
+    print(f"  Decisions:    {summary['decisions_total']}")
+    print(f"  Price points: {summary['price_points_total']}")
+    print(f"  Scored rows:  {summary['rows_scored']}")
+    print(f"  Pending rows: {summary['rows_pending']}")
+    print(f"  Report JSON:  {SUMMARY_JSON}")
+    print(f"  Report CSV:   {EVAL_CSV}")
+    print(f"  Summary MD:   {SUMMARY_MD}")
+    print(f"  Next:         {summary['recommendation']}")
+    return summary
+
+
+if __name__ == "__main__":
+    run()

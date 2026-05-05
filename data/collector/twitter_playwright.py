@@ -62,6 +62,13 @@ def _load_accounts(args: argparse.Namespace) -> list[str]:
 
 
 async def _block_heavy_assets(route) -> None:
+    if route.request.resource_type in {"font", "media"}:
+        await route.abort()
+    else:
+        await route.continue_()
+
+
+async def _block_all_heavy_assets(route) -> None:
     if route.request.resource_type in {"image", "font", "media"}:
         await route.abort()
     else:
@@ -119,6 +126,20 @@ EXTRACT_JS = """
     return metrics;
   };
 
+  const mediaFromArticle = (article) => {
+    const urls = [];
+    const alt = [];
+    for (const img of article.querySelectorAll('img')) {
+      const src = img.getAttribute('src') || '';
+      if (!/pbs\\.twimg\\.com\\/(media|card_img|ext_tw_video_thumb)/.test(src)) continue;
+      const clean = src.replace(/&name=[^&]+/, '&name=large');
+      if (!urls.includes(clean)) urls.push(clean);
+      const label = img.getAttribute('alt') || img.getAttribute('aria-label') || '';
+      if (label && !alt.includes(label)) alt.push(label);
+    }
+    return { urls, alt };
+  };
+
   const out = [];
   const seen = new Set();
   for (const article of document.querySelectorAll('article[data-testid="tweet"]')) {
@@ -135,12 +156,19 @@ EXTRACT_JS = """
 
     let metrics = metricsFromLabel(article);
     metrics = metricsFromButtons(article, metrics);
+    const media = mediaFromArticle(article);
+    const isTruncated = /\\bShow more\\b/i.test(full) || /…\\s*$/.test(text) || text.includes('\\n…');
     out.push({
       tweet_id: tweetId,
       timestamp,
       text,
+      full_text: text,
       url,
       is_pinned: isPinned ? 1 : 0,
+      has_show_more: isTruncated ? 1 : 0,
+      has_media: media.urls.length ? 1 : 0,
+      media_urls: media.urls,
+      media_alt_text: media.alt,
       replies: metrics.replies || 0,
       comments: metrics.replies || 0,
       reposts: metrics.reposts || 0,
@@ -150,9 +178,68 @@ EXTRACT_JS = """
       views: metrics.views || 0,
       bookmarks: metrics.bookmarks || 0,
     });
-    if (out.length >= maxTweets) break;
   }
-  return out;
+  return out
+    .sort((a, b) => Date.parse(b.timestamp || 0) - Date.parse(a.timestamp || 0))
+    .slice(0, maxTweets);
+}
+"""
+
+
+DETAIL_JS = """
+({ tweetId }) => {
+  const article = Array.from(document.querySelectorAll('article[data-testid="tweet"]')).find(a => {
+    const href = a.querySelector('a[href*="/status/"]')?.href || '';
+    return href.includes(`/status/${tweetId}`);
+  }) || document.querySelector('article[data-testid="tweet"]');
+  if (!article) return null;
+
+  const parseCompact = (value) => {
+    if (!value) return 0;
+    const raw = String(value).replace(/,/g, '').trim();
+    const match = raw.match(/([0-9]+(?:\\.[0-9]+)?)([KMB])?/i);
+    if (!match) return 0;
+    const n = parseFloat(match[1]);
+    const suffix = (match[2] || '').toUpperCase();
+    const mult = suffix === 'K' ? 1e3 : suffix === 'M' ? 1e6 : suffix === 'B' ? 1e9 : 1;
+    return Math.round(n * mult);
+  };
+
+  const text = article.querySelector('[data-testid="tweetText"]')?.innerText?.trim() || '';
+  const timestamp = article.querySelector('time')?.getAttribute('datetime') || '';
+  const mediaUrls = [];
+  const mediaAlt = [];
+  for (const img of article.querySelectorAll('img')) {
+    const src = img.getAttribute('src') || '';
+    if (!/pbs\\.twimg\\.com\\/(media|card_img|ext_tw_video_thumb)/.test(src)) continue;
+    const clean = src.replace(/&name=[^&]+/, '&name=large');
+    if (!mediaUrls.includes(clean)) mediaUrls.push(clean);
+    const label = img.getAttribute('alt') || img.getAttribute('aria-label') || '';
+    if (label && !mediaAlt.includes(label)) mediaAlt.push(label);
+  }
+
+  const labels = [
+    ...Array.from(article.querySelectorAll('[role="group"][aria-label]')).map(x => x.getAttribute('aria-label') || ''),
+    ...Array.from(article.querySelectorAll('[aria-label]')).map(x => x.getAttribute('aria-label') || '')
+  ].join(' | ');
+  const metric = (re) => {
+    const m = labels.match(re);
+    return m ? parseCompact(m[1]) : 0;
+  };
+
+  return {
+    full_text: text,
+    timestamp,
+    media_urls: mediaUrls,
+    media_alt_text: mediaAlt,
+    has_media: mediaUrls.length ? 1 : 0,
+    replies: metric(/([0-9.,]+\\s*[KMB]?)\\s+(?:Reply|Replies)/i),
+    reposts: metric(/([0-9.,]+\\s*[KMB]?)\\s+(?:repost|reposts|retweet|retweets)/i),
+    likes: metric(/([0-9.,]+\\s*[KMB]?)\\s+(?:Like|Likes)/i),
+    views: metric(/([0-9.,]+\\s*[KMB]?)\\s+(?:view|views)/i),
+    bookmarks: metric(/([0-9.,]+\\s*[KMB]?)\\s+(?:bookmark|bookmarks)/i),
+    quotes: metric(/([0-9.,]+\\s*[KMB]?)\\s+(?:quote|quotes)/i),
+  };
 }
 """
 
@@ -170,9 +257,113 @@ async def _extract_until_ready(page, max_tweets: int, max_scrolls: int, include_
             {"maxTweets": max_tweets, "includePinned": include_pinned},
         )
         if len(tweets) >= max_tweets:
+            if any(t.get("has_show_more") for t in tweets):
+                await _click_show_more_buttons(page)
+                tweets = await page.evaluate(
+                    EXTRACT_JS,
+                    {"maxTweets": max_tweets, "includePinned": include_pinned},
+                )
             return tweets
         await page.mouse.wheel(0, 900)
         await page.wait_for_timeout(900)
+    return tweets
+
+
+async def _click_show_more_buttons(page) -> None:
+    try:
+        await page.evaluate(
+            """() => {
+              const nodes = Array.from(document.querySelectorAll('article[data-testid="tweet"] *'))
+                .filter(el => /^show more$/i.test((el.innerText || el.textContent || '').trim()));
+              for (const el of nodes.slice(0, 8)) {
+                const clickable = el.closest('div[role="button"], a, button') || el;
+                clickable.click();
+              }
+              return nodes.length;
+            }"""
+        )
+        await page.wait_for_timeout(800)
+    except Exception:
+        pass
+
+
+def _tweet_engagement(tweet: dict) -> dict:
+    comments = int(tweet.get("comments") or tweet.get("replies") or 0)
+    retweets = int(tweet.get("retweets") or tweet.get("reposts") or 0)
+    quotes = int(tweet.get("quotes") or 0)
+    likes = int(tweet.get("likes") or 0)
+    bookmarks = int(tweet.get("bookmarks") or 0)
+    views = int(tweet.get("views") or 0)
+    raw = likes + (2 * retweets) + (2 * quotes) + (3 * comments) + (3 * bookmarks)
+    rate = round(raw / views * 1000, 2) if views > 0 else 0.0
+    # A bounded importance score for the dashboard. High views matter, but replies/reposts/bookmarks
+    # get extra weight because they indicate people are acting on the tweet.
+    score = min(100.0, round((raw ** 0.5) + min(35, rate * 2) + min(25, views ** 0.25), 2))
+    return {
+        "engagement_raw": raw,
+        "engagement_rate_per_1k_views": rate,
+        "impact_score": score,
+    }
+
+
+async def _hydrate_tweet_details(page, tweets: list[dict], args: argparse.Namespace) -> list[dict]:
+    if getattr(args, "no_detail_hydration", False):
+        return tweets
+
+    for tweet in tweets:
+        needs_detail = bool(
+            getattr(args, "hydrate_all_details", False)
+            or tweet.get("has_show_more")
+            or (tweet.get("has_media") and getattr(args, "hydrate_media_details", True))
+        )
+        if not needs_detail or not tweet.get("url"):
+            tweet.update(_tweet_engagement(tweet))
+            continue
+
+        try:
+            await page.goto(tweet["url"], wait_until="domcontentloaded", timeout=args.timeout_ms)
+            try:
+                await page.wait_for_selector('article[data-testid="tweet"]', timeout=8000)
+            except PlaywrightTimeoutError:
+                pass
+            await page.wait_for_timeout(900)
+            for pattern in ("Show more", "Show More"):
+                try:
+                    await page.get_by_text(pattern, exact=True).first.click(timeout=1200)
+                    await page.wait_for_timeout(700)
+                    break
+                except Exception:
+                    pass
+            detail = await page.evaluate(DETAIL_JS, {"tweetId": tweet.get("tweet_id", "")})
+            if detail:
+                if detail.get("full_text"):
+                    tweet["full_text"] = detail["full_text"]
+                    tweet["text"] = detail["full_text"]
+                if detail.get("timestamp"):
+                    tweet["timestamp"] = detail["timestamp"]
+                for key in ("media_urls", "media_alt_text", "has_media"):
+                    if detail.get(key):
+                        tweet[key] = detail[key]
+                for key in ("replies", "comments", "reposts", "retweets", "quotes", "likes", "views", "bookmarks"):
+                    val = detail.get(key)
+                    if val:
+                        if key == "replies":
+                            tweet["replies"] = val
+                            tweet["comments"] = val
+                        elif key == "reposts":
+                            tweet["reposts"] = val
+                            tweet["retweets"] = val
+                        else:
+                            tweet[key] = val
+                tweet["detail_hydrated"] = 1
+            else:
+                tweet["detail_hydrated"] = 0
+        except Exception as e:
+            tweet["detail_hydrated"] = 0
+            tweet["detail_error"] = str(e)[:160]
+
+        tweet.update(_tweet_engagement(tweet))
+
     return tweets
 
 
@@ -180,7 +371,7 @@ async def _scrape_account(ctx, handle: str, args: argparse.Namespace) -> dict:
     page = await ctx.new_page()
     t0 = time.perf_counter()
     try:
-        await page.route("**/*", _block_heavy_assets)
+        await page.route("**/*", _block_all_heavy_assets if args.block_images else _block_heavy_assets)
         await page.goto(
             f"https://x.com/{handle}",
             wait_until="domcontentloaded",
@@ -192,6 +383,7 @@ async def _scrape_account(ctx, handle: str, args: argparse.Namespace) -> dict:
             max_scrolls=args.max_scrolls,
             include_pinned=not args.skip_pinned,
         )
+        tweets = await _hydrate_tweet_details(page, tweets, args)
         elapsed = round(time.perf_counter() - t0, 2)
         print(f"  @{handle:<20} {elapsed:>6.2f}s  ({len(tweets)} tweets)")
         return {"handle": handle, "tweets": tweets, "elapsed_s": elapsed, "error": ""}
@@ -215,8 +407,14 @@ def _flatten_rows(results: list[dict], scraped_at: str) -> list[dict]:
                     "tweet_id": tweet.get("tweet_id", ""),
                     "timestamp": tweet.get("timestamp", ""),
                     "text": tweet.get("text", ""),
+                    "full_text": tweet.get("full_text", tweet.get("text", "")),
                     "url": tweet.get("url", ""),
                     "is_pinned": tweet.get("is_pinned", 0),
+                    "has_show_more": tweet.get("has_show_more", 0),
+                    "detail_hydrated": tweet.get("detail_hydrated", 0),
+                    "has_media": tweet.get("has_media", 0),
+                    "media_urls": json.dumps(tweet.get("media_urls", []), ensure_ascii=False),
+                    "media_alt_text": json.dumps(tweet.get("media_alt_text", []), ensure_ascii=False),
                     "comments": tweet.get("comments", tweet.get("replies", 0)),
                     "replies": tweet.get("replies", 0),
                     "retweets": tweet.get("retweets", tweet.get("reposts", 0)),
@@ -225,8 +423,12 @@ def _flatten_rows(results: list[dict], scraped_at: str) -> list[dict]:
                     "likes": tweet.get("likes", 0),
                     "views": tweet.get("views", 0),
                     "bookmarks": tweet.get("bookmarks", 0),
+                    "engagement_raw": tweet.get("engagement_raw", 0),
+                    "engagement_rate_per_1k_views": tweet.get("engagement_rate_per_1k_views", 0),
+                    "impact_score": tweet.get("impact_score", 0),
                     "account_elapsed_s": account.get("elapsed_s", 0),
                     "account_error": account.get("error", ""),
+                    "detail_error": tweet.get("detail_error", ""),
                 }
             )
     return rows
@@ -250,6 +452,8 @@ async def run(args: argparse.Namespace | None = None) -> dict:
     print(f"  Tweets/account: {args.max_tweets}")
     print(f"  Workers:        {args.workers}")
     print(f"  Include pinned: {not args.skip_pinned}\n")
+    print(f"  Detail hydrate: {not args.no_detail_hydration} (show-more/media only unless --hydrate-all-details)")
+    print(f"  Images allowed: {not args.block_images}\n")
 
     results: list[dict] = []
     async with async_playwright() as p:
@@ -321,8 +525,14 @@ async def run(args: argparse.Namespace | None = None) -> dict:
         "tweet_id",
         "timestamp",
         "text",
+        "full_text",
         "url",
         "is_pinned",
+        "has_show_more",
+        "detail_hydrated",
+        "has_media",
+        "media_urls",
+        "media_alt_text",
         "comments",
         "replies",
         "retweets",
@@ -331,8 +541,12 @@ async def run(args: argparse.Namespace | None = None) -> dict:
         "likes",
         "views",
         "bookmarks",
+        "engagement_raw",
+        "engagement_rate_per_1k_views",
+        "impact_score",
         "account_elapsed_s",
         "account_error",
+        "detail_error",
     ]
     timing_fields = ["scraped_at", "handle", "elapsed_s", "tweets_found", "error"]
 
@@ -384,6 +598,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout-ms", type=int, default=30000)
     parser.add_argument("--no-retry-missing", action="store_true", help="Do not retry accounts that return zero tweets")
     parser.add_argument("--skip-pinned", action="store_true", help="Skip tweets marked as pinned")
+    parser.add_argument("--no-detail-hydration", action="store_true", help="Do not open individual tweet pages for Show more/media tweets")
+    parser.add_argument("--hydrate-all-details", action="store_true", help="Open every tweet detail page. Slower but highest text/media quality")
+    parser.add_argument("--hydrate-media-details", action="store_true", default=True, help="Open tweet detail pages when media is present")
+    parser.add_argument("--block-images", action="store_true", help="Block images for speed. Media URL extraction will be worse")
     parser.add_argument("--headed", action="store_true", help="Show Chromium window for debugging")
     return parser.parse_args()
 

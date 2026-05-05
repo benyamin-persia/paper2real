@@ -1,0 +1,9 @@
+[Unit]
+Description=Paper2Real local backup
+
+[Service]
+Type=oneshot
+User=paper2real
+Group=paper2real
+WorkingDirectory=/opt/paper2real
+ExecStart=/opt/paper2real/deploy/scripts/backup.sh

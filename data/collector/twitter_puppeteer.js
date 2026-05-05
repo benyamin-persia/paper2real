@@ -171,9 +171,10 @@ const EXTRACT_JS = ({ maxTweets, includePinned }) => {
       views: metrics.views || 0,
       bookmarks: metrics.bookmarks || 0,
     });
-    if (out.length >= maxTweets) break;
   }
-  return out;
+  return out
+    .sort((a, b) => Date.parse(b.timestamp || 0) - Date.parse(a.timestamp || 0))
+    .slice(0, maxTweets);
 };
 
 async function extractUntilReady(page, args) {

@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Paper2Real AI decision evaluator every 4 hours
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=4h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

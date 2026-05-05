@@ -65,6 +65,7 @@ def compute_position_size(
     entry_price: float,
     atr: float,
     risk_pct: float = MAX_RISK_PER_TRADE_PCT,
+    max_position_pct: float = 30.0,
 ) -> tuple[float, float]:
     """
     Returns (usd_position_size, stop_price).
@@ -77,7 +78,7 @@ def compute_position_size(
     if stop_pct <= 0:
         return 0.0, stop_price
     position_usd = risk_amount / stop_pct
-    position_usd = min(position_usd, account_balance * 0.30)  # hard cap at 30% of account
+    position_usd = min(position_usd, account_balance * (max_position_pct / 100))
     return round(position_usd, 2), round(stop_price, 2)
 
 
@@ -115,6 +116,9 @@ def evaluate(
     balance    = float(portfolio.get("cash_balance_usd", 0))
     total      = float(portfolio.get("total_portfolio_usd", 0))
     open_cnt   = int(portfolio.get("open_trades", 0))
+    settings   = portfolio.get("settings") or {}
+    risk_pct   = float(settings.get("risk_per_trade_pct", MAX_RISK_PER_TRADE_PCT))
+    max_pos_pct = float(settings.get("max_position_pct", 30.0))
 
     def _hold(reason: str, blocked_by: str) -> dict:
         return {
@@ -265,7 +269,7 @@ def evaluate(
 
     position_usd, stop_price = (None, None)
     if action == "BUY":
-        position_usd, stop_price = compute_position_size(balance, price, atr)
+        position_usd, stop_price = compute_position_size(balance, price, atr, risk_pct, max_pos_pct)
         if position_usd < 10:
             return _hold(
                 f"Calculated position size ${position_usd:.2f} too small (ATR stop too wide).",

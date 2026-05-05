@@ -9,3 +9,11 @@ env/
 *.sqlite
 *.sqlite3
 *.log
+
+__pycache__/
+*.pyc
+*.pyo
+
+.playwright-mcp/
+.remote_paper2real/
+.tmp_paramiko/
