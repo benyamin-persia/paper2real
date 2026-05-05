@@ -71,6 +71,7 @@ table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--mute
     <div class="panel"><div class="ptitle"><span>Why No Trade?</span><span id="whyNoTradeState">--</span></div><div id="whyNoTradeBox"></div></div>
     <div class="panel"><div class="ptitle"><span>Missed Opportunity</span><span id="missedState">--</span></div><div id="missedBox"></div></div>
   </div>
+  <div class="panel" style="margin-bottom:14px"><div class="ptitle"><span>Data Source Trust</span><span id="trustState">--</span></div><div id="trustBox" class="grid cols3"></div></div>
 
   <div class="tabs">
     <button class="tab active" onclick="tab(this,'trades')">Trades</button>
@@ -97,6 +98,14 @@ table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--mute
     <div class="grid cols2" style="margin-bottom:14px">
       <div><div class="ptitle"><span>Backtest equity curve</span><span id="btMeta"></span></div><div class="chartbox"><canvas id="backtestChart"></canvas></div></div>
       <div><div class="ptitle"><span>AI feedback loop</span></div><div class="audit" id="feedbackReport"></div></div>
+    </div>
+    <div class="grid cols2" style="margin-bottom:14px">
+      <div><div class="ptitle"><span>Trade Quality Sweep</span><span id="sweepBest">--</span></div><div class="chartbox"><canvas id="sweepReturnChart"></canvas></div></div>
+      <div><div class="ptitle"><span>Sweep Risk / Trades</span><span id="sweepMeta">--</span></div><div class="chartbox"><canvas id="sweepRiskChart"></canvas></div></div>
+    </div>
+    <div class="grid cols2" style="margin-bottom:14px">
+      <div><div class="ptitle"><span>Profit Factor by Threshold</span></div><div class="chartbox sm"><canvas id="sweepPfChart"></canvas></div></div>
+      <div><div class="ptitle"><span>Shadow BUY Performance</span><span id="shadowState">--</span></div><div class="audit" id="shadowReport"></div></div>
     </div>
     <div style="margin-bottom:14px"><div class="ptitle"><span>Live learning status</span><span id="learningState"></span></div><div class="audit" id="learningReport"></div></div>
     <div><div class="ptitle"><span>Backtest summary</span></div><div class="audit" id="backtestReport"></div></div>
@@ -215,7 +224,7 @@ async function loadAudit(){
 }
 
 async function loadReports(){
-  const [r,eq,learn,missed]=await Promise.all([j("/reports"),j("/backtest-equity?limit=800"),j("/learning-status"),j("/missed-opportunities")]);
+  const [r,eq,learn,missed,sweep,shadow]=await Promise.all([j("/reports"),j("/backtest-equity?limit=800"),j("/learning-status"),j("/missed-opportunities"),j("/trade-quality-sweep"),j("/shadow-performance")]);
   $("backtestReport").textContent=JSON.stringify(r.backtest||{status:"No backtest report found"},null,2);
   $("feedbackReport").textContent=JSON.stringify(r.ai_feedback||{status:"No AI feedback report found"},null,2);
   $("learningState").textContent=learn.status||"--";
@@ -229,10 +238,18 @@ async function loadReports(){
   const dateKey=rows[0]&&("date" in rows[0]?"date":"timestamp");
   const equityKey=rows[0]&&("equity" in rows[0]?"equity":"portfolio_value");
   makeChart("backtestChart","line",rows.map(r=>String(r[dateKey]||"").slice(0,10)),[{label:"Backtest equity",data:rows.map(r=>Number(r[equityKey]||0)),borderColor:"#18c964",backgroundColor:"rgba(24,201,100,.08)",fill:true,pointRadius:0,tension:.2}],{legend:false});
+  const sw=sweep.results||[], best=sweep.best_threshold||{};
+  $("sweepBest").textContent=best.threshold?`best ${best.threshold} | ${best.total_return_pct}%`:"--";
+  $("sweepMeta").textContent=sw.length?`${sw.length} thresholds`:"--";
+  makeChart("sweepReturnChart","line",sw.map(x=>x.threshold),[{label:"Return %",data:sw.map(x=>x.total_return_pct),borderColor:"#18c964",pointRadius:3,tension:.2},{label:"Max DD %",data:sw.map(x=>x.max_drawdown_pct),borderColor:"#ff4d66",pointRadius:3,tension:.2}],{legend:true});
+  makeChart("sweepRiskChart","bar",sw.map(x=>x.threshold),[{label:"Trades",data:sw.map(x=>x.number_of_trades),backgroundColor:"#58a6ff"},{label:"Missed upside HOLDs",data:sw.map(x=>x.missed_upside_holds),backgroundColor:"#ffd166"}],{legend:true});
+  makeChart("sweepPfChart","bar",sw.map(x=>x.threshold),[{label:"Profit factor",data:sw.map(x=>x.profit_factor),backgroundColor:"#f7931a"}],{legend:false});
+  $("shadowState").textContent=`${(shadow.summary||{}).shadow_buys||0} shadow BUYs`;
+  $("shadowReport").textContent=JSON.stringify(shadow.summary||{},null,2);
 }
 
 async function loadRiskHealth(){
-  const [risk,health,tg]=await Promise.all([j("/risk-status"),j("/system-health"),j("/telegram/status")]);
+  const [risk,health,tg,mc]=await Promise.all([j("/risk-status"),j("/system-health"),j("/telegram/status"),j("/market-context")]);
   $("riskStatus").textContent=(risk.consecutive_losses||0)+" loss streak";
   $("riskBox").innerHTML=[
     ["Daily P&L",fmt(risk.daily_pnl)],
@@ -246,6 +263,16 @@ async function loadRiskHealth(){
   $("telegramState").textContent=tg.configured?"configured":"not configured";
   $("telegramState").className=tg.configured?"green":"yellow";
   $("telegramBox").innerHTML=`<div class="hint">enabled: ${tg.enabled}</div><div class="hint">min severity: ${tg.min_severity}</div><div class="hint">token configured: ${tg.bot_token_configured}</div><div class="hint">chat configured: ${tg.chat_id_configured}</div>`;
+  const trust=[
+    ["BTC price", mc.price>0?"trusted":"bad"],
+    ["Volume", mc.volume_quality||"unknown"],
+    ["Events", mc.events_unavailable?"stale":"trusted"],
+    ["Twitter", mc.twitter_unavailable?"stale":"trusted"],
+    ["Fear & Greed", mc.fear_greed_index==null?"missing":"trusted"],
+    ["Master data", health.files?.["data/processed/master_dataset.csv"]?.age_minutes!=null?`${Math.round(health.files["data/processed/master_dataset.csv"].age_minutes/60)}h old`:"missing"]
+  ];
+  $("trustState").textContent=trust.some(x=>["bad","stale","missing","unreliable"].includes(x[1]))?"warning":"ok";
+  $("trustBox").innerHTML=trust.map(x=>`<div class="card"><div class="label">${x[0]}</div><div class="value ${["bad","stale","missing","unreliable"].includes(x[1])?"yellow":"green"}">${x[1]}</div></div>`).join("");
 }
 
 async function loadEvents(){

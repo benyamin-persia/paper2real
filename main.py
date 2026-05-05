@@ -23,8 +23,9 @@ import risk_engine
 import notifier
 import decision_evaluator
 import trade_quality
+import trade_quality_sweep
 from data.collector import events as events_collector
-from config import WEBHOOK_SECRET
+from config import WEBHOOK_SECRET, TRADE_QUALITY_BUY_THRESHOLD, TRADE_QUALITY_CAN_PROPOSE_BUY
 
 EVENTS_REFRESH_MINUTES = 15    # how often to re-scrape CryptoPanic
 EVENTS_MAX_AGE_MINUTES = 20    # older than this → treat as missing
@@ -57,6 +58,37 @@ def _twitter_keyword_matches(text: str) -> list[str]:
         elif re.search(rf"\b{re.escape(kw)}\b", lower):
             matches.append(kw)
     return matches
+
+
+def _apply_trade_quality_candidate(context: dict, claude_out: dict) -> dict:
+    """Let deterministic score propose BUY candidates; risk_engine still decides execution."""
+    quality = trade_quality.score(context, claude_out.get("historical_summary"), {})
+    context["trade_quality"] = quality
+    if not TRADE_QUALITY_CAN_PROPOSE_BUY:
+        return claude_out
+    if (claude_out.get("action") or "HOLD").upper() != "HOLD":
+        return claude_out
+    score = float(quality.get("score") or 0)
+    if score < TRADE_QUALITY_BUY_THRESHOLD:
+        return claude_out
+    upgraded = dict(claude_out)
+    upgraded["action"] = "BUY"
+    upgraded["confidence"] = max(int(upgraded.get("confidence") or 0), 65)
+    upgraded["reason"] = (
+        f"Trade Quality Score {score}/100 is above BUY threshold {TRADE_QUALITY_BUY_THRESHOLD}. "
+        f"Primary reason: {quality.get('primary_reason')}. Original Claude HOLD reason: "
+        f"{claude_out.get('reason', '')}"
+    )[:700]
+    upgraded["risk_summary"] = (
+        "Trade Quality proposed BUY; deterministic risk engine must approve sizing, stops, "
+        "freshness, macro/event blocks, portfolio limits, and loss limits."
+    )
+    upgraded["invalid_if"] = list(dict.fromkeys((upgraded.get("invalid_if") or []) + quality.get("blockers", [])))
+    upgraded["trade_quality_candidate"] = True
+    upgraded["_audit"] = claude_out.get("_audit")
+    upgraded["_api_usage"] = claude_out.get("_api_usage")
+    upgraded["historical_summary"] = claude_out.get("historical_summary", {})
+    return upgraded
 
 
 def _classify_twitter_alert(text: str) -> tuple[str, bool]:
@@ -327,6 +359,7 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
         # 3. Run brain → risk engine → execute
         summary    = trader.portfolio_summary(price)
         claude_out = brain.decide(context, summary)
+        claude_out = _apply_trade_quality_candidate(context, claude_out)
         closed     = [t for t in trader.get_all_trades() if t["closed"]]
         final      = risk_engine.evaluate(claude_out, context, summary, closed)
         context["trade_quality"] = trade_quality.score(
@@ -584,6 +617,7 @@ async def _decision_evaluator_loop():
     while True:
         try:
             summary = await asyncio.to_thread(decision_evaluator.run)
+            await asyncio.to_thread(trade_quality_sweep.run)
             await notifier.notify(
                 "INFO",
                 "ai_feedback_refreshed",
@@ -1022,6 +1056,7 @@ async def tradingview_webhook(request: Request):
 
     summary    = trader.portfolio_summary(context["price"])
     claude_out = brain.decide(context, summary)
+    claude_out = _apply_trade_quality_candidate(context, claude_out)
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
     final      = risk_engine.evaluate(claude_out, context, summary, closed)
     context["trade_quality"] = trade_quality.score(context, claude_out.get("historical_summary"), final)
@@ -1067,6 +1102,7 @@ async def manual_scan():
     stops      = trader.check_trailing_stops(price, atr)
     summary    = trader.portfolio_summary(price)
     claude_out = brain.decide(context, summary)
+    claude_out = _apply_trade_quality_candidate(context, claude_out)
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
     final      = risk_engine.evaluate(claude_out, context, summary, closed)
     context["trade_quality"] = trade_quality.score(context, claude_out.get("historical_summary"), final)
@@ -1476,6 +1512,8 @@ async def download_all_artifacts():
         "data/reports/backtest_latest.json",
         "data/reports/backtest_equity.csv",
         "data/reports/backtest_trades.csv",
+        "data/reports/trade_quality_sweep.json",
+        "data/reports/trade_quality_sweep.csv",
         "data/raw/live_btc_15m.csv",
         "data/raw/twitter_playwright.json",
         "data/raw/twitter_tweets.csv",
@@ -1483,6 +1521,7 @@ async def download_all_artifacts():
         "data/raw/events.json",
         "data/processed/master_dataset.csv",
         "data/processed/btc_15m_labeled.csv",
+        "PAPER2REAL_IMPLEMENTATION_LOG.md",
     ]
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as zf:
@@ -1591,6 +1630,7 @@ async def reports():
     return {
         "backtest": _read_json("data/reports/backtest_latest.json"),
         "ai_feedback": _read_json("data/reports/ai_feedback_summary.json"),
+        "trade_quality_sweep": _read_json("data/reports/trade_quality_sweep.json"),
         "api_usage": trader.api_usage_summary(),
     }
 
@@ -1751,6 +1791,49 @@ async def missed_opportunities(limit: int = 100):
             "avg_hold_return_pct": round(float(holds["return_pct"].mean()), 4) if len(holds) else None,
         },
         "rows": missed.head(limit).where(pd.notna(missed), None).to_dict(orient="records"),
+    }
+
+
+@app.get("/trade-quality-sweep")
+async def trade_quality_sweep_report():
+    path = Path("data/reports/trade_quality_sweep.json")
+    if not path.exists():
+        report = await asyncio.to_thread(trade_quality_sweep.run)
+        return report
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        report = await asyncio.to_thread(trade_quality_sweep.run)
+        return report
+
+
+@app.get("/shadow-performance")
+async def shadow_performance():
+    rows = trader.get_decisions(limit=1000)
+    shadow = [r for r in rows if r.get("shadow_action")]
+    scored_1h = [r for r in shadow if r.get("shadow_future_return_1h") is not None]
+    scored_4h = [r for r in shadow if r.get("shadow_future_return_4h") is not None]
+    scored_24h = [r for r in shadow if r.get("shadow_future_return_24h") is not None]
+
+    def _stats(items, key):
+        vals = [float(r[key]) for r in items if r.get(key) is not None]
+        if not vals:
+            return {"count": 0, "avg_return_pct": None, "win_rate_pct": None}
+        return {
+            "count": len(vals),
+            "avg_return_pct": round(sum(vals) / len(vals), 4),
+            "win_rate_pct": round(sum(1 for v in vals if v > 0) / len(vals) * 100, 2),
+        }
+
+    return {
+        "summary": {
+            "shadow_buys": len(shadow),
+            "pending": len([r for r in shadow if r.get("shadow_future_return_24h") is None]),
+            "one_hour": _stats(scored_1h, "shadow_future_return_1h"),
+            "four_hour": _stats(scored_4h, "shadow_future_return_4h"),
+            "twenty_four_hour": _stats(scored_24h, "shadow_future_return_24h"),
+        },
+        "rows": shadow[:100],
     }
 
 

@@ -7,6 +7,7 @@ from config import (
     MAX_DRAWDOWN_PCT, MAX_CONSECUTIVE_LOSS, DAILY_LOSS_LIMIT_PCT,
     ATR_INITIAL_STOP_MULT, ATR_TRAIL_STOP_MULT,
     AI_INPUT_USD_PER_MILLION_TOKENS, AI_OUTPUT_USD_PER_MILLION_TOKENS,
+    SHADOW_BUY_SCORE_THRESHOLD,
 )
 
 
@@ -104,6 +105,25 @@ def init_db():
         "invalid_if_json TEXT",
         "historical_summary_json TEXT",
         "trade_quality_json TEXT",
+        "tq_score REAL",
+        "tq_trend REAL",
+        "tq_momentum REAL",
+        "tq_volatility REAL",
+        "tq_derivatives REAL",
+        "tq_macro REAL",
+        "tq_historical_match REAL",
+        "tq_data_quality REAL",
+        "tq_risk_safety REAL",
+        "tq_primary_reason TEXT",
+        "shadow_action TEXT",
+        "shadow_entry_price REAL",
+        "shadow_score REAL",
+        "shadow_reason TEXT",
+        "shadow_stop_price REAL",
+        "shadow_take_profit_price REAL",
+        "shadow_future_return_1h REAL",
+        "shadow_future_return_4h REAL",
+        "shadow_future_return_24h REAL",
         "ai_model TEXT",
         "ai_prompt TEXT",
         "ai_response TEXT",
@@ -116,8 +136,73 @@ def init_db():
         except Exception:
             pass
     cur.execute("INSERT OR IGNORE INTO portfolio (id, balance) VALUES (1, ?)", (STARTING_BALANCE,))
+    _backfill_trade_quality_columns(cur)
     con.commit()
     con.close()
+
+
+def _backfill_trade_quality_columns(cur) -> None:
+    """Populate new queryable Trade Quality columns from existing JSON rows."""
+    try:
+        rows = cur.execute(
+            """SELECT id, final_action, btc_price, trade_quality_json, tq_score, shadow_action
+               FROM decisions
+               WHERE trade_quality_json IS NOT NULL AND trade_quality_json != ''"""
+        ).fetchall()
+    except Exception:
+        return
+
+    for row in rows:
+        decision_id, final_action, btc_price, quality_json, tq_score, shadow_action = row
+        try:
+            quality = json.loads(quality_json or "{}")
+        except Exception:
+            continue
+        components = quality.get("components") or {}
+        score = quality.get("score")
+        if score is None:
+            continue
+        shadow = shadow_action
+        shadow_entry = shadow_score = shadow_tp = None
+        shadow_reason = None
+        if not shadow and str(final_action).upper() == "HOLD" and float(score) >= SHADOW_BUY_SCORE_THRESHOLD:
+            price = float(btc_price or 0)
+            if price > 0:
+                shadow = "BUY"
+                shadow_entry = price
+                shadow_score = float(score)
+                shadow_tp = round(price * 1.03, 2)
+                shadow_reason = quality.get("primary_reason") or "quality_score_above_shadow_threshold"
+        cur.execute(
+            """UPDATE decisions SET
+               tq_score=?, tq_trend=?, tq_momentum=?, tq_volatility=?, tq_derivatives=?,
+               tq_macro=?, tq_historical_match=?, tq_data_quality=?, tq_risk_safety=?,
+               tq_primary_reason=?,
+               shadow_action=COALESCE(shadow_action, ?),
+               shadow_entry_price=COALESCE(shadow_entry_price, ?),
+               shadow_score=COALESCE(shadow_score, ?),
+               shadow_reason=COALESCE(shadow_reason, ?),
+               shadow_take_profit_price=COALESCE(shadow_take_profit_price, ?)
+               WHERE id=?""",
+            (
+                score,
+                components.get("trend"),
+                components.get("momentum"),
+                components.get("volatility"),
+                components.get("derivatives"),
+                components.get("macro"),
+                components.get("historical_match"),
+                components.get("data_quality"),
+                components.get("risk_safety"),
+                quality.get("primary_reason"),
+                shadow,
+                shadow_entry,
+                shadow_score,
+                shadow_reason,
+                shadow_tp,
+                decision_id,
+            ),
+        )
 
 
 def log_event(
@@ -258,6 +343,22 @@ def log_decision(
         input_tokens / 1_000_000 * AI_INPUT_USD_PER_MILLION_TOKENS
         + output_tokens / 1_000_000 * AI_OUTPUT_USD_PER_MILLION_TOKENS
     )
+    quality = market.get("trade_quality") or {}
+    components = quality.get("components") or {}
+    tq_score = quality.get("score")
+    shadow_action = None
+    shadow_entry = shadow_score = shadow_stop = shadow_tp = None
+    shadow_reason = None
+    if final.get("action") == "HOLD" and tq_score is not None and float(tq_score) >= SHADOW_BUY_SCORE_THRESHOLD:
+        price = float(market.get("price") or 0)
+        atr = float(market.get("atr_14") or 0)
+        if price > 0:
+            shadow_action = "BUY"
+            shadow_entry = price
+            shadow_score = float(tq_score)
+            shadow_stop = round(price - ATR_INITIAL_STOP_MULT * atr, 2) if atr > 0 else None
+            shadow_tp = round(price * 1.03, 2)
+            shadow_reason = quality.get("primary_reason") or "quality_score_above_shadow_threshold"
     con = sqlite3.connect(DB_FILE)
     con.execute(
         """INSERT INTO decisions
@@ -266,8 +367,13 @@ def log_decision(
             final_action, blocked_by, block_reason,
             position_usd, stop_price, trade_executed,
             risk_summary, invalid_if_json, historical_summary_json,
-            trade_quality_json, ai_model, ai_prompt, ai_response, input_tokens, output_tokens, api_cost_usd)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            trade_quality_json,
+            tq_score, tq_trend, tq_momentum, tq_volatility, tq_derivatives, tq_macro,
+            tq_historical_match, tq_data_quality, tq_risk_safety, tq_primary_reason,
+            shadow_action, shadow_entry_price, shadow_score, shadow_reason,
+            shadow_stop_price, shadow_take_profit_price,
+            ai_model, ai_prompt, ai_response, input_tokens, output_tokens, api_cost_usd)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             int(time.time()),
             trigger,
@@ -287,7 +393,23 @@ def log_decision(
             claude_out.get("risk_summary"),
             json_dumps_safe(claude_out.get("invalid_if", [])),
             json_dumps_safe(claude_out.get("historical_summary", {})),
-            json_dumps_safe(market.get("trade_quality", {})),
+            json_dumps_safe(quality),
+            tq_score,
+            components.get("trend"),
+            components.get("momentum"),
+            components.get("volatility"),
+            components.get("derivatives"),
+            components.get("macro"),
+            components.get("historical_match"),
+            components.get("data_quality"),
+            components.get("risk_safety"),
+            quality.get("primary_reason"),
+            shadow_action,
+            shadow_entry,
+            shadow_score,
+            shadow_reason,
+            shadow_stop,
+            shadow_tp,
             audit.get("model"),
             audit.get("prompt"),
             audit.get("response"),

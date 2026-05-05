@@ -13,6 +13,13 @@ from config import (
 
 
 SEVERITY_RANK = {"INFO": 10, "WARNING": 20, "CRITICAL": 30}
+INFO_IMMEDIATE_EVENTS = {
+    "telegram_test",
+    "daily_summary",
+    "weekly_summary",
+    "app_startup",
+    "app_shutdown",
+}
 
 SECRET_PATTERNS = [
     re.compile(r"(?i)(ANTHROPIC_API_KEY|TELEGRAM_BOT_TOKEN|WEBHOOK_SECRET|API_KEY|TOKEN|PASSWORD|COOKIE|AUTHORIZATION)\s*=\s*([^\s]+)"),
@@ -39,6 +46,17 @@ def should_send(severity: str) -> bool:
         return False
     min_rank = SEVERITY_RANK.get(TELEGRAM_MIN_SEVERITY.upper(), 20)
     return SEVERITY_RANK.get(severity.upper(), 10) >= min_rank
+
+
+def should_send_event(severity: str, event_type: str, force: bool = False) -> bool:
+    if not configured():
+        return False
+    if force:
+        return True
+    severity = severity.upper()
+    if severity == "INFO" and event_type not in INFO_IMMEDIATE_EVENTS:
+        return False
+    return should_send(severity)
 
 
 def status() -> dict:
@@ -97,8 +115,12 @@ async def notify(
         metadata=metadata or {},
     )
 
-    if not configured() or (not force and not should_send(severity)):
-        reason = "telegram_not_configured_or_below_min_severity"
+    if not should_send_event(severity, event_type, force=force):
+        reason = (
+            "telegram_info_digest_only"
+            if configured() and severity == "INFO" and event_type not in INFO_IMMEDIATE_EVENTS
+            else "telegram_not_configured_or_below_min_severity"
+        )
         trader.update_event_telegram(event_id, False, reason)
         return {"event_id": event_id, "telegram_sent": False, "reason": reason, **status()}
 

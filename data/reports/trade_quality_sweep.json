@@ -1,0 +1,167 @@
+{
+  "generated_at": "2026-05-05T19:40:49.504571+00:00",
+  "input": "data\\processed\\master_dataset.csv",
+  "thresholds": [
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85
+  ],
+  "best_threshold": {
+    "threshold": 85,
+    "total_return_pct": 1.37,
+    "final_equity": 10137.21,
+    "max_drawdown_pct": 6.58,
+    "win_rate_pct": 50.0,
+    "profit_factor": 1.173,
+    "number_of_trades": 34,
+    "executed_buys": 34,
+    "executed_sells": 0,
+    "average_trade_usd": 4.04,
+    "worst_trade_usd": -111.98,
+    "hold_ratio_pct": 93.6,
+    "missed_upside_holds": 211,
+    "block_breakdown": {
+      "max_open_trades": 13,
+      "consecutive_losses": 29
+    }
+  },
+  "results": [
+    {
+      "threshold": 55,
+      "total_return_pct": -1.4,
+      "final_equity": 9860.3,
+      "max_drawdown_pct": 5.14,
+      "win_rate_pct": 33.33,
+      "profit_factor": 0.563,
+      "number_of_trades": 15,
+      "executed_buys": 15,
+      "executed_sells": 0,
+      "average_trade_usd": -9.31,
+      "worst_trade_usd": -89.48,
+      "hold_ratio_pct": 97.18,
+      "missed_upside_holds": 224,
+      "block_breakdown": {
+        "max_open_trades": 30,
+        "consecutive_losses": 483
+      }
+    },
+    {
+      "threshold": 60,
+      "total_return_pct": -1.4,
+      "final_equity": 9860.3,
+      "max_drawdown_pct": 5.14,
+      "win_rate_pct": 33.33,
+      "profit_factor": 0.563,
+      "number_of_trades": 15,
+      "executed_buys": 15,
+      "executed_sells": 0,
+      "average_trade_usd": -9.31,
+      "worst_trade_usd": -89.48,
+      "hold_ratio_pct": 97.18,
+      "missed_upside_holds": 224,
+      "block_breakdown": {
+        "max_open_trades": 30,
+        "consecutive_losses": 455
+      }
+    },
+    {
+      "threshold": 65,
+      "total_return_pct": -1.4,
+      "final_equity": 9860.3,
+      "max_drawdown_pct": 5.14,
+      "win_rate_pct": 33.33,
+      "profit_factor": 0.563,
+      "number_of_trades": 15,
+      "executed_buys": 15,
+      "executed_sells": 0,
+      "average_trade_usd": -9.31,
+      "worst_trade_usd": -89.48,
+      "hold_ratio_pct": 97.18,
+      "missed_upside_holds": 224,
+      "block_breakdown": {
+        "max_open_trades": 30,
+        "consecutive_losses": 382
+      }
+    },
+    {
+      "threshold": 70,
+      "total_return_pct": -0.97,
+      "final_equity": 9903.37,
+      "max_drawdown_pct": 5.2,
+      "win_rate_pct": 40.0,
+      "profit_factor": 0.699,
+      "number_of_trades": 15,
+      "executed_buys": 15,
+      "executed_sells": 0,
+      "average_trade_usd": -6.44,
+      "worst_trade_usd": -89.87,
+      "hold_ratio_pct": 97.18,
+      "missed_upside_holds": 224,
+      "block_breakdown": {
+        "max_open_trades": 24,
+        "consecutive_losses": 301
+      }
+    },
+    {
+      "threshold": 75,
+      "total_return_pct": -0.84,
+      "final_equity": 9915.98,
+      "max_drawdown_pct": 5.2,
+      "win_rate_pct": 40.0,
+      "profit_factor": 0.739,
+      "number_of_trades": 15,
+      "executed_buys": 15,
+      "executed_sells": 0,
+      "average_trade_usd": -5.6,
+      "worst_trade_usd": -89.99,
+      "hold_ratio_pct": 97.18,
+      "missed_upside_holds": 224,
+      "block_breakdown": {
+        "max_open_trades": 21,
+        "consecutive_losses": 223
+      }
+    },
+    {
+      "threshold": 80,
+      "total_return_pct": -0.4,
+      "final_equity": 9959.61,
+      "max_drawdown_pct": 3.98,
+      "win_rate_pct": 30.77,
+      "profit_factor": 0.823,
+      "number_of_trades": 13,
+      "executed_buys": 13,
+      "executed_sells": 0,
+      "average_trade_usd": -3.11,
+      "worst_trade_usd": -83.58,
+      "hold_ratio_pct": 97.55,
+      "missed_upside_holds": 225,
+      "block_breakdown": {
+        "max_open_trades": 7,
+        "consecutive_losses": 151
+      }
+    },
+    {
+      "threshold": 85,
+      "total_return_pct": 1.37,
+      "final_equity": 10137.21,
+      "max_drawdown_pct": 6.58,
+      "win_rate_pct": 50.0,
+      "profit_factor": 1.173,
+      "number_of_trades": 34,
+      "executed_buys": 34,
+      "executed_sells": 0,
+      "average_trade_usd": 4.04,
+      "worst_trade_usd": -111.98,
+      "hold_ratio_pct": 93.6,
+      "missed_upside_holds": 211,
+      "block_breakdown": {
+        "max_open_trades": 13,
+        "consecutive_losses": 29
+      }
+    }
+  ]
+}

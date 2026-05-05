@@ -92,6 +92,39 @@ def _read_decisions() -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def _update_shadow_future_returns(rows: list[dict]) -> None:
+    db = Path(DB_FILE)
+    if not db.exists() or not rows:
+        return
+    con = sqlite3.connect(db)
+    try:
+        for col in (
+            "shadow_future_return_1h REAL",
+            "shadow_future_return_4h REAL",
+            "shadow_future_return_24h REAL",
+        ):
+            try:
+                con.execute(f"ALTER TABLE decisions ADD COLUMN {col}")
+            except sqlite3.OperationalError:
+                pass
+        for row in rows:
+            if row["status"] != "SCORED" or not row.get("shadow_action") or row.get("return_pct") == "":
+                continue
+            col = {
+                "1h": "shadow_future_return_1h",
+                "4h": "shadow_future_return_4h",
+                "24h": "shadow_future_return_24h",
+            }.get(row["horizon"])
+            if col:
+                con.execute(
+                    f"UPDATE decisions SET {col}=? WHERE id=?",
+                    (float(row["return_pct"]), row["decision_id"]),
+                )
+        con.commit()
+    finally:
+        con.close()
+
+
 def _load_csv_prices(path: Path, source: str) -> list[PricePoint]:
     if not path.exists():
         return []
@@ -287,6 +320,13 @@ def _evaluate_rows(decisions: list[dict], prices: list[PricePoint]) -> list[dict
                     "final_score": final_score,
                     "final_good": final_good,
                     "trade_executed": d.get("trade_executed"),
+                    "tq_score": d.get("tq_score"),
+                    "tq_primary_reason": d.get("tq_primary_reason"),
+                    "shadow_action": d.get("shadow_action"),
+                    "shadow_score": d.get("shadow_score"),
+                    "shadow_reason": d.get("shadow_reason"),
+                    "shadow_stop_price": d.get("shadow_stop_price"),
+                    "shadow_take_profit_price": d.get("shadow_take_profit_price"),
                     "condition_tags": "|".join(_condition_tags(d)),
                     "claude_reason": d.get("claude_reason"),
                 }
@@ -378,6 +418,8 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
     scored = [r for r in rows if r["status"] == "SCORED"]
     pending = [r for r in rows if r["status"] == "PENDING"]
     no_price = [r for r in rows if r["status"] == "NO_PRICE_AT_HORIZON"]
+    shadow_rows = [r for r in rows if r.get("shadow_action")]
+    shadow_scored = [r for r in shadow_rows if r["status"] == "SCORED" and r.get("return_pct") != ""]
     latest_price_ts = max((p.ts for p in prices), default=None)
 
     summary = {
@@ -393,6 +435,8 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
         "rows_scored": len(scored),
         "rows_pending": len(pending),
         "rows_no_price_at_horizon": len(no_price),
+        "shadow_buys_total": len({r["decision_id"] for r in shadow_rows}),
+        "shadow_rows_scored": len(shadow_scored),
         "horizons": {},
         "recommendation": None,
     }
@@ -419,6 +463,7 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
             "missed_upside_holds": len(hold_rows),
             "risk_engine": _risk_engine_summary(hrows, horizon),
             "conditions": _condition_summary(hrows, horizon),
+            "shadow_buy": _shadow_summary(hrows),
         }
 
     if not decisions:
@@ -435,6 +480,23 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
         else:
             summary["recommendation"] = "Keep collecting decisions. Do not change strategy until sample size is larger."
     return summary
+
+
+def _shadow_summary(rows: list[dict]) -> dict:
+    scoped = [
+        r for r in rows
+        if r.get("shadow_action") == "BUY" and r["status"] == "SCORED" and r.get("return_pct") != ""
+    ]
+    vals = [float(r["return_pct"]) for r in scoped]
+    if not vals:
+        return {"count": 0, "avg_return_pct": None, "win_rate_pct": None}
+    return {
+        "count": len(vals),
+        "avg_return_pct": round(mean(vals), 4),
+        "win_rate_pct": _pct(sum(1 for v in vals if v > 0), len(vals)),
+        "missed_big_upside": sum(1 for v in vals if v > HOLD_MISSED_MOVE_PCT),
+        "would_have_lost": sum(1 for v in vals if v < 0),
+    }
 
 
 def _write_csv(path: Path, rows: list[dict]) -> None:
@@ -456,6 +518,8 @@ def _write_markdown(summary: dict) -> None:
         f"Decisions: {summary['decisions_total']}",
         f"Scored rows: {summary['rows_scored']}",
         f"Pending rows: {summary['rows_pending']}",
+        f"Shadow BUYs: {summary.get('shadow_buys_total', 0)}",
+        f"Shadow rows scored: {summary.get('shadow_rows_scored', 0)}",
         f"Recommendation: {summary['recommendation']}",
         "",
         "## Horizons",
@@ -470,6 +534,9 @@ def _write_markdown(summary: dict) -> None:
                 f"- Missed upside HOLDs: {data['missed_upside_holds']}",
                 f"- Risk engine saved losses: {data['risk_engine']['risk_engine_saved_losses']}",
                 f"- Risk engine blocked winners: {data['risk_engine']['risk_engine_blocked_winners']}",
+                f"- Shadow BUY count: {data['shadow_buy']['count']}",
+                f"- Shadow BUY avg return: {data['shadow_buy']['avg_return_pct']}",
+                f"- Shadow BUY win rate: {data['shadow_buy']['win_rate_pct']}",
             ]
         )
     SUMMARY_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -479,6 +546,7 @@ def run() -> dict:
     decisions = _read_decisions()
     prices = _load_price_series(decisions)
     rows = _evaluate_rows(decisions, prices)
+    _update_shadow_future_returns(rows)
     summary = _build_summary(decisions, prices, rows)
 
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
