@@ -107,6 +107,10 @@ table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--mute
       <div><div class="ptitle"><span>Profit Factor by Threshold</span></div><div class="chartbox sm"><canvas id="sweepPfChart"></canvas></div></div>
       <div><div class="ptitle"><span>Shadow BUY Performance</span><span id="shadowState">--</span></div><div class="audit" id="shadowReport"></div></div>
     </div>
+    <div style="margin-bottom:14px">
+      <div class="ptitle"><span>Risk Block Performance</span><span id="riskBlockState">--</span></div>
+      <div class="audit" id="riskBlockReport"></div>
+    </div>
     <div style="margin-bottom:14px"><div class="ptitle"><span>Live learning status</span><span id="learningState"></span></div><div class="audit" id="learningReport"></div></div>
     <div><div class="ptitle"><span>Backtest summary</span></div><div class="audit" id="backtestReport"></div></div>
   </section>
@@ -224,7 +228,7 @@ async function loadAudit(){
 }
 
 async function loadReports(){
-  const [r,eq,learn,missed,sweep,shadow]=await Promise.all([j("/reports"),j("/backtest-equity?limit=800"),j("/learning-status"),j("/missed-opportunities"),j("/trade-quality-sweep"),j("/shadow-performance")]);
+  const [r,eq,learn,missed,sweep,shadow,riskBlock]=await Promise.all([j("/reports"),j("/backtest-equity?limit=800"),j("/learning-status"),j("/missed-opportunities"),j("/trade-quality-sweep"),j("/shadow-performance"),j("/risk-block-performance")]);
   $("backtestReport").textContent=JSON.stringify(r.backtest||{status:"No backtest report found"},null,2);
   $("feedbackReport").textContent=JSON.stringify(r.ai_feedback||{status:"No AI feedback report found"},null,2);
   $("learningState").textContent=learn.status||"--";
@@ -246,6 +250,9 @@ async function loadReports(){
   makeChart("sweepPfChart","bar",sw.map(x=>x.threshold),[{label:"Profit factor",data:sw.map(x=>x.profit_factor),backgroundColor:"#f7931a"}],{legend:false});
   $("shadowState").textContent=`${(shadow.summary||{}).shadow_buys||0} shadow BUYs`;
   $("shadowReport").textContent=JSON.stringify(shadow.summary||{},null,2);
+  $("riskBlockState").textContent=`${riskBlock.total_blocked_candidates||0} blocked | tune: ${riskBlock.ready_to_tune?"yes":"no"}`;
+  const blockers=Object.entries(riskBlock.blockers||{}).map(([name,b])=>`<tr><td>${name}</td><td>${b.count}</td><td>${b.avg_return_1h??"--"}</td><td>${b.avg_return_4h??"--"}</td><td>${b.avg_return_24h??"--"}</td><td>${b.blocked_winners_4h}</td><td>${b.saved_losses_4h}</td><td>${b.neutral_4h}</td><td>${b.verdict}</td></tr>`).join("");
+  $("riskBlockReport").innerHTML=`<div class="hint">Total blocked BUY candidates: ${riskBlock.total_blocked_candidates||0}</div><div class="hint">Minimum required before tuning: ${riskBlock.minimum_required_before_tuning||30}</div><div class="hint">Ready to tune: ${riskBlock.ready_to_tune?"yes":"no"}</div><table style="margin-top:10px"><thead><tr><th>Blocker</th><th>Count</th><th>Avg 1h</th><th>Avg 4h</th><th>Avg 24h</th><th>Blocked winners 4h</th><th>Saved losses 4h</th><th>Neutral 4h</th><th>Verdict</th></tr></thead><tbody>${blockers||'<tr><td class="empty" colspan="9">No blocked BUY candidates measured yet</td></tr>'}</tbody></table>`;
 }
 
 async function loadRiskHealth(){

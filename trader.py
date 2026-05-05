@@ -7,7 +7,7 @@ from config import (
     MAX_DRAWDOWN_PCT, MAX_CONSECUTIVE_LOSS, DAILY_LOSS_LIMIT_PCT,
     ATR_INITIAL_STOP_MULT, ATR_TRAIL_STOP_MULT,
     AI_INPUT_USD_PER_MILLION_TOKENS, AI_OUTPUT_USD_PER_MILLION_TOKENS,
-    SHADOW_BUY_SCORE_THRESHOLD,
+    SHADOW_BUY_SCORE_THRESHOLD, STRATEGY_VERSION,
 )
 
 
@@ -105,6 +105,34 @@ def init_db():
         "invalid_if_json TEXT",
         "historical_summary_json TEXT",
         "trade_quality_json TEXT",
+        "strategy_version TEXT",
+        "candidate_action TEXT",
+        "candidate_source TEXT",
+        "candidate_confidence INTEGER",
+        "candidate_reason TEXT",
+        "pre_risk_tq_json TEXT",
+        "pre_risk_tq_score REAL",
+        "pre_risk_tq_trend REAL",
+        "pre_risk_tq_momentum REAL",
+        "pre_risk_tq_volatility REAL",
+        "pre_risk_tq_derivatives REAL",
+        "pre_risk_tq_macro REAL",
+        "pre_risk_tq_historical_match REAL",
+        "pre_risk_tq_data_quality REAL",
+        "pre_risk_tq_risk_safety REAL",
+        "pre_risk_tq_primary_reason TEXT",
+        "post_risk_tq_json TEXT",
+        "post_risk_tq_score REAL",
+        "risk_blocked_candidate INTEGER DEFAULT 0",
+        "risk_blocker TEXT",
+        "blocked_candidate_entry_price REAL",
+        "blocked_candidate_tq_score REAL",
+        "blocked_candidate_future_return_1h REAL",
+        "blocked_candidate_future_return_4h REAL",
+        "blocked_candidate_future_return_24h REAL",
+        "blocked_candidate_outcome_1h TEXT",
+        "blocked_candidate_outcome_4h TEXT",
+        "blocked_candidate_outcome_24h TEXT",
         "tq_score REAL",
         "tq_trend REAL",
         "tq_momentum REAL",
@@ -145,7 +173,9 @@ def _backfill_trade_quality_columns(cur) -> None:
     """Populate new queryable Trade Quality columns from existing JSON rows."""
     try:
         rows = cur.execute(
-            """SELECT id, final_action, btc_price, trade_quality_json, tq_score, shadow_action
+            """SELECT id, final_action, blocked_by, btc_price, claude_action, claude_conf,
+                      claude_reason, trade_quality_json, tq_score, shadow_action,
+                      candidate_action, pre_risk_tq_score, post_risk_tq_score
                FROM decisions
                WHERE trade_quality_json IS NOT NULL AND trade_quality_json != ''"""
         ).fetchall()
@@ -153,7 +183,11 @@ def _backfill_trade_quality_columns(cur) -> None:
         return
 
     for row in rows:
-        decision_id, final_action, btc_price, quality_json, tq_score, shadow_action = row
+        (
+            decision_id, final_action, blocked_by, btc_price, claude_action, claude_conf,
+            claude_reason, quality_json, tq_score, shadow_action, candidate_action,
+            pre_risk_tq_score, post_risk_tq_score,
+        ) = row
         try:
             quality = json.loads(quality_json or "{}")
         except Exception:
@@ -173,11 +207,51 @@ def _backfill_trade_quality_columns(cur) -> None:
                 shadow_score = float(score)
                 shadow_tp = round(price * 1.03, 2)
                 shadow_reason = quality.get("primary_reason") or "quality_score_above_shadow_threshold"
+        inferred_candidate_action = candidate_action
+        inferred_source = None
+        if not inferred_candidate_action:
+            reason_text = str(claude_reason or "")
+            if str(claude_action).upper() == "BUY":
+                inferred_candidate_action = "BUY"
+                inferred_source = "trade_quality" if reason_text.startswith("Trade Quality Score") else "claude"
+            else:
+                inferred_candidate_action = str(claude_action or "HOLD").upper()
+                inferred_source = "none"
+        risk_blocked_candidate = int(
+            str(inferred_candidate_action).upper() == "BUY"
+            and str(final_action).upper() == "HOLD"
+            and bool(blocked_by)
+        )
         cur.execute(
             """UPDATE decisions SET
                tq_score=?, tq_trend=?, tq_momentum=?, tq_volatility=?, tq_derivatives=?,
                tq_macro=?, tq_historical_match=?, tq_data_quality=?, tq_risk_safety=?,
                tq_primary_reason=?,
+               strategy_version=COALESCE(strategy_version, ?),
+               candidate_action=COALESCE(candidate_action, ?),
+               candidate_source=COALESCE(candidate_source, ?),
+               candidate_confidence=COALESCE(candidate_confidence, ?),
+               candidate_reason=COALESCE(candidate_reason, ?),
+               pre_risk_tq_json=COALESCE(pre_risk_tq_json, ?),
+               pre_risk_tq_score=COALESCE(pre_risk_tq_score, ?),
+               pre_risk_tq_trend=COALESCE(pre_risk_tq_trend, ?),
+               pre_risk_tq_momentum=COALESCE(pre_risk_tq_momentum, ?),
+               pre_risk_tq_volatility=COALESCE(pre_risk_tq_volatility, ?),
+               pre_risk_tq_derivatives=COALESCE(pre_risk_tq_derivatives, ?),
+               pre_risk_tq_macro=COALESCE(pre_risk_tq_macro, ?),
+               pre_risk_tq_historical_match=COALESCE(pre_risk_tq_historical_match, ?),
+               pre_risk_tq_data_quality=COALESCE(pre_risk_tq_data_quality, ?),
+               pre_risk_tq_risk_safety=COALESCE(pre_risk_tq_risk_safety, ?),
+               pre_risk_tq_primary_reason=COALESCE(pre_risk_tq_primary_reason, ?),
+               post_risk_tq_json=COALESCE(post_risk_tq_json, ?),
+               post_risk_tq_score=COALESCE(post_risk_tq_score, ?),
+               risk_blocked_candidate=CASE
+                   WHEN COALESCE(risk_blocked_candidate, 0)=0 THEN ?
+                   ELSE risk_blocked_candidate
+               END,
+               risk_blocker=COALESCE(risk_blocker, ?),
+               blocked_candidate_entry_price=COALESCE(blocked_candidate_entry_price, ?),
+               blocked_candidate_tq_score=COALESCE(blocked_candidate_tq_score, ?),
                shadow_action=COALESCE(shadow_action, ?),
                shadow_entry_price=COALESCE(shadow_entry_price, ?),
                shadow_score=COALESCE(shadow_score, ?),
@@ -195,6 +269,28 @@ def _backfill_trade_quality_columns(cur) -> None:
                 components.get("data_quality"),
                 components.get("risk_safety"),
                 quality.get("primary_reason"),
+                STRATEGY_VERSION,
+                inferred_candidate_action,
+                inferred_source,
+                claude_conf,
+                claude_reason,
+                quality_json,
+                score,
+                components.get("trend"),
+                components.get("momentum"),
+                components.get("volatility"),
+                components.get("derivatives"),
+                components.get("macro"),
+                components.get("historical_match"),
+                components.get("data_quality"),
+                components.get("risk_safety"),
+                quality.get("primary_reason"),
+                quality_json,
+                score,
+                risk_blocked_candidate,
+                blocked_by,
+                btc_price if risk_blocked_candidate else None,
+                score if risk_blocked_candidate else None,
                 shadow,
                 shadow_entry,
                 shadow_score,
@@ -333,6 +429,10 @@ def log_decision(
     final: dict,
     trade_executed: bool,
     trigger: str = "unknown",
+    candidate: dict | None = None,
+    pre_risk_tq: dict | None = None,
+    post_risk_tq: dict | None = None,
+    strategy_version: str | None = None,
 ) -> None:
     """Record every scan decision to the decisions table for review."""
     audit = claude_out.get("_audit") or {}
@@ -343,22 +443,40 @@ def log_decision(
         input_tokens / 1_000_000 * AI_INPUT_USD_PER_MILLION_TOKENS
         + output_tokens / 1_000_000 * AI_OUTPUT_USD_PER_MILLION_TOKENS
     )
-    quality = market.get("trade_quality") or {}
+    candidate = candidate or {}
+    pre_risk_tq = pre_risk_tq or market.get("pre_risk_trade_quality") or market.get("trade_quality") or {}
+    post_risk_tq = post_risk_tq or market.get("post_risk_trade_quality") or market.get("trade_quality") or pre_risk_tq
+    quality = post_risk_tq
     components = quality.get("components") or {}
+    pre_components = pre_risk_tq.get("components") or {}
+    post_components = post_risk_tq.get("components") or {}
     tq_score = quality.get("score")
+    pre_tq_score = pre_risk_tq.get("score")
+    candidate_action = (candidate.get("action") or candidate.get("candidate_action") or "HOLD").upper()
+    candidate_source = candidate.get("source") or candidate.get("candidate_source") or "none"
+    candidate_confidence = candidate.get("confidence")
+    candidate_reason = candidate.get("reason") or candidate.get("candidate_reason") or ""
+    risk_blocked_candidate = int(
+        candidate_action == "BUY"
+        and (final.get("action") or "").upper() == "HOLD"
+        and bool(final.get("blocked_by"))
+    )
+    risk_blocker = final.get("blocked_by") if risk_blocked_candidate else None
+    blocked_entry_price = float(market.get("price") or 0) if risk_blocked_candidate else None
+    blocked_tq_score = float(pre_tq_score) if risk_blocked_candidate and pre_tq_score is not None else None
     shadow_action = None
     shadow_entry = shadow_score = shadow_stop = shadow_tp = None
     shadow_reason = None
-    if final.get("action") == "HOLD" and tq_score is not None and float(tq_score) >= SHADOW_BUY_SCORE_THRESHOLD:
+    if final.get("action") == "HOLD" and pre_tq_score is not None and float(pre_tq_score) >= SHADOW_BUY_SCORE_THRESHOLD:
         price = float(market.get("price") or 0)
         atr = float(market.get("atr_14") or 0)
         if price > 0:
             shadow_action = "BUY"
             shadow_entry = price
-            shadow_score = float(tq_score)
+            shadow_score = float(pre_tq_score)
             shadow_stop = round(price - ATR_INITIAL_STOP_MULT * atr, 2) if atr > 0 else None
             shadow_tp = round(price * 1.03, 2)
-            shadow_reason = quality.get("primary_reason") or "quality_score_above_shadow_threshold"
+            shadow_reason = pre_risk_tq.get("primary_reason") or "quality_score_above_shadow_threshold"
     con = sqlite3.connect(DB_FILE)
     con.execute(
         """INSERT INTO decisions
@@ -368,12 +486,21 @@ def log_decision(
             position_usd, stop_price, trade_executed,
             risk_summary, invalid_if_json, historical_summary_json,
             trade_quality_json,
+            strategy_version,
+            candidate_action, candidate_source, candidate_confidence, candidate_reason,
+            pre_risk_tq_json, pre_risk_tq_score, pre_risk_tq_trend, pre_risk_tq_momentum,
+            pre_risk_tq_volatility, pre_risk_tq_derivatives, pre_risk_tq_macro,
+            pre_risk_tq_historical_match, pre_risk_tq_data_quality, pre_risk_tq_risk_safety,
+            pre_risk_tq_primary_reason,
+            post_risk_tq_json, post_risk_tq_score,
+            risk_blocked_candidate, risk_blocker, blocked_candidate_entry_price,
+            blocked_candidate_tq_score,
             tq_score, tq_trend, tq_momentum, tq_volatility, tq_derivatives, tq_macro,
             tq_historical_match, tq_data_quality, tq_risk_safety, tq_primary_reason,
             shadow_action, shadow_entry_price, shadow_score, shadow_reason,
             shadow_stop_price, shadow_take_profit_price,
             ai_model, ai_prompt, ai_response, input_tokens, output_tokens, api_cost_usd)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             int(time.time()),
             trigger,
@@ -394,6 +521,28 @@ def log_decision(
             json_dumps_safe(claude_out.get("invalid_if", [])),
             json_dumps_safe(claude_out.get("historical_summary", {})),
             json_dumps_safe(quality),
+            strategy_version or STRATEGY_VERSION,
+            candidate_action,
+            candidate_source,
+            candidate_confidence,
+            candidate_reason[:700],
+            json_dumps_safe(pre_risk_tq),
+            pre_tq_score,
+            pre_components.get("trend"),
+            pre_components.get("momentum"),
+            pre_components.get("volatility"),
+            pre_components.get("derivatives"),
+            pre_components.get("macro"),
+            pre_components.get("historical_match"),
+            pre_components.get("data_quality"),
+            pre_components.get("risk_safety"),
+            pre_risk_tq.get("primary_reason"),
+            json_dumps_safe(post_risk_tq),
+            post_risk_tq.get("score"),
+            risk_blocked_candidate,
+            risk_blocker,
+            blocked_entry_price,
+            blocked_tq_score,
             tq_score,
             components.get("trend"),
             components.get("momentum"),

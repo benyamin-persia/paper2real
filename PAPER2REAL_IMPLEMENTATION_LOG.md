@@ -203,3 +203,35 @@ The next decision is now measurable:
 - If shadow BUYs lose, keep the current conservative posture.
 
 No safety rules should be removed until shadow learning and paper trades produce enough evidence.
+
+## Risk Block Outcome Evaluation
+
+Status: implemented as the next audit layer.
+
+Rules frozen:
+
+- `TRADE_QUALITY_BUY_THRESHOLD=65`
+- `SHADOW_BUY_SCORE_THRESHOLD=60`
+- `TRADE_QUALITY_CAN_PROPOSE_BUY=true`
+
+What changed:
+
+- `risk_engine.py` behavior is unchanged.
+- `candidate_action` is now separate from Claude's original `claude_action`.
+- `candidate_source` can be `claude`, `trade_quality`, `both`, or `none`.
+- `pre_risk_tq_*` fields store the Trade Quality score that created the candidate.
+- `post_risk_tq_*` fields store the score after risk-engine context is known.
+- A risk-engine block is recorded as `risk_blocked_candidate=1` only when a BUY candidate becomes final HOLD because a risk rule blocked it.
+- Blocked BUY candidates are evaluated after 1h, 4h, and 24h.
+- Reports are written to `data/reports/risk_block_performance.json` and `.csv`.
+
+Decision rule:
+
+- Do not remove `bb_squeeze` or any other blocker until at least 30 blocked BUY candidates are measured.
+- If a blocker saves more losses than blocked winners, keep it.
+- If a blocker blocks more winners than saved losses, convert it later from a hard block into a soft penalty.
+- Thresholds remain frozen until the risk-block evidence is large enough to tune.
+
+New endpoint:
+
+- `/risk-block-performance`

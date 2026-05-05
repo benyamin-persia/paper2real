@@ -29,6 +29,7 @@ TELEGRAM_MIN_SEVERITY = os.getenv("TELEGRAM_MIN_SEVERITY", "WARNING").upper()
 SHADOW_BUY_SCORE_THRESHOLD = float(os.getenv("SHADOW_BUY_SCORE_THRESHOLD", "60"))
 TRADE_QUALITY_BUY_THRESHOLD = float(os.getenv("TRADE_QUALITY_BUY_THRESHOLD", "65"))
 TRADE_QUALITY_CAN_PROPOSE_BUY = os.getenv("TRADE_QUALITY_CAN_PROPOSE_BUY", "true").lower() in {"1", "true", "yes", "on"}
+STRATEGY_VERSION = os.getenv("STRATEGY_VERSION", "tq65_shadow60_risk_v1")
 
 # ATR stop multipliers — shared by risk_engine.py and trader.py
 ATR_INITIAL_STOP_MULT = float(os.getenv("ATR_INITIAL_STOP_MULT", "1.5"))  # initial stop = entry - 1.5×ATR

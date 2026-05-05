@@ -25,7 +25,12 @@ import decision_evaluator
 import trade_quality
 import trade_quality_sweep
 from data.collector import events as events_collector
-from config import WEBHOOK_SECRET, TRADE_QUALITY_BUY_THRESHOLD, TRADE_QUALITY_CAN_PROPOSE_BUY
+from config import (
+    WEBHOOK_SECRET,
+    TRADE_QUALITY_BUY_THRESHOLD,
+    TRADE_QUALITY_CAN_PROPOSE_BUY,
+    STRATEGY_VERSION,
+)
 
 EVENTS_REFRESH_MINUTES = 15    # how often to re-scrape CryptoPanic
 EVENTS_MAX_AGE_MINUTES = 20    # older than this → treat as missing
@@ -60,35 +65,53 @@ def _twitter_keyword_matches(text: str) -> list[str]:
     return matches
 
 
-def _apply_trade_quality_candidate(context: dict, claude_out: dict) -> dict:
-    """Let deterministic score propose BUY candidates; risk_engine still decides execution."""
-    quality = trade_quality.score(context, claude_out.get("historical_summary"), {})
-    context["trade_quality"] = quality
-    if not TRADE_QUALITY_CAN_PROPOSE_BUY:
-        return claude_out
-    if (claude_out.get("action") or "HOLD").upper() != "HOLD":
-        return claude_out
-    score = float(quality.get("score") or 0)
-    if score < TRADE_QUALITY_BUY_THRESHOLD:
-        return claude_out
-    upgraded = dict(claude_out)
-    upgraded["action"] = "BUY"
-    upgraded["confidence"] = max(int(upgraded.get("confidence") or 0), 65)
-    upgraded["reason"] = (
-        f"Trade Quality Score {score}/100 is above BUY threshold {TRADE_QUALITY_BUY_THRESHOLD}. "
-        f"Primary reason: {quality.get('primary_reason')}. Original Claude HOLD reason: "
-        f"{claude_out.get('reason', '')}"
-    )[:700]
-    upgraded["risk_summary"] = (
-        "Trade Quality proposed BUY; deterministic risk engine must approve sizing, stops, "
-        "freshness, macro/event blocks, portfolio limits, and loss limits."
-    )
-    upgraded["invalid_if"] = list(dict.fromkeys((upgraded.get("invalid_if") or []) + quality.get("blockers", [])))
-    upgraded["trade_quality_candidate"] = True
-    upgraded["_audit"] = claude_out.get("_audit")
-    upgraded["_api_usage"] = claude_out.get("_api_usage")
-    upgraded["historical_summary"] = claude_out.get("historical_summary", {})
-    return upgraded
+def _build_candidate_decision(context: dict, claude_out: dict) -> tuple[dict, dict, dict]:
+    """Build a clean BUY/HOLD candidate without mutating Claude's original decision."""
+    pre_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), {})
+    score = float(pre_risk_tq.get("score") or 0)
+    claude_action = (claude_out.get("action") or "HOLD").upper()
+    claude_conf = int(claude_out.get("confidence") or 0)
+
+    candidate = {
+        "action": "HOLD",
+        "source": "none",
+        "confidence": claude_conf,
+        "reason": claude_out.get("reason") or "",
+    }
+
+    if claude_action == "BUY" and claude_conf >= 60:
+        candidate.update(
+            {
+                "action": "BUY",
+                "source": "claude",
+                "reason": claude_out.get("reason") or "",
+            }
+        )
+
+    if TRADE_QUALITY_CAN_PROPOSE_BUY and score >= TRADE_QUALITY_BUY_THRESHOLD:
+        if candidate["action"] == "BUY":
+            candidate["source"] = "both"
+        else:
+            candidate["action"] = "BUY"
+            candidate["source"] = "trade_quality"
+            candidate["confidence"] = max(claude_conf, 65)
+            candidate["reason"] = (
+                f"Trade Quality Score {score}/100 is above BUY threshold {TRADE_QUALITY_BUY_THRESHOLD}. "
+                f"Primary reason: {pre_risk_tq.get('primary_reason')}. "
+                f"Original Claude {claude_action} reason: {claude_out.get('reason', '')}"
+            )[:700]
+
+    risk_input_decision = {
+        "action": candidate["action"],
+        "confidence": candidate["confidence"],
+        "reason": candidate["reason"],
+        "risk_summary": claude_out.get("risk_summary"),
+        "invalid_if": claude_out.get("invalid_if"),
+        "historical_summary": claude_out.get("historical_summary"),
+        "_audit": claude_out.get("_audit"),
+        "_api_usage": claude_out.get("_api_usage"),
+    }
+    return pre_risk_tq, candidate, risk_input_decision
 
 
 def _classify_twitter_alert(text: str) -> tuple[str, bool]:
@@ -359,24 +382,25 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
         # 3. Run brain → risk engine → execute
         summary    = trader.portfolio_summary(price)
         claude_out = brain.decide(context, summary)
-        claude_out = _apply_trade_quality_candidate(context, claude_out)
+        pre_risk_tq, candidate, risk_input_decision = _build_candidate_decision(context, claude_out)
+        context["pre_risk_trade_quality"] = pre_risk_tq
         closed     = [t for t in trader.get_all_trades() if t["closed"]]
-        final      = risk_engine.evaluate(claude_out, context, summary, closed)
-        context["trade_quality"] = trade_quality.score(
-            context, claude_out.get("historical_summary"), final
-        )
+        final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+        post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
+        context["post_risk_trade_quality"] = post_risk_tq
+        context["trade_quality"] = post_risk_tq
 
         action  = final["action"]
         reason  = final["reason"]
         blocked = final.get("blocked_by")
-        conf    = claude_out.get("confidence", 0)
+        conf    = candidate.get("confidence", 0)
 
         log.info(
             "SCAN | BTC=$%s  RSI=%.1f  F&G=%s | Claude=%s(%s%%) → Final=%s%s — %s",
             f"{price:,.0f}",
             context["rsi_14"],
             context.get("fear_greed_index", "?"),
-            claude_out.get("action", "?"),
+            f"{claude_out.get('action', '?')}->{candidate.get('action', '?')}/{candidate.get('source', '?')}",
             conf,
             action,
             f" [blocked:{blocked}]" if blocked else "",
@@ -398,8 +422,18 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
             trade_executed = "error" not in result
             log.info("SELL executed: %s", result)
 
-        trader.log_decision(context, claude_out, final, trade_executed, trigger=trigger)
-        await _notify_scan_result(trigger, context, claude_out, final, result)
+        trader.log_decision(
+            context,
+            claude_out,
+            final,
+            trade_executed,
+            trigger=trigger,
+            candidate=candidate,
+            pre_risk_tq=pre_risk_tq,
+            post_risk_tq=post_risk_tq,
+            strategy_version=STRATEGY_VERSION,
+        )
+        await _notify_scan_result(trigger, context, risk_input_decision, final, result)
 
     except Exception as e:
         log.error("Scan failed: %s", e)
@@ -1056,19 +1090,23 @@ async def tradingview_webhook(request: Request):
 
     summary    = trader.portfolio_summary(context["price"])
     claude_out = brain.decide(context, summary)
-    claude_out = _apply_trade_quality_candidate(context, claude_out)
+    pre_risk_tq, candidate, risk_input_decision = _build_candidate_decision(context, claude_out)
+    context["pre_risk_trade_quality"] = pre_risk_tq
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
-    final      = risk_engine.evaluate(claude_out, context, summary, closed)
-    context["trade_quality"] = trade_quality.score(context, claude_out.get("historical_summary"), final)
+    final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+    post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
+    context["post_risk_trade_quality"] = post_risk_tq
+    context["trade_quality"] = post_risk_tq
     action     = final["action"]
     reason     = final["reason"]
 
     result = {
         "market_context":  context,
         "claude_opinion":  claude_out,
+        "candidate_decision": candidate,
         "risk_engine":     {k: v for k, v in final.items() if k != "claude_opinion"},
         "final_action":    action,
-        "confidence":      claude_out.get("confidence"),
+        "confidence":      candidate.get("confidence"),
     }
 
     if action == "BUY":
@@ -1086,8 +1124,12 @@ async def tradingview_webhook(request: Request):
         final,
         bool(result.get("trade")) and "error" not in result["trade"] and "blocked" not in result["trade"],
         trigger="webhook",
+        candidate=candidate,
+        pre_risk_tq=pre_risk_tq,
+        post_risk_tq=post_risk_tq,
+        strategy_version=STRATEGY_VERSION,
     )
-    await _notify_scan_result("webhook", context, claude_out, final, result.get("trade"))
+    await _notify_scan_result("webhook", context, risk_input_decision, final, result.get("trade"))
 
     return result
 
@@ -1102,10 +1144,13 @@ async def manual_scan():
     stops      = trader.check_trailing_stops(price, atr)
     summary    = trader.portfolio_summary(price)
     claude_out = brain.decide(context, summary)
-    claude_out = _apply_trade_quality_candidate(context, claude_out)
+    pre_risk_tq, candidate, risk_input_decision = _build_candidate_decision(context, claude_out)
+    context["pre_risk_trade_quality"] = pre_risk_tq
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
-    final      = risk_engine.evaluate(claude_out, context, summary, closed)
-    context["trade_quality"] = trade_quality.score(context, claude_out.get("historical_summary"), final)
+    final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+    post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
+    context["post_risk_trade_quality"] = post_risk_tq
+    context["trade_quality"] = post_risk_tq
     action     = final["action"]
     reason     = final["reason"]
 
@@ -1113,6 +1158,7 @@ async def manual_scan():
         "market_context":    context,
         "trailing_stops":    stops,
         "claude_opinion":    claude_out,
+        "candidate_decision": candidate,
         "risk_engine":       {k: v for k, v in final.items() if k != "claude_opinion"},
         "final_action":      action,
     }
@@ -1132,8 +1178,12 @@ async def manual_scan():
         final,
         bool(result.get("trade")) and "error" not in result["trade"] and "blocked" not in result["trade"],
         trigger="manual",
+        candidate=candidate,
+        pre_risk_tq=pre_risk_tq,
+        post_risk_tq=post_risk_tq,
+        strategy_version=STRATEGY_VERSION,
     )
-    await _notify_scan_result("manual", context, claude_out, final, result.get("trade"))
+    await _notify_scan_result("manual", context, risk_input_decision, final, result.get("trade"))
 
     return result
 
@@ -1166,6 +1216,10 @@ async def decisions():
     claude_buys  = sum(1 for r in rows if r["claude_action"] == "BUY")
     claude_sells = sum(1 for r in rows if r["claude_action"] == "SELL")
     claude_holds = sum(1 for r in rows if r["claude_action"] == "HOLD")
+    candidate_buys = sum(1 for r in rows if r.get("candidate_action") == "BUY")
+    tq_candidate_buys = sum(1 for r in rows if r.get("candidate_source") in {"trade_quality", "both"})
+    claude_candidate_buys = sum(1 for r in rows if r.get("candidate_source") in {"claude", "both"})
+    risk_blocked_candidates = sum(1 for r in rows if int(r.get("risk_blocked_candidate") or 0) == 1)
     executed     = sum(1 for r in rows if r["trade_executed"])
     blocked      = sum(1 for r in rows if r["blocked_by"])
 
@@ -1183,6 +1237,10 @@ async def decisions():
             "claude_buy":     claude_buys,
             "claude_sell":    claude_sells,
             "claude_hold":    claude_holds,
+            "candidate_buy":  candidate_buys,
+            "candidate_buy_from_claude": claude_candidate_buys,
+            "candidate_buy_from_trade_quality": tq_candidate_buys,
+            "risk_blocked_candidates": risk_blocked_candidates,
             "trades_executed": executed,
             "blocked_by_risk_engine": blocked,
             "block_breakdown": block_counts,
@@ -1514,6 +1572,8 @@ async def download_all_artifacts():
         "data/reports/backtest_trades.csv",
         "data/reports/trade_quality_sweep.json",
         "data/reports/trade_quality_sweep.csv",
+        "data/reports/risk_block_performance.json",
+        "data/reports/risk_block_performance.csv",
         "data/raw/live_btc_15m.csv",
         "data/raw/twitter_playwright.json",
         "data/raw/twitter_tweets.csv",
@@ -1631,8 +1691,28 @@ async def reports():
         "backtest": _read_json("data/reports/backtest_latest.json"),
         "ai_feedback": _read_json("data/reports/ai_feedback_summary.json"),
         "trade_quality_sweep": _read_json("data/reports/trade_quality_sweep.json"),
+        "risk_block_performance": _read_json("data/reports/risk_block_performance.json"),
         "api_usage": trader.api_usage_summary(),
     }
+
+
+@app.get("/risk-block-performance")
+async def risk_block_performance():
+    path = Path("data/reports/risk_block_performance.json")
+    if not path.exists():
+        await asyncio.to_thread(decision_evaluator.run)
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        await asyncio.to_thread(decision_evaluator.run)
+        if path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+        return {
+            "total_blocked_candidates": 0,
+            "minimum_required_before_tuning": 30,
+            "ready_to_tune": False,
+            "blockers": {},
+        }
 
 
 @app.get("/learning-status")
@@ -1658,6 +1738,7 @@ async def learning_status():
     events = trader.get_events(limit=1000)
     usage = trader.api_usage_summary()
     feedback = _read_json("data/reports/ai_feedback_summary.json") or {}
+    risk_block_report = _read_json("data/reports/risk_block_performance.json") or {}
     eval_path = Path("data/reports/decision_evaluations.csv")
 
     latest_decision_ts = max((d.get("timestamp") or 0 for d in decisions), default=0)
@@ -1677,6 +1758,12 @@ async def learning_status():
     claude_buy = sum(1 for d in decisions if d.get("claude_action") == "BUY")
     claude_sell = sum(1 for d in decisions if d.get("claude_action") == "SELL")
     claude_hold = sum(1 for d in decisions if d.get("claude_action") == "HOLD")
+    candidate_buy = sum(1 for d in decisions if d.get("candidate_action") == "BUY")
+    candidate_sources = {}
+    for d in decisions:
+        src = d.get("candidate_source") or "none"
+        candidate_sources[src] = candidate_sources.get(src, 0) + 1
+    risk_blocked_candidates = sum(1 for d in decisions if int(d.get("risk_blocked_candidate") or 0) == 1)
     executed = sum(1 for d in decisions if d.get("trade_executed"))
     blocked = sum(1 for d in decisions if d.get("blocked_by"))
 
@@ -1734,6 +1821,10 @@ async def learning_status():
             "claude_buy": claude_buy,
             "claude_sell": claude_sell,
             "claude_hold": claude_hold,
+            "candidate_buy": candidate_buy,
+            "candidate_sources": candidate_sources,
+            "risk_blocked_candidates": risk_blocked_candidates,
+            "ready_to_tune_risk_blocks": bool(risk_block_report.get("ready_to_tune")),
             "risk_blocked": blocked,
             "trades_executed": executed,
             "latest_decision_time": latest_decision_time,

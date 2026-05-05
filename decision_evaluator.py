@@ -32,6 +32,8 @@ REPORT_DIR = Path("data/reports")
 EVAL_CSV = REPORT_DIR / "decision_evaluations.csv"
 SUMMARY_JSON = REPORT_DIR / "ai_feedback_summary.json"
 SUMMARY_MD = REPORT_DIR / "ai_feedback_summary.md"
+RISK_BLOCK_JSON = REPORT_DIR / "risk_block_performance.json"
+RISK_BLOCK_CSV = REPORT_DIR / "risk_block_performance.csv"
 
 LIVE_CANDLES = Path("data/raw/live_btc_15m.csv")
 DAILY_CANDLES = Path("data/raw/btc_15m_raw.csv")
@@ -119,6 +121,60 @@ def _update_shadow_future_returns(rows: list[dict]) -> None:
                 con.execute(
                     f"UPDATE decisions SET {col}=? WHERE id=?",
                     (float(row["return_pct"]), row["decision_id"]),
+                )
+        con.commit()
+    finally:
+        con.close()
+
+
+def _blocked_outcome(return_pct: float) -> str:
+    if return_pct >= 1.5:
+        return "WIN"
+    if return_pct <= -1.0:
+        return "LOSS"
+    return "NEUTRAL"
+
+
+def _update_blocked_candidate_future_returns(rows: list[dict]) -> None:
+    db = Path(DB_FILE)
+    if not db.exists() or not rows:
+        return
+    con = sqlite3.connect(db)
+    try:
+        for col in (
+            "blocked_candidate_future_return_1h REAL",
+            "blocked_candidate_future_return_4h REAL",
+            "blocked_candidate_future_return_24h REAL",
+            "blocked_candidate_outcome_1h TEXT",
+            "blocked_candidate_outcome_4h TEXT",
+            "blocked_candidate_outcome_24h TEXT",
+        ):
+            try:
+                con.execute(f"ALTER TABLE decisions ADD COLUMN {col}")
+            except sqlite3.OperationalError:
+                pass
+        for row in rows:
+            if (
+                row["status"] != "SCORED"
+                or int(row.get("risk_blocked_candidate") or 0) != 1
+                or row.get("return_pct") == ""
+            ):
+                continue
+            ret = float(row["return_pct"])
+            ret_col = {
+                "1h": "blocked_candidate_future_return_1h",
+                "4h": "blocked_candidate_future_return_4h",
+                "24h": "blocked_candidate_future_return_24h",
+            }.get(row["horizon"])
+            out_col = {
+                "1h": "blocked_candidate_outcome_1h",
+                "4h": "blocked_candidate_outcome_4h",
+                "24h": "blocked_candidate_outcome_24h",
+            }.get(row["horizon"])
+            if ret_col and out_col:
+                con.execute(
+                    f"UPDATE decisions SET {ret_col}=?, {out_col}=? WHERE id=?",
+                    (ret, _blocked_outcome(ret), row["decision_id"]),
                 )
         con.commit()
     finally:
@@ -251,6 +307,8 @@ def _condition_tags(row: dict) -> list[str]:
         f"trigger_{row.get('trigger') or 'unknown'}",
         f"final_{(row.get('final_action') or 'UNKNOWN').upper()}",
         f"claude_{(row.get('claude_action') or 'UNKNOWN').upper()}",
+        f"candidate_{(row.get('candidate_action') or 'UNKNOWN').upper()}",
+        f"candidate_source_{row.get('candidate_source') or 'unknown'}",
     ]
 
 
@@ -314,9 +372,20 @@ def _evaluate_rows(decisions: list[dict], prices: list[PricePoint]) -> list[dict
                     "claude_conf": d.get("claude_conf"),
                     "claude_score": claude_score,
                     "claude_good": claude_good,
+                    "strategy_version": d.get("strategy_version"),
+                    "candidate_action": d.get("candidate_action"),
+                    "candidate_source": d.get("candidate_source"),
+                    "candidate_confidence": d.get("candidate_confidence"),
+                    "candidate_reason": d.get("candidate_reason"),
+                    "pre_risk_tq_score": d.get("pre_risk_tq_score"),
+                    "post_risk_tq_score": d.get("post_risk_tq_score"),
                     "final_action": d.get("final_action"),
                     "blocked_by": d.get("blocked_by"),
                     "block_reason": d.get("block_reason"),
+                    "risk_blocked_candidate": d.get("risk_blocked_candidate") or 0,
+                    "risk_blocker": d.get("risk_blocker") or d.get("blocked_by"),
+                    "blocked_candidate_entry_price": d.get("blocked_candidate_entry_price"),
+                    "blocked_candidate_tq_score": d.get("blocked_candidate_tq_score"),
                     "final_score": final_score,
                     "final_good": final_good,
                     "trade_executed": d.get("trade_executed"),
@@ -365,7 +434,7 @@ def _risk_engine_summary(rows: list[dict], horizon: str) -> dict:
         r for r in rows
         if r["horizon"] == horizon
         and r["status"] == "SCORED"
-        and (r.get("claude_action") or "").upper() == "BUY"
+        and (r.get("candidate_action") or "").upper() == "BUY"
         and (r.get("final_action") or "").upper() == "HOLD"
     ]
     saved_losses = [r for r in scoped if r["return_pct"] != "" and float(r["return_pct"]) < 0]
@@ -375,11 +444,96 @@ def _risk_engine_summary(rows: list[dict], horizon: str) -> dict:
         key = r.get("blocked_by") or "unknown"
         block_counts[key] = block_counts.get(key, 0) + 1
     return {
-        "claude_buy_blocked": len(scoped),
+        "candidate_buy_blocked": len(scoped),
+        "claude_buy_blocked": len([r for r in scoped if (r.get("candidate_source") or "") in {"claude", "both"}]),
+        "trade_quality_buy_blocked": len([r for r in scoped if (r.get("candidate_source") or "") in {"trade_quality", "both"}]),
         "risk_engine_saved_losses": len(saved_losses),
         "risk_engine_blocked_winners": len(blocked_winners),
         "block_breakdown": dict(sorted(block_counts.items(), key=lambda x: x[1], reverse=True)),
     }
+
+
+def build_risk_block_performance(rows: list[dict]) -> dict:
+    blocked_ids = {
+        r["decision_id"]
+        for r in rows
+        if int(r.get("risk_blocked_candidate") or 0) == 1
+        and (r.get("candidate_action") or "").upper() == "BUY"
+        and (r.get("final_action") or "").upper() == "HOLD"
+    }
+    by_blocker: dict[str, dict] = {}
+    for r in rows:
+        if r["decision_id"] not in blocked_ids:
+            continue
+        blocker = r.get("risk_blocker") or r.get("blocked_by") or "unknown"
+        item = by_blocker.setdefault(
+            blocker,
+            {
+                "decision_ids": set(),
+                "returns": {"1h": [], "4h": [], "24h": []},
+                "blocked_winners": {"1h": 0, "4h": 0, "24h": 0},
+                "saved_losses": {"1h": 0, "4h": 0, "24h": 0},
+                "neutral": {"1h": 0, "4h": 0, "24h": 0},
+            },
+        )
+        item["decision_ids"].add(r["decision_id"])
+        if r.get("status") != "SCORED" or r.get("return_pct") == "":
+            continue
+        horizon = r.get("horizon")
+        if horizon not in HORIZONS:
+            continue
+        ret = float(r["return_pct"])
+        item["returns"][horizon].append(ret)
+        outcome = _blocked_outcome(ret)
+        if outcome == "WIN":
+            item["blocked_winners"][horizon] += 1
+        elif outcome == "LOSS":
+            item["saved_losses"][horizon] += 1
+        else:
+            item["neutral"][horizon] += 1
+
+    blockers: dict[str, dict] = {}
+    for blocker, item in by_blocker.items():
+        count = len(item["decision_ids"])
+        saved_4h = item["saved_losses"]["4h"]
+        winners_4h = item["blocked_winners"]["4h"]
+        if count < 30:
+            verdict = "not_enough_data"
+        elif saved_4h > winners_4h:
+            verdict = "helping"
+        elif winners_4h > saved_4h:
+            verdict = "hurting"
+        else:
+            verdict = "neutral"
+        blockers[blocker] = {
+            "count": count,
+            "avg_return_1h": _avg(item["returns"]["1h"]),
+            "avg_return_4h": _avg(item["returns"]["4h"]),
+            "avg_return_24h": _avg(item["returns"]["24h"]),
+            "blocked_winners_1h": item["blocked_winners"]["1h"],
+            "blocked_winners_4h": item["blocked_winners"]["4h"],
+            "blocked_winners_24h": item["blocked_winners"]["24h"],
+            "saved_losses_1h": item["saved_losses"]["1h"],
+            "saved_losses_4h": item["saved_losses"]["4h"],
+            "saved_losses_24h": item["saved_losses"]["24h"],
+            "neutral_1h": item["neutral"]["1h"],
+            "neutral_4h": item["neutral"]["4h"],
+            "neutral_24h": item["neutral"]["24h"],
+            "verdict": verdict,
+        }
+
+    total = len(blocked_ids)
+    return {
+        "generated_at": _utc_now(),
+        "total_blocked_candidates": total,
+        "minimum_required_before_tuning": 30,
+        "ready_to_tune": total >= 30,
+        "blockers": dict(sorted(blockers.items(), key=lambda x: x[1]["count"], reverse=True)),
+    }
+
+
+def _avg(vals: list[float]) -> float | None:
+    return round(mean(vals), 4) if vals else None
 
 
 def _condition_summary(rows: list[dict], horizon: str) -> dict:
@@ -420,6 +574,12 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
     no_price = [r for r in rows if r["status"] == "NO_PRICE_AT_HORIZON"]
     shadow_rows = [r for r in rows if r.get("shadow_action")]
     shadow_scored = [r for r in shadow_rows if r["status"] == "SCORED" and r.get("return_pct") != ""]
+    candidate_buy_ids = {
+        r["decision_id"] for r in rows if (r.get("candidate_action") or "").upper() == "BUY"
+    }
+    blocked_candidate_ids = {
+        r["decision_id"] for r in rows if int(r.get("risk_blocked_candidate") or 0) == 1
+    }
     latest_price_ts = max((p.ts for p in prices), default=None)
 
     summary = {
@@ -437,6 +597,8 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
         "rows_no_price_at_horizon": len(no_price),
         "shadow_buys_total": len({r["decision_id"] for r in shadow_rows}),
         "shadow_rows_scored": len(shadow_scored),
+        "candidate_buys_total": len(candidate_buy_ids),
+        "risk_blocked_candidates_total": len(blocked_candidate_ids),
         "horizons": {},
         "recommendation": None,
     }
@@ -510,6 +672,15 @@ def _write_csv(path: Path, rows: list[dict]) -> None:
         writer.writerows(rows)
 
 
+def _write_risk_block_csv(report: dict) -> None:
+    rows = []
+    for blocker, stats in (report.get("blockers") or {}).items():
+        row = {"blocker": blocker}
+        row.update(stats)
+        rows.append(row)
+    _write_csv(RISK_BLOCK_CSV, rows)
+
+
 def _write_markdown(summary: dict) -> None:
     lines = [
         "# AI Feedback Summary",
@@ -547,11 +718,15 @@ def run() -> dict:
     prices = _load_price_series(decisions)
     rows = _evaluate_rows(decisions, prices)
     _update_shadow_future_returns(rows)
+    _update_blocked_candidate_future_returns(rows)
     summary = _build_summary(decisions, prices, rows)
+    risk_block_report = build_risk_block_performance(rows)
 
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     _write_csv(EVAL_CSV, rows)
     SUMMARY_JSON.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    RISK_BLOCK_JSON.write_text(json.dumps(risk_block_report, indent=2), encoding="utf-8")
+    _write_risk_block_csv(risk_block_report)
     _write_markdown(summary)
 
     print("Decision evaluation complete")
@@ -561,6 +736,7 @@ def run() -> dict:
     print(f"  Pending rows: {summary['rows_pending']}")
     print(f"  Report JSON:  {SUMMARY_JSON}")
     print(f"  Report CSV:   {EVAL_CSV}")
+    print(f"  Risk blocks:  {RISK_BLOCK_JSON}")
     print(f"  Summary MD:   {SUMMARY_MD}")
     print(f"  Next:         {summary['recommendation']}")
     return summary

@@ -1,0 +1,2 @@
+﻿blocker,count,avg_return_1h,avg_return_4h,avg_return_24h,blocked_winners_1h,blocked_winners_4h,blocked_winners_24h,saved_losses_1h,saved_losses_4h,saved_losses_24h,neutral_1h,neutral_4h,neutral_24h,verdict
+bb_squeeze,2,-0.3133,,,0,0,0,0,0,0,1,0,0,not_enough_data

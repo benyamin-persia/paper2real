@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-05-05T22:21:07.199792+00:00",
+  "total_blocked_candidates": 2,
+  "minimum_required_before_tuning": 30,
+  "ready_to_tune": false,
+  "blockers": {
+    "bb_squeeze": {
+      "count": 2,
+      "avg_return_1h": -0.3133,
+      "avg_return_4h": null,
+      "avg_return_24h": null,
+      "blocked_winners_1h": 0,
+      "blocked_winners_4h": 0,
+      "blocked_winners_24h": 0,
+      "saved_losses_1h": 0,
+      "saved_losses_4h": 0,
+      "saved_losses_24h": 0,
+      "neutral_1h": 1,
+      "neutral_4h": 0,
+      "neutral_24h": 0,
+      "verdict": "not_enough_data"
+    }
+  }
+}
