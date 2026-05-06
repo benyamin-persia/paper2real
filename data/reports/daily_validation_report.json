@@ -1,0 +1,502 @@
+{
+  "generated_at": "2026-05-06T22:07:10.629809+00:00",
+  "system_health_status": "ok",
+  "master_dataset_last_date": "2026-05-06",
+  "master_dataset_rows": 532,
+  "master_dataset_columns": 55,
+  "stale_dataset_warning": false,
+  "endpoint_statuses": {
+    "/system-health": {
+      "ok": true,
+      "http_status": 200,
+      "elapsed_seconds": 17.277,
+      "content_type": "json",
+      "json_parse_ok": true,
+      "error": null
+    },
+    "/learning-status": {
+      "ok": true,
+      "http_status": 200,
+      "elapsed_seconds": 0.113,
+      "content_type": "json",
+      "json_parse_ok": true,
+      "error": null
+    },
+    "/risk-block-performance": {
+      "ok": true,
+      "http_status": 200,
+      "elapsed_seconds": 0.017,
+      "content_type": "json",
+      "json_parse_ok": true,
+      "error": null
+    },
+    "/shadow-performance": {
+      "ok": true,
+      "http_status": 200,
+      "elapsed_seconds": 0.019,
+      "content_type": "json",
+      "json_parse_ok": true,
+      "error": null
+    },
+    "/smart-money-backtest": {
+      "ok": true,
+      "http_status": 200,
+      "elapsed_seconds": 0.011,
+      "content_type": "json",
+      "json_parse_ok": true,
+      "error": null
+    },
+    "/reports": {
+      "ok": true,
+      "http_status": 200,
+      "elapsed_seconds": 0.032,
+      "content_type": "json",
+      "json_parse_ok": true,
+      "error": null
+    }
+  },
+  "decisions_total": 35,
+  "claude_buy_count": 1,
+  "candidate_buy_count": 8,
+  "risk_blocked_candidates": 8,
+  "trades_executed": 0,
+  "shadow_buy_count": 11,
+  "shadow_smart_money_count": 2,
+  "ready_for_risk_block_review": false,
+  "ready_for_smart_money_review": false,
+  "download_zip_safe": true,
+  "secrets_excluded": true,
+  "errors": [],
+  "final_recommendation": "COLLECT_MORE_DATA",
+  "recommendations": [
+    "COLLECT_MORE_DATA"
+  ],
+  "system_health": {
+    "system_health_status": "ok",
+    "master_dataset_last_date": "2026-05-06",
+    "master_dataset_rows": 532,
+    "master_dataset_columns": 55,
+    "master_dataset_age_hours": 1.13,
+    "stale_dataset_warning": false,
+    "stale_data_warnings": [],
+    "endpoint_health_summary": {
+      "/system-health": {
+        "ok": true,
+        "http_status": 200,
+        "elapsed_seconds": 17.277,
+        "content_type": "json",
+        "json_parse_ok": true,
+        "error": null
+      },
+      "/learning-status": {
+        "ok": true,
+        "http_status": 200,
+        "elapsed_seconds": 0.113,
+        "content_type": "json",
+        "json_parse_ok": true,
+        "error": null
+      },
+      "/risk-block-performance": {
+        "ok": true,
+        "http_status": 200,
+        "elapsed_seconds": 0.017,
+        "content_type": "json",
+        "json_parse_ok": true,
+        "error": null
+      },
+      "/shadow-performance": {
+        "ok": true,
+        "http_status": 200,
+        "elapsed_seconds": 0.019,
+        "content_type": "json",
+        "json_parse_ok": true,
+        "error": null
+      },
+      "/smart-money-backtest": {
+        "ok": true,
+        "http_status": 200,
+        "elapsed_seconds": 0.011,
+        "content_type": "json",
+        "json_parse_ok": true,
+        "error": null
+      },
+      "/reports": {
+        "ok": true,
+        "http_status": 200,
+        "elapsed_seconds": 0.032,
+        "content_type": "json",
+        "json_parse_ok": true,
+        "error": null
+      }
+    }
+  },
+  "learning_counts": {
+    "decisions_total": 35,
+    "claude_buy_count": 1,
+    "candidate_buy_count": 8,
+    "risk_blocked_candidates": 8,
+    "trades_executed": 0,
+    "shadow_buy_count": 11,
+    "shadow_smart_money_count": 2
+  },
+  "progress_targets": {
+    "blocked_buy_candidates_current": 8,
+    "blocked_buy_candidates_target": 30,
+    "blocked_buy_candidates_pct": 26.67,
+    "shadow_buy_current": 11,
+    "shadow_buy_target": 100,
+    "shadow_buy_pct": 11.0,
+    "shadow_smart_money_current": 2,
+    "shadow_smart_money_target": 50,
+    "shadow_smart_money_pct": 4.0
+  },
+  "risk_block_performance": {
+    "ready_to_tune": false,
+    "total_blocked_candidates": 8,
+    "minimum_required_before_tuning": 30,
+    "top_blockers": [
+      {
+        "blocker": "bb_squeeze",
+        "count": 4,
+        "avg_return_1h": -0.1445,
+        "avg_return_4h": -0.0394,
+        "avg_return_24h": -0.2747,
+        "blocked_winners_1h": 0,
+        "blocked_winners_4h": 0,
+        "blocked_winners_24h": 0,
+        "saved_losses_1h": 0,
+        "saved_losses_4h": 0,
+        "saved_losses_24h": 0,
+        "neutral_1h": 4,
+        "neutral_4h": 4,
+        "neutral_24h": 1,
+        "verdict": "not_enough_data"
+      },
+      {
+        "blocker": "exchange_alert",
+        "count": 4,
+        "avg_return_1h": 0.0676,
+        "avg_return_4h": -0.3152,
+        "avg_return_24h": null,
+        "blocked_winners_1h": 0,
+        "blocked_winners_4h": 0,
+        "blocked_winners_24h": 0,
+        "saved_losses_1h": 0,
+        "saved_losses_4h": 0,
+        "saved_losses_24h": 0,
+        "neutral_1h": 3,
+        "neutral_4h": 2,
+        "neutral_24h": 0,
+        "verdict": "not_enough_data"
+      }
+    ],
+    "bb_squeeze": {
+      "count": 4,
+      "avg_return_1h": -0.1445,
+      "avg_return_4h": -0.0394,
+      "avg_return_24h": -0.2747,
+      "blocked_winners_1h": 0,
+      "blocked_winners_4h": 0,
+      "blocked_winners_24h": 0,
+      "saved_losses_1h": 0,
+      "saved_losses_4h": 0,
+      "saved_losses_24h": 0,
+      "verdict": "not_enough_data"
+    }
+  },
+  "smart_money_performance": {
+    "smart_money_shadow_count": 2,
+    "smart_money_score_distribution": {
+      "0-39": 0,
+      "40-59": 0,
+      "60-79": 0,
+      "80-100": 2
+    },
+    "smart_money_bias_distribution": {
+      "bullish": 2
+    },
+    "smart_money_future_return_1h": {
+      "count": 1,
+      "avg_directional_return_pct": 0.0617,
+      "win_rate_pct": 100.0
+    },
+    "smart_money_future_return_4h": {
+      "count": 0,
+      "avg_directional_return_pct": null,
+      "win_rate_pct": null
+    },
+    "smart_money_future_return_24h": {
+      "count": 0,
+      "avg_directional_return_pct": null,
+      "win_rate_pct": null
+    },
+    "smart_money_ready_for_bonus": false,
+    "current_smart_money": {
+      "smart_money_score": 85,
+      "smart_money_bullish_score": 85,
+      "smart_money_bearish_score": 45,
+      "smart_money_bias": "bullish",
+      "smart_money_reason": "higher_timeframe_bullish, bullish_bos_or_choch, bullish_liquidity_sweep, bearish_liquidity_sweep, price_in_premium, active_bullish_order_block, active_bullish_fvg, active_bearish_fvg",
+      "structure_state": "bullish: HH/LL/HL/LH",
+      "liquidity_state": "bullish_sweep",
+      "order_block_state": "3 active",
+      "fvg_state": "11 active",
+      "premium_discount_state": "premium",
+      "timeframe_alignment": "bullish",
+      "market_structure": {
+        "15m": {
+          "trend": "bullish",
+          "structure_state": "bullish: HH/LL/HL/LH",
+          "latest_event": {
+            "event_id": "15m_structure_16",
+            "timeframe": "15m",
+            "event_time": "2026-05-06T09:15:00",
+            "event_type": "bullish_BOS",
+            "price": 81752.2,
+            "broken_level": 81708.9,
+            "previous_structure": "bullish",
+            "new_structure": "bullish",
+            "confidence": 70,
+            "confirmed_by_closed_candle": true
+          },
+          "events_count": 16,
+          "swings_count": 28
+        },
+        "1h": {
+          "trend": "bullish",
+          "structure_state": "bullish: HH/HL/HH/HL",
+          "latest_event": {
+            "event_id": "1h_structure_4",
+            "timeframe": "1h",
+            "event_time": "2026-05-06T10:00:00",
+            "event_type": "bullish_BOS",
+            "price": 82056.6,
+            "broken_level": 81708.9,
+            "previous_structure": "bullish",
+            "new_structure": "bullish",
+            "confidence": 70,
+            "confirmed_by_closed_candle": true
+          },
+          "events_count": 4,
+          "swings_count": 9
+        },
+        "4h": {
+          "trend": "neutral",
+          "structure_state": "neutral",
+          "latest_event": null,
+          "events_count": 0,
+          "swings_count": 0
+        }
+      },
+      "liquidity": {
+        "15m": {
+          "liquidity_state": "bullish_sweep",
+          "latest_sweep": {
+            "zone_id": "15m_liq_32",
+            "timeframe": "15m",
+            "zone_type": "equal_lows",
+            "price_low": 80963.7,
+            "price_high": 81066.7,
+            "created_at": "2026-05-05T16:45:00",
+            "swept": true,
+            "swept_at": "2026-05-05T22:30:00",
+            "sweep_type": "bullish_sweep",
+            "active": false
+          },
+          "active_count": 14
+        },
+        "1h": {
+          "liquidity_state": "bearish_sweep",
+          "latest_sweep": {
+            "zone_id": "1h_liq_10",
+            "timeframe": "1h",
+            "zone_type": "equal_highs",
+            "price_low": 81708.9,
+            "price_high": 81765.8,
+            "created_at": "2026-05-05T21:00:00",
+            "swept": true,
+            "swept_at": "2026-05-06T04:00:00",
+            "sweep_type": "bearish_sweep",
+            "active": false
+          },
+          "active_count": 5
+        },
+        "4h": {
+          "liquidity_state": "no_recent_sweep",
+          "latest_sweep": null,
+          "active_count": 0
+        }
+      },
+      "order_blocks": {
+        "15m": {
+          "order_block_state": "3 active",
+          "active_count": 3,
+          "latest_order_block": {
+            "order_block_id": "15m_ob_12",
+            "timeframe": "15m",
+            "type": "bullish",
+            "created_at": "2026-05-06T09:00:00",
+            "price_low": 81770.7,
+            "price_high": 81972.5,
+            "bos_event_id": "15m_structure_16",
+            "mitigated": true,
+            "mitigated_at": "2026-05-06T09:30:00",
+            "strength_score": 80,
+            "active": false
+          }
+        },
+        "1h": {
+          "order_block_state": "1 active",
+          "active_count": 1,
+          "latest_order_block": {
+            "order_block_id": "1h_ob_4",
+            "timeframe": "1h",
+            "type": "bullish",
+            "created_at": "2026-05-06T06:00:00",
+            "price_low": 81057.6,
+            "price_high": 81382.1,
+            "bos_event_id": "1h_structure_4",
+            "mitigated": true,
+            "mitigated_at": "2026-05-06T14:00:00",
+            "strength_score": 40,
+            "active": false
+          }
+        },
+        "4h": {
+          "order_block_state": "0 active",
+          "active_count": 0,
+          "latest_order_block": null
+        }
+      },
+      "fair_value_gaps": {
+        "15m": {
+          "fvg_state": "11 active",
+          "active_count": 11,
+          "latest_fvg": {
+            "fvg_id": "15m_fvg_73",
+            "timeframe": "15m",
+            "type": "bullish",
+            "created_at": "2026-05-06T21:45:00",
+            "price_low": 81445.7,
+            "price_high": 81526.6,
+            "filled": false,
+            "filled_at": null,
+            "strength_score": 50,
+            "active": true
+          }
+        },
+        "1h": {
+          "fvg_state": "6 active",
+          "active_count": 6,
+          "latest_fvg": {
+            "fvg_id": "1h_fvg_18",
+            "timeframe": "1h",
+            "type": "bearish",
+            "created_at": "2026-05-06T14:00:00",
+            "price_low": 82135.0,
+            "price_high": 82198.7,
+            "filled": false,
+            "filled_at": null,
+            "strength_score": 25,
+            "active": true
+          }
+        },
+        "4h": {
+          "fvg_state": "none",
+          "active_count": 0,
+          "latest_fvg": null
+        }
+      },
+      "premium_discount": {
+        "15m": {
+          "timeframe": "15m",
+          "range_high": 82790.9,
+          "range_low": 78209.2,
+          "equilibrium": 80500.05,
+          "current_zone": "premium",
+          "current_price": 81534.6,
+          "created_at": "2026-05-06T21:45:00"
+        },
+        "1h": {
+          "timeframe": "1h",
+          "range_high": 82790.9,
+          "range_low": 79743.1,
+          "equilibrium": 81267.0,
+          "current_zone": "premium",
+          "current_price": 81369.3,
+          "created_at": "2026-05-06T21:00:00"
+        },
+        "4h": {
+          "timeframe": "4h",
+          "range_high": 82790.9,
+          "range_low": 78209.2,
+          "equilibrium": 80500.05,
+          "current_zone": "premium",
+          "current_price": 81637.1,
+          "created_at": "2026-05-06T20:00:00"
+        }
+      }
+    }
+  },
+  "download_safety": {
+    "download_zip_safe": true,
+    "secrets_excluded": true,
+    "http_status": 200,
+    "elapsed_seconds": 5.696,
+    "included_files_checked": 40,
+    "included_files": [
+      "paper_trader.db",
+      "data/reports/ai_feedback_summary.json",
+      "data/reports/ai_feedback_summary.md",
+      "data/reports/decision_evaluations.csv",
+      "data/reports/backtest_latest.json",
+      "data/reports/backtest_equity.csv",
+      "data/reports/backtest_trades.csv",
+      "data/reports/trade_quality_sweep.json",
+      "data/reports/trade_quality_sweep.csv",
+      "data/reports/risk_block_performance.json",
+      "data/reports/risk_block_performance.csv",
+      "data/reports/daily_validation_report.json",
+      "data/reports/daily_validation_report.md",
+      "data/reports/full_application_test_report.md",
+      "data/reports/market_structure_events.csv",
+      "data/reports/market_structure_events.json",
+      "data/reports/liquidity_zones.csv",
+      "data/reports/liquidity_zones.json",
+      "data/reports/order_blocks.csv",
+      "data/reports/order_blocks.json",
+      "data/reports/fair_value_gaps.csv",
+      "data/reports/fair_value_gaps.json",
+      "data/reports/premium_discount_zones.csv",
+      "data/reports/premium_discount_zones.json",
+      "data/reports/smart_money_backtest.csv",
+      "data/reports/smart_money_backtest.json",
+      "data/reports/smart_money_summary.json",
+      "data/raw/live_btc_15m.csv",
+      "data/raw/live_btc_1h.csv",
+      "data/raw/live_btc_4h.csv",
+      "data/raw/live_btc_source_status.json",
+      "data/raw/twitter_playwright.json",
+      "data/raw/twitter_tweets.csv",
+      "data/raw/twitter_timing.csv",
+      "data/raw/events.json",
+      "data/processed/master_dataset.csv",
+      "data/processed/btc_15m_labeled.csv",
+      "PAPER2REAL_IMPLEMENTATION_LOG.md",
+      "runtime/live_logs.json",
+      "manifest.json"
+    ],
+    "findings": [],
+    "env_excluded": true,
+    "api_keys_excluded": true,
+    "telegram_token_excluded": true,
+    "cookies_excluded": true
+  },
+  "guardrails": [
+    "No trading logic changed by this report.",
+    "risk_engine.py remains final authority.",
+    "Trade Quality thresholds are not changed by this report.",
+    "Smart Money remains shadow-only until minimum sample size is reached.",
+    "Do not change risk_engine before at least 30 blocked BUY candidates are measured."
+  ]
+}
