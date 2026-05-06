@@ -558,3 +558,55 @@ Deployment files now exist under `deploy/`:
 | coinglass.csv ETF data sparse | Known | Bitcoin ETFs launched Jan 2024 — only ~15 months of data available. Correct behavior. |
 | macro.csv is 506 rows not 730 | Known | Stock market trading days only. Correct behavior. |
 | events.json stale when server down | Known | Background loop only runs while FastAPI is running. Expected behavior — block BUY on stale. |
+
+---
+
+## 18. Smart Money Structure Layer
+
+Status: implemented on 2026-05-06 as shadow/evidence only.
+
+Files:
+- `smart_money.py`
+- `market_structure.py`
+- `liquidity.py`
+- `order_blocks.py`
+- `fair_value_gaps.py`
+- `premium_discount.py`
+- `smart_money_backtest.py`
+
+Purpose:
+- Detect swing highs/lows, BOS, CHoCH, liquidity sweeps, equal highs/lows, order blocks, Fair Value Gaps, premium/discount, and 15m/1h/4h alignment.
+- Produce `smart_money_score`, `smart_money_bias`, and explainable state fields.
+- Store Smart Money data in the `decisions` table and dashboard.
+- Evaluate Smart Money through shadow learning before any scoring bonus is allowed.
+
+Safety:
+- Smart Money does not execute trades.
+- Smart Money does not bypass `risk_engine.py`.
+- Smart Money does not remove or weaken `bb_squeeze`, loss limits, max drawdown, max open trades, or consecutive loss protection.
+- Default config keeps it shadow-only: `SMART_MONEY_SHADOW_ONLY=true`, `SMART_MONEY_MAX_TQ_BONUS=0`.
+
+New endpoints:
+- `/smart-money`
+- `/market-structure`
+- `/liquidity-zones`
+- `/order-blocks`
+- `/fair-value-gaps`
+- `/premium-discount`
+- `/smart-money-backtest`
+
+Reports:
+- `data/reports/smart_money_summary.json`
+- `data/reports/smart_money_backtest.csv`
+- `data/reports/smart_money_backtest.json`
+- `data/reports/market_structure_events.csv/json`
+- `data/reports/liquidity_zones.csv/json`
+- `data/reports/order_blocks.csv/json`
+- `data/reports/fair_value_gaps.csv/json`
+- `data/reports/premium_discount_zones.csv/json`
+- `data/reports/full_application_test_report.md`
+
+Current recommendation:
+- Keep Smart Money enabled for visibility and shadow learning.
+- Do not allow it to modify Trade Quality until it has enough directional evidence.
+- Target before tuning: 50+ Smart Money shadow candidates.
