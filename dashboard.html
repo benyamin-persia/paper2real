@@ -17,7 +17,7 @@ button{border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:70
 .grid{display:grid;gap:12px}.cards{grid-template-columns:repeat(8,minmax(130px,1fr));margin-bottom:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:13px;min-height:82px}.label{font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.value{font-size:1.22rem;font-weight:800;margin-top:6px}.hint{font-size:.72rem;color:var(--muted);margin-top:5px}
 .green{color:var(--green)}.red{color:var(--red)}.orange{color:var(--orange)}.yellow{color:var(--yellow)}.muted{color:var(--muted)}
 .charts{grid-template-columns:1.25fr .75fr;margin-bottom:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:14px}.ptitle{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}.chartbox{height:245px}.chartbox.sm{height:190px}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:8px 0 14px}.tab{background:transparent;color:var(--muted);border-radius:0;padding:10px 18px;border-bottom:2px solid transparent}.tab.active{color:var(--text);border-bottom-color:var(--orange)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:8px 0 14px}.tab{background:transparent;color:var(--muted);border-radius:0;padding:10px 14px;border-bottom:2px solid transparent}.tab.active{color:var(--text);border-bottom-color:var(--orange)}
 .view{display:none}.view.active{display:block}.cols2{grid-template-columns:1fr 1fr}.cols3{grid-template-columns:1fr 1fr 1fr}
 table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--muted);font-size:.68rem;text-transform:uppercase;text-align:left;padding:9px 10px}td{border-top:1px solid var(--line);padding:9px 10px;font-size:.8rem;vertical-align:top}.empty{text-align:center;color:var(--muted);padding:24px}.clip{max-width:520px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:800;text-transform:uppercase}.buy{background:#102f1c;color:var(--green);border:1px solid #1f9d52}.sell{background:#35121a;color:var(--red);border:1px solid #b8354b}.hold{background:#322805;color:var(--yellow);border:1px solid #a9800d}.neutral{background:#182238;color:var(--muted);border:1px solid var(--line)}
@@ -79,6 +79,7 @@ table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--mute
     <button class="tab" onclick="tab(this,'twitter')">Twitter Extracted</button>
     <button class="tab" onclick="tab(this,'audit')">AI Brain Audit</button>
     <button class="tab" onclick="tab(this,'reports')">Reports</button>
+    <button class="tab" onclick="tab(this,'smartmoney')">Smart Money</button>
     <button class="tab" onclick="tab(this,'events')">Notifications</button>
     <button class="tab" onclick="tab(this,'logs')">Live Logs</button>
     <button class="tab" onclick="tab(this,'downloads')">Downloads</button>
@@ -113,6 +114,26 @@ table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--mute
     </div>
     <div style="margin-bottom:14px"><div class="ptitle"><span>Live learning status</span><span id="learningState"></span></div><div class="audit" id="learningReport"></div></div>
     <div><div class="ptitle"><span>Backtest summary</span></div><div class="audit" id="backtestReport"></div></div>
+  </section>
+  <section id="smartmoney" class="view panel">
+    <div class="grid cols3" style="margin-bottom:14px">
+      <div class="card"><div class="label">Smart Money Score</div><div class="value" id="smScore">--</div><div class="hint" id="smBias">--</div></div>
+      <div class="card"><div class="label">Timeframe Alignment</div><div class="value" id="smAlignment">--</div><div class="hint">15m / 1h / 4h closed candles only</div></div>
+      <div class="card"><div class="label">Trade Integration</div><div class="value">Shadow</div><div class="hint">Evidence only; risk_engine remains final authority</div></div>
+    </div>
+    <div class="grid cols2" style="margin-bottom:14px">
+      <div><div class="ptitle"><span>Current Structure Reason</span></div><div class="audit" id="smReason">No Smart Money report yet</div></div>
+      <div><div class="ptitle"><span>Backtest Summary</span><span id="smBacktestState">--</span></div><div class="audit" id="smBacktest">--</div></div>
+    </div>
+    <div class="grid cols2" style="margin-bottom:14px">
+      <div><div class="ptitle"><span>Market Structure</span><span id="structureState">--</span></div><div class="audit" id="structureBox"></div></div>
+      <div><div class="ptitle"><span>Liquidity Zones / Sweeps</span><span id="liquidityState">--</span></div><div class="audit" id="liquidityBox"></div></div>
+    </div>
+    <div class="grid cols3">
+      <div><div class="ptitle"><span>Order Blocks</span><span id="obState">--</span></div><div class="audit" id="obBox"></div></div>
+      <div><div class="ptitle"><span>Fair Value Gaps</span><span id="fvgState">--</span></div><div class="audit" id="fvgBox"></div></div>
+      <div><div class="ptitle"><span>Premium / Discount</span><span id="pdState">--</span></div><div class="audit" id="pdBox"></div></div>
+    </div>
   </section>
   <section id="events" class="view panel"><div class="ptitle"><span>Immutable event / notification audit</span><span id="eventMeta"></span></div><table><thead><tr><th>Time</th><th>Severity</th><th>Event</th><th>Source</th><th>Status</th><th>Telegram</th><th>Message</th></tr></thead><tbody id="eventRows"></tbody></table></section>
   <section id="logs" class="view panel"><div class="ptitle"><span>Application log</span><span>last 200 lines</span></div><div id="logRows"></div></section>
@@ -255,6 +276,30 @@ async function loadReports(){
   $("riskBlockReport").innerHTML=`<div class="hint">Total blocked BUY candidates: ${riskBlock.total_blocked_candidates||0}</div><div class="hint">Minimum required before tuning: ${riskBlock.minimum_required_before_tuning||30}</div><div class="hint">Ready to tune: ${riskBlock.ready_to_tune?"yes":"no"}</div><table style="margin-top:10px"><thead><tr><th>Blocker</th><th>Count</th><th>Avg 1h</th><th>Avg 4h</th><th>Avg 24h</th><th>Blocked winners 4h</th><th>Saved losses 4h</th><th>Neutral 4h</th><th>Verdict</th></tr></thead><tbody>${blockers||'<tr><td class="empty" colspan="9">No blocked BUY candidates measured yet</td></tr>'}</tbody></table>`;
 }
 
+async function loadSmartMoney(){
+  const [sm,structure,liq,obs,fvgs,pd,bt]=await Promise.all([
+    j("/smart-money"),j("/market-structure"),j("/liquidity-zones"),j("/order-blocks"),j("/fair-value-gaps"),j("/premium-discount"),j("/smart-money-backtest")
+  ]);
+  $("smScore").textContent=(sm.smart_money_score??0)+"/100";
+  $("smScore").className=(sm.smart_money_bias==="bullish"?"value green":sm.smart_money_bias==="bearish"?"value red":"value yellow");
+  $("smBias").textContent=`${sm.smart_money_bias||"neutral"} | ${sm.timeframe_alignment||"mixed"}`;
+  $("smAlignment").textContent=sm.timeframe_alignment||"--";
+  $("smReason").textContent=JSON.stringify({reason:sm.smart_money_reason, structure_state:sm.structure_state, liquidity_state:sm.liquidity_state, order_block_state:sm.order_block_state, fvg_state:sm.fvg_state, premium_discount_state:sm.premium_discount_state},null,2);
+  const best=bt.best_threshold||{};
+  $("smBacktestState").textContent=best.threshold?`best ${best.threshold}`:`${bt.total_setups||0} setups`;
+  $("smBacktest").textContent=JSON.stringify({total_setups:bt.total_setups, thresholds:bt.thresholds, best_threshold:bt.best_threshold, rules:bt.rules},null,2);
+  $("structureState").textContent=(structure.count||0)+" events";
+  $("structureBox").textContent=JSON.stringify((structure.events||[]).slice(-20),null,2);
+  $("liquidityState").textContent=(liq.count||0)+" zones";
+  $("liquidityBox").textContent=JSON.stringify((liq.zones||[]).filter(x=>x.swept).slice(-20),null,2);
+  $("obState").textContent=(obs.count||0)+" blocks";
+  $("obBox").textContent=JSON.stringify((obs.order_blocks||[]).slice(-20),null,2);
+  $("fvgState").textContent=(fvgs.count||0)+" gaps";
+  $("fvgBox").textContent=JSON.stringify((fvgs.fair_value_gaps||[]).slice(-20),null,2);
+  $("pdState").textContent=(pd.count||0)+" zones";
+  $("pdBox").textContent=JSON.stringify(pd.premium_discount_zones||[],null,2);
+}
+
 async function loadRiskHealth(){
   const [risk,health,tg,mc]=await Promise.all([j("/risk-status"),j("/system-health"),j("/telegram/status"),j("/market-context")]);
   $("riskStatus").textContent=(risk.consecutive_losses||0)+" loss streak";
@@ -310,14 +355,14 @@ async function scanNow(){
 }
 
 async function loadAll(){
-  const jobs=[loadPortfolio(),loadMarket(),loadPrice(),loadDecisions(),loadTrades(),loadTwitter(),loadApi(),loadAudit(),loadReports(),loadRiskHealth(),loadEvents(),loadLogs()];
+  const jobs=[loadPortfolio(),loadMarket(),loadPrice(),loadDecisions(),loadTrades(),loadTwitter(),loadApi(),loadAudit(),loadReports(),loadSmartMoney(),loadRiskHealth(),loadEvents(),loadLogs()];
   const res=await Promise.allSettled(jobs); const bad=res.find(x=>x.status==="rejected"); if(bad)console.error(bad.reason);
   $("status").textContent=bad?"Partial data loaded":"Live"; $("updated").textContent="Updated "+new Date().toLocaleTimeString();
 }
 
 loadAll();
 setInterval(()=>{loadPortfolio();loadPrice();loadMarket();loadLogs()},30000);
-setInterval(()=>{loadDecisions();loadTrades();loadTwitter();loadApi();loadAudit();loadReports();loadRiskHealth();loadEvents()},60000);
+setInterval(()=>{loadDecisions();loadTrades();loadTwitter();loadApi();loadAudit();loadReports();loadSmartMoney();loadRiskHealth();loadEvents()},60000);
 </script>
 </body>
 </html>

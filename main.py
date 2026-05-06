@@ -24,10 +24,12 @@ import notifier
 import decision_evaluator
 import trade_quality
 import trade_quality_sweep
+import smart_money
 from data.collector import live_btc
 from data.collector import events as events_collector
 from config import (
     WEBHOOK_SECRET,
+    SMART_MONEY_ENABLED,
     TRADE_QUALITY_BUY_THRESHOLD,
     TRADE_QUALITY_CAN_PROPOSE_BUY,
     STRATEGY_VERSION,
@@ -185,6 +187,24 @@ def _json_list(value) -> list:
         return parsed if isinstance(parsed, list) else []
     except Exception:
         return []
+
+
+def _safe_json_records(df: pd.DataFrame) -> list[dict]:
+    """Return JSON-safe records with NaN/Inf converted to null."""
+    if df is None or df.empty:
+        return []
+    clean = df.replace([float("inf"), float("-inf")], pd.NA)
+    return json.loads(clean.to_json(orient="records", date_format="iso"))
+
+
+def _read_json_file(path: str | Path, fallback=None):
+    p = Path(path)
+    if not p.exists():
+        return fallback
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return fallback
 
 
 def _save_live_candles(df: pd.DataFrame) -> None:
@@ -1023,6 +1043,37 @@ async def get_market_context() -> dict:
         # Daily context — derivatives, macro, market structure from existing CSVs
         context.update(_load_daily_context())
 
+        # Smart Money Structure Layer. Evidence only; it never executes or bypasses risk_engine.
+        if SMART_MONEY_ENABLED:
+            try:
+                sm = smart_money.analyze(df, context=context, save=True)
+            except Exception as e:
+                log.warning("Smart Money analysis failed: %s", e)
+                sm = {
+                    "smart_money_score": 0,
+                    "smart_money_bias": "neutral",
+                    "smart_money_reason": f"analysis_failed: {e}",
+                    "structure_state": "unknown",
+                    "liquidity_state": "unknown",
+                    "order_block_state": "unknown",
+                    "fvg_state": "unknown",
+                    "premium_discount_state": "unknown",
+                    "timeframe_alignment": "unknown",
+                }
+            context["smart_money"] = sm
+            for key in (
+                "smart_money_score",
+                "smart_money_bias",
+                "smart_money_reason",
+                "structure_state",
+                "liquidity_state",
+                "order_block_state",
+                "fvg_state",
+                "premium_discount_state",
+                "timeframe_alignment",
+            ):
+                context[key] = sm.get(key)
+
         # Tier 1 Twitter — read cached scrape output (written by background loop)
         context.update(_get_twitter_context())
 
@@ -1548,7 +1599,23 @@ async def download_all_artifacts():
         "data/reports/trade_quality_sweep.csv",
         "data/reports/risk_block_performance.json",
         "data/reports/risk_block_performance.csv",
+        "data/reports/full_application_test_report.md",
+        "data/reports/market_structure_events.csv",
+        "data/reports/market_structure_events.json",
+        "data/reports/liquidity_zones.csv",
+        "data/reports/liquidity_zones.json",
+        "data/reports/order_blocks.csv",
+        "data/reports/order_blocks.json",
+        "data/reports/fair_value_gaps.csv",
+        "data/reports/fair_value_gaps.json",
+        "data/reports/premium_discount_zones.csv",
+        "data/reports/premium_discount_zones.json",
+        "data/reports/smart_money_backtest.csv",
+        "data/reports/smart_money_backtest.json",
+        "data/reports/smart_money_summary.json",
         "data/raw/live_btc_15m.csv",
+        "data/raw/live_btc_1h.csv",
+        "data/raw/live_btc_4h.csv",
         "data/raw/live_btc_source_status.json",
         "data/raw/twitter_playwright.json",
         "data/raw/twitter_tweets.csv",
@@ -1668,8 +1735,56 @@ async def reports():
         "ai_feedback": _read_json("data/reports/ai_feedback_summary.json"),
         "trade_quality_sweep": _read_json("data/reports/trade_quality_sweep.json"),
         "risk_block_performance": _read_json("data/reports/risk_block_performance.json"),
+        "smart_money": _read_json("data/reports/smart_money_summary.json"),
+        "smart_money_backtest": _read_json("data/reports/smart_money_backtest.json"),
         "api_usage": trader.api_usage_summary(),
     }
+
+
+@app.get("/smart-money")
+async def smart_money_report():
+    path = Path("data/reports/smart_money_summary.json")
+    if not path.exists() and LIVE_CANDLES_FILE.exists():
+        try:
+            df = pd.read_csv(LIVE_CANDLES_FILE)
+            return smart_money.analyze(df, context={}, save=True)
+        except Exception as e:
+            return {"smart_money_score": 0, "smart_money_bias": "neutral", "smart_money_reason": f"analysis_failed: {e}"}
+    return _read_json_file(path, {"smart_money_score": 0, "smart_money_bias": "neutral", "smart_money_reason": "not_available"})
+
+
+@app.get("/market-structure")
+async def market_structure_report():
+    return _read_json_file("data/reports/market_structure_events.json", {"events": [], "count": 0})
+
+
+@app.get("/liquidity-zones")
+async def liquidity_zones_report():
+    return _read_json_file("data/reports/liquidity_zones.json", {"zones": [], "count": 0})
+
+
+@app.get("/order-blocks")
+async def order_blocks_report():
+    return _read_json_file("data/reports/order_blocks.json", {"order_blocks": [], "count": 0})
+
+
+@app.get("/fair-value-gaps")
+async def fair_value_gaps_report():
+    return _read_json_file("data/reports/fair_value_gaps.json", {"fair_value_gaps": [], "count": 0})
+
+
+@app.get("/premium-discount")
+async def premium_discount_report():
+    return _read_json_file("data/reports/premium_discount_zones.json", {"zones": [], "count": 0})
+
+
+@app.get("/smart-money-backtest")
+async def smart_money_backtest_report():
+    path = Path("data/reports/smart_money_backtest.json")
+    if not path.exists():
+        import smart_money_backtest
+        return await asyncio.to_thread(smart_money_backtest.run)
+    return _read_json_file(path, {"summary": {}, "thresholds": []})
 
 
 @app.get("/risk-block-performance")
@@ -1735,6 +1850,7 @@ async def learning_status():
     claude_sell = sum(1 for d in decisions if d.get("claude_action") == "SELL")
     claude_hold = sum(1 for d in decisions if d.get("claude_action") == "HOLD")
     candidate_buy = sum(1 for d in decisions if d.get("candidate_action") == "BUY")
+    smart_money_candidates = sum(1 for d in decisions if d.get("shadow_smart_money_action"))
     candidate_sources = {}
     for d in decisions:
         src = d.get("candidate_source") or "none"
@@ -1791,6 +1907,8 @@ async def learning_status():
             "critical_events": "data/raw/events.json",
             "feedback_json": "data/reports/ai_feedback_summary.json",
             "feedback_csv": "data/reports/decision_evaluations.csv",
+            "smart_money_summary": "data/reports/smart_money_summary.json",
+            "smart_money_backtest": "data/reports/smart_money_backtest.json",
         },
         "decision_counts": {
             "total": len(decisions),
@@ -1800,6 +1918,7 @@ async def learning_status():
             "candidate_buy": candidate_buy,
             "candidate_sources": candidate_sources,
             "risk_blocked_candidates": risk_blocked_candidates,
+            "shadow_smart_money_candidates": smart_money_candidates,
             "ready_to_tune_risk_blocks": bool(risk_block_report.get("ready_to_tune")),
             "risk_blocked": blocked,
             "trades_executed": executed,
@@ -1850,14 +1969,16 @@ async def missed_opportunities(limit: int = 100):
     holds["return_pct"] = pd.to_numeric(holds["return_pct"], errors="coerce")
     missed = holds[holds["return_pct"] > 1.5].sort_values("return_pct", ascending=False)
     avoided = holds[holds["return_pct"] < -1.5].sort_values("return_pct")
+    avg_hold = holds["return_pct"].mean() if len(holds) else None
+    avg_hold = None if pd.isna(avg_hold) else round(float(avg_hold), 4)
     return {
         "summary": {
             "scored_holds": int(len(holds)),
             "missed_upside_holds": int(len(missed)),
             "avoided_downside_holds": int(len(avoided)),
-            "avg_hold_return_pct": round(float(holds["return_pct"].mean()), 4) if len(holds) else None,
+            "avg_hold_return_pct": avg_hold,
         },
-        "rows": missed.head(limit).where(pd.notna(missed), None).to_dict(orient="records"),
+        "rows": _safe_json_records(missed.head(limit)),
     }
 
 
@@ -1878,6 +1999,7 @@ async def trade_quality_sweep_report():
 async def shadow_performance():
     rows = trader.get_decisions(limit=1000)
     shadow = [r for r in rows if r.get("shadow_action")]
+    shadow_sm = [r for r in rows if r.get("shadow_smart_money_action")]
     scored_1h = [r for r in shadow if r.get("shadow_future_return_1h") is not None]
     scored_4h = [r for r in shadow if r.get("shadow_future_return_4h") is not None]
     scored_24h = [r for r in shadow if r.get("shadow_future_return_24h") is not None]
@@ -1892,6 +2014,22 @@ async def shadow_performance():
             "win_rate_pct": round(sum(1 for v in vals if v > 0) / len(vals) * 100, 2),
         }
 
+    def _smart_stats(horizon_key):
+        vals = []
+        for r in shadow_sm:
+            raw = r.get(horizon_key)
+            if raw is None:
+                continue
+            action = (r.get("shadow_smart_money_action") or "").upper()
+            vals.append(float(raw) if action == "BUY" else -float(raw) if action == "SELL" else float(raw))
+        if not vals:
+            return {"count": 0, "avg_directional_return_pct": None, "win_rate_pct": None}
+        return {
+            "count": len(vals),
+            "avg_directional_return_pct": round(sum(vals) / len(vals), 4),
+            "win_rate_pct": round(sum(1 for v in vals if v > 0) / len(vals) * 100, 2),
+        }
+
     return {
         "summary": {
             "shadow_buys": len(shadow),
@@ -1899,8 +2037,15 @@ async def shadow_performance():
             "one_hour": _stats(scored_1h, "shadow_future_return_1h"),
             "four_hour": _stats(scored_4h, "shadow_future_return_4h"),
             "twenty_four_hour": _stats(scored_24h, "shadow_future_return_24h"),
+            "shadow_smart_money": {
+                "total": len(shadow_sm),
+                "one_hour": _smart_stats("shadow_smart_money_future_return_1h"),
+                "four_hour": _smart_stats("shadow_smart_money_future_return_4h"),
+                "twenty_four_hour": _smart_stats("shadow_smart_money_future_return_24h"),
+            },
         },
         "rows": shadow[:100],
+        "smart_money_rows": shadow_sm[:100],
     }
 
 
@@ -1910,8 +2055,7 @@ async def backtest_equity(limit: int = 800):
     if not path.exists():
         return {"source": None, "rows": []}
     df = pd.read_csv(path).tail(limit)
-    df = df.where(pd.notna(df), None)
-    return {"source": str(path), "rows": df.to_dict(orient="records")}
+    return {"source": str(path), "rows": _safe_json_records(df)}
 
 
 @app.get("/performance")

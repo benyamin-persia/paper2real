@@ -8,6 +8,7 @@ from config import (
     ATR_INITIAL_STOP_MULT, ATR_TRAIL_STOP_MULT,
     AI_INPUT_USD_PER_MILLION_TOKENS, AI_OUTPUT_USD_PER_MILLION_TOKENS,
     SHADOW_BUY_SCORE_THRESHOLD, STRATEGY_VERSION,
+    SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS,
 )
 
 
@@ -133,6 +134,23 @@ def init_db():
         "blocked_candidate_outcome_1h TEXT",
         "blocked_candidate_outcome_4h TEXT",
         "blocked_candidate_outcome_24h TEXT",
+        "smart_money_score REAL",
+        "smart_money_bias TEXT",
+        "smart_money_reason TEXT",
+        "smart_money_json TEXT",
+        "structure_state TEXT",
+        "liquidity_state TEXT",
+        "order_block_state TEXT",
+        "fvg_state TEXT",
+        "premium_discount_state TEXT",
+        "timeframe_alignment TEXT",
+        "shadow_smart_money_action TEXT",
+        "shadow_smart_money_score REAL",
+        "shadow_smart_money_bias TEXT",
+        "shadow_smart_money_reason TEXT",
+        "shadow_smart_money_future_return_1h REAL",
+        "shadow_smart_money_future_return_4h REAL",
+        "shadow_smart_money_future_return_24h REAL",
         "tq_score REAL",
         "tq_trend REAL",
         "tq_momentum REAL",
@@ -464,6 +482,10 @@ def log_decision(
     risk_blocker = final.get("blocked_by") if risk_blocked_candidate else None
     blocked_entry_price = float(market.get("price") or 0) if risk_blocked_candidate else None
     blocked_tq_score = float(pre_tq_score) if risk_blocked_candidate and pre_tq_score is not None else None
+    smart_money = market.get("smart_money") or {}
+    smart_money_score = smart_money.get("smart_money_score") or market.get("smart_money_score")
+    smart_money_bias = smart_money.get("smart_money_bias") or market.get("smart_money_bias")
+    smart_money_reason = smart_money.get("smart_money_reason") or market.get("smart_money_reason")
     shadow_action = None
     shadow_entry = shadow_score = shadow_stop = shadow_tp = None
     shadow_reason = None
@@ -477,9 +499,23 @@ def log_decision(
             shadow_stop = round(price - ATR_INITIAL_STOP_MULT * atr, 2) if atr > 0 else None
             shadow_tp = round(price * 1.03, 2)
             shadow_reason = pre_risk_tq.get("primary_reason") or "quality_score_above_shadow_threshold"
+    shadow_sm_action = None
+    shadow_sm_score = None
+    shadow_sm_bias = None
+    shadow_sm_reason = None
+    if final.get("action") == "HOLD" and smart_money_score is not None:
+        try:
+            sm_score_float = float(smart_money_score)
+        except Exception:
+            sm_score_float = 0.0
+        if sm_score_float >= SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS and smart_money_bias in {"bullish", "bearish"}:
+            shadow_sm_action = "BUY" if smart_money_bias == "bullish" else "SELL"
+            shadow_sm_score = sm_score_float
+            shadow_sm_bias = smart_money_bias
+            shadow_sm_reason = smart_money_reason or "smart_money_score_above_shadow_threshold"
     con = sqlite3.connect(DB_FILE)
     con.execute(
-        """INSERT INTO decisions
+        f"""INSERT INTO decisions
            (timestamp, trigger, btc_price, rsi_14, fear_greed, funding_rate,
             claude_action, claude_conf, claude_reason,
             final_action, blocked_by, block_reason,
@@ -495,12 +531,17 @@ def log_decision(
             post_risk_tq_json, post_risk_tq_score,
             risk_blocked_candidate, risk_blocker, blocked_candidate_entry_price,
             blocked_candidate_tq_score,
+            smart_money_score, smart_money_bias, smart_money_reason, smart_money_json,
+            structure_state, liquidity_state, order_block_state, fvg_state,
+            premium_discount_state, timeframe_alignment,
+            shadow_smart_money_action, shadow_smart_money_score, shadow_smart_money_bias,
+            shadow_smart_money_reason,
             tq_score, tq_trend, tq_momentum, tq_volatility, tq_derivatives, tq_macro,
             tq_historical_match, tq_data_quality, tq_risk_safety, tq_primary_reason,
             shadow_action, shadow_entry_price, shadow_score, shadow_reason,
             shadow_stop_price, shadow_take_profit_price,
             ai_model, ai_prompt, ai_response, input_tokens, output_tokens, api_cost_usd)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+           VALUES ({','.join(['?'] * 77)})""",
         (
             int(time.time()),
             trigger,
@@ -543,6 +584,20 @@ def log_decision(
             risk_blocker,
             blocked_entry_price,
             blocked_tq_score,
+            smart_money_score,
+            smart_money_bias,
+            smart_money_reason,
+            json_dumps_safe(smart_money),
+            smart_money.get("structure_state"),
+            smart_money.get("liquidity_state"),
+            smart_money.get("order_block_state"),
+            smart_money.get("fvg_state"),
+            smart_money.get("premium_discount_state"),
+            smart_money.get("timeframe_alignment"),
+            shadow_sm_action,
+            shadow_sm_score,
+            shadow_sm_bias,
+            shadow_sm_reason,
             tq_score,
             components.get("trend"),
             components.get("momentum"),

@@ -127,6 +127,39 @@ def _update_shadow_future_returns(rows: list[dict]) -> None:
         con.close()
 
 
+def _update_shadow_smart_money_future_returns(rows: list[dict]) -> None:
+    db = Path(DB_FILE)
+    if not db.exists() or not rows:
+        return
+    con = sqlite3.connect(db)
+    try:
+        for col in (
+            "shadow_smart_money_future_return_1h REAL",
+            "shadow_smart_money_future_return_4h REAL",
+            "shadow_smart_money_future_return_24h REAL",
+        ):
+            try:
+                con.execute(f"ALTER TABLE decisions ADD COLUMN {col}")
+            except sqlite3.OperationalError:
+                pass
+        for row in rows:
+            if row["status"] != "SCORED" or not row.get("shadow_smart_money_action") or row.get("return_pct") == "":
+                continue
+            col = {
+                "1h": "shadow_smart_money_future_return_1h",
+                "4h": "shadow_smart_money_future_return_4h",
+                "24h": "shadow_smart_money_future_return_24h",
+            }.get(row["horizon"])
+            if col:
+                con.execute(
+                    f"UPDATE decisions SET {col}=? WHERE id=?",
+                    (float(row["return_pct"]), row["decision_id"]),
+                )
+        con.commit()
+    finally:
+        con.close()
+
+
 def _blocked_outcome(return_pct: float) -> str:
     if return_pct >= 1.5:
         return "WIN"
@@ -396,6 +429,19 @@ def _evaluate_rows(decisions: list[dict], prices: list[PricePoint]) -> list[dict
                     "shadow_reason": d.get("shadow_reason"),
                     "shadow_stop_price": d.get("shadow_stop_price"),
                     "shadow_take_profit_price": d.get("shadow_take_profit_price"),
+                    "smart_money_score": d.get("smart_money_score"),
+                    "smart_money_bias": d.get("smart_money_bias"),
+                    "smart_money_reason": d.get("smart_money_reason"),
+                    "structure_state": d.get("structure_state"),
+                    "liquidity_state": d.get("liquidity_state"),
+                    "order_block_state": d.get("order_block_state"),
+                    "fvg_state": d.get("fvg_state"),
+                    "premium_discount_state": d.get("premium_discount_state"),
+                    "timeframe_alignment": d.get("timeframe_alignment"),
+                    "shadow_smart_money_action": d.get("shadow_smart_money_action"),
+                    "shadow_smart_money_score": d.get("shadow_smart_money_score"),
+                    "shadow_smart_money_bias": d.get("shadow_smart_money_bias"),
+                    "shadow_smart_money_reason": d.get("shadow_smart_money_reason"),
                     "condition_tags": "|".join(_condition_tags(d)),
                     "claude_reason": d.get("claude_reason"),
                 }
@@ -574,6 +620,8 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
     no_price = [r for r in rows if r["status"] == "NO_PRICE_AT_HORIZON"]
     shadow_rows = [r for r in rows if r.get("shadow_action")]
     shadow_scored = [r for r in shadow_rows if r["status"] == "SCORED" and r.get("return_pct") != ""]
+    shadow_sm_rows = [r for r in rows if r.get("shadow_smart_money_action")]
+    shadow_sm_scored = [r for r in shadow_sm_rows if r["status"] == "SCORED" and r.get("return_pct") != ""]
     candidate_buy_ids = {
         r["decision_id"] for r in rows if (r.get("candidate_action") or "").upper() == "BUY"
     }
@@ -597,6 +645,8 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
         "rows_no_price_at_horizon": len(no_price),
         "shadow_buys_total": len({r["decision_id"] for r in shadow_rows}),
         "shadow_rows_scored": len(shadow_scored),
+        "shadow_smart_money_total": len({r["decision_id"] for r in shadow_sm_rows}),
+        "shadow_smart_money_rows_scored": len(shadow_sm_scored),
         "candidate_buys_total": len(candidate_buy_ids),
         "risk_blocked_candidates_total": len(blocked_candidate_ids),
         "horizons": {},
@@ -626,6 +676,7 @@ def _build_summary(decisions: list[dict], prices: list[PricePoint], rows: list[d
             "risk_engine": _risk_engine_summary(hrows, horizon),
             "conditions": _condition_summary(hrows, horizon),
             "shadow_buy": _shadow_summary(hrows),
+            "shadow_smart_money": _shadow_smart_money_summary(hrows),
         }
 
     if not decisions:
@@ -661,6 +712,27 @@ def _shadow_summary(rows: list[dict]) -> dict:
     }
 
 
+def _shadow_smart_money_summary(rows: list[dict]) -> dict:
+    scoped = [
+        r for r in rows
+        if r.get("shadow_smart_money_action") and r["status"] == "SCORED" and r.get("return_pct") != ""
+    ]
+    vals = []
+    for r in scoped:
+        raw = float(r["return_pct"])
+        action = (r.get("shadow_smart_money_action") or "").upper()
+        vals.append(raw if action == "BUY" else -raw if action == "SELL" else raw)
+    if not vals:
+        return {"count": 0, "avg_directional_return_pct": None, "win_rate_pct": None}
+    return {
+        "count": len(vals),
+        "avg_directional_return_pct": round(mean(vals), 4),
+        "win_rate_pct": _pct(sum(1 for v in vals if v > 0), len(vals)),
+        "missed_big_directional_move": sum(1 for v in vals if v > HOLD_MISSED_MOVE_PCT),
+        "would_have_lost": sum(1 for v in vals if v < 0),
+    }
+
+
 def _write_csv(path: Path, rows: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     if not rows:
@@ -691,6 +763,8 @@ def _write_markdown(summary: dict) -> None:
         f"Pending rows: {summary['rows_pending']}",
         f"Shadow BUYs: {summary.get('shadow_buys_total', 0)}",
         f"Shadow rows scored: {summary.get('shadow_rows_scored', 0)}",
+        f"Shadow Smart Money candidates: {summary.get('shadow_smart_money_total', 0)}",
+        f"Shadow Smart Money rows scored: {summary.get('shadow_smart_money_rows_scored', 0)}",
         f"Recommendation: {summary['recommendation']}",
         "",
         "## Horizons",
@@ -708,6 +782,9 @@ def _write_markdown(summary: dict) -> None:
                 f"- Shadow BUY count: {data['shadow_buy']['count']}",
                 f"- Shadow BUY avg return: {data['shadow_buy']['avg_return_pct']}",
                 f"- Shadow BUY win rate: {data['shadow_buy']['win_rate_pct']}",
+                f"- Shadow Smart Money count: {data['shadow_smart_money']['count']}",
+                f"- Shadow Smart Money directional avg return: {data['shadow_smart_money']['avg_directional_return_pct']}",
+                f"- Shadow Smart Money directional win rate: {data['shadow_smart_money']['win_rate_pct']}",
             ]
         )
     SUMMARY_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -718,6 +795,7 @@ def run() -> dict:
     prices = _load_price_series(decisions)
     rows = _evaluate_rows(decisions, prices)
     _update_shadow_future_returns(rows)
+    _update_shadow_smart_money_future_returns(rows)
     _update_blocked_candidate_future_returns(rows)
     summary = _build_summary(decisions, prices, rows)
     risk_block_report = build_risk_block_performance(rows)

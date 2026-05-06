@@ -235,3 +235,101 @@ Decision rule:
 New endpoint:
 
 - `/risk-block-performance`
+
+## Smart Money Structure Layer
+
+Status: implemented as shadow/evidence only.
+
+Safety rule:
+
+- Smart Money does not execute trades.
+- Smart Money does not bypass `risk_engine.py`.
+- Smart Money does not remove or weaken `bb_squeeze`, daily loss, monthly loss, max drawdown, max open trades, or consecutive loss protection.
+- Default config keeps Smart Money in shadow mode: `SMART_MONEY_SHADOW_ONLY=true` and `SMART_MONEY_MAX_TQ_BONUS=0`.
+
+What it detects:
+
+- Swing highs and swing lows from closed candles only.
+- BOS: close above prior confirmed swing high or below prior confirmed swing low.
+- CHoCH: structure flips direction after breaking the prior opposite structure.
+- Liquidity zones: swing highs/lows plus equal highs/lows within 0.2%.
+- Liquidity sweeps: wick through a liquidity zone with close back inside.
+- Order blocks: last opposite candle before a BOS, filtered by strength.
+- Fair Value Gaps: three-candle imbalance gaps, with active/filled state.
+- Premium/discount: current price relative to the latest major swing range midpoint.
+- Multi-timeframe alignment using 15m, 1h, and 4h candles.
+
+Files added:
+
+- `market_structure.py`
+- `liquidity.py`
+- `order_blocks.py`
+- `fair_value_gaps.py`
+- `premium_discount.py`
+- `smart_money.py`
+- `smart_money_backtest.py`
+
+Reports added:
+
+- `data/reports/market_structure_events.csv/json`
+- `data/reports/liquidity_zones.csv/json`
+- `data/reports/order_blocks.csv/json`
+- `data/reports/fair_value_gaps.csv/json`
+- `data/reports/premium_discount_zones.csv/json`
+- `data/reports/smart_money_summary.json`
+- `data/reports/smart_money_backtest.csv/json`
+
+Database fields added:
+
+- `smart_money_score`
+- `smart_money_bias`
+- `smart_money_reason`
+- `smart_money_json`
+- `structure_state`
+- `liquidity_state`
+- `order_block_state`
+- `fvg_state`
+- `premium_discount_state`
+- `timeframe_alignment`
+- `shadow_smart_money_action`
+- `shadow_smart_money_score`
+- `shadow_smart_money_bias`
+- `shadow_smart_money_reason`
+- `shadow_smart_money_future_return_1h`
+- `shadow_smart_money_future_return_4h`
+- `shadow_smart_money_future_return_24h`
+
+Endpoints added:
+
+- `/smart-money`
+- `/market-structure`
+- `/liquidity-zones`
+- `/order-blocks`
+- `/fair-value-gaps`
+- `/premium-discount`
+- `/smart-money-backtest`
+
+Dashboard added:
+
+- New `Smart Money` tab.
+- Current Smart Money score and bias.
+- Structure, liquidity, order block, FVG, and premium/discount tables.
+- Smart Money backtest summary.
+
+Current engineering decision:
+
+- Keep this layer shadow-only until it proves directional edge.
+- Use `/smart-money-backtest` and shadow Smart Money future returns to decide later whether it deserves any Trade Quality bonus.
+- Do not enable `SMART_MONEY_MAX_TQ_BONUS` until the sample is large enough and profitable directionally.
+
+## Full Application Test Pass
+
+Local verification completed:
+
+- Python compile passed for `main.py`, `trader.py`, `trade_quality.py`, `decision_evaluator.py`, all Smart Money modules, and `smart_money_backtest.py`.
+- `trader.init_db()` migration passed.
+- `trader.log_decision()` insert passed against a temporary DB.
+- `/missed-opportunities` no longer returns invalid NaN JSON.
+- Smart Money reports generate successfully from cached live BTC candles.
+- `/download/all.zip` includes Smart Money reports and excludes `.env`.
+- Dashboard tabs verified with Playwright: Trades, Decisions, Twitter Extracted, AI Brain Audit, Reports, Smart Money, Notifications, Live Logs, Downloads, Money Settings.

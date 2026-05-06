@@ -6,6 +6,13 @@ system is or is not close to a trade.
 
 from __future__ import annotations
 
+from config import (
+    SMART_MONEY_MAX_TQ_BONUS,
+    SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS,
+    SMART_MONEY_SCORE_ENABLED,
+    SMART_MONEY_SHADOW_ONLY,
+)
+
 
 def _num(value, default=0.0) -> float:
     try:
@@ -118,6 +125,22 @@ def score(market: dict, historical: dict | None = None, risk: dict | None = None
     elif market.get("events_unavailable"):
         risk_safety = 4
 
+    smart_money = market.get("smart_money") or {}
+    sm_score = _num(smart_money.get("smart_money_score") or market.get("smart_money_score"))
+    sm_bias = smart_money.get("smart_money_bias") or market.get("smart_money_bias") or "neutral"
+    sm_modifier = 0.0
+    if (
+        SMART_MONEY_SCORE_ENABLED
+        and not SMART_MONEY_SHADOW_ONLY
+        and sm_score >= SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS
+        and SMART_MONEY_MAX_TQ_BONUS > 0
+    ):
+        strength = _clamp((sm_score - SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS) / 40, 0, 1)
+        if sm_bias == "bullish":
+            sm_modifier = round(SMART_MONEY_MAX_TQ_BONUS * strength, 1)
+        elif sm_bias == "bearish":
+            sm_modifier = round(-SMART_MONEY_MAX_TQ_BONUS * strength, 1)
+
     components = {
         "trend": round(trend, 1),
         "momentum": round(momentum, 1),
@@ -128,7 +151,7 @@ def score(market: dict, historical: dict | None = None, risk: dict | None = None
         "data_quality": round(data_quality, 1),
         "risk_safety": round(risk_safety, 1),
     }
-    total = round(sum(components.values()), 1)
+    total = round(_clamp(sum(components.values()) + sm_modifier, 0, 100), 1)
 
     blockers = []
     if win_rate < 35 and avg_4h < 0 and avg_24h < 0:
@@ -142,6 +165,8 @@ def score(market: dict, historical: dict | None = None, risk: dict | None = None
         "score": total,
         "max_score": 100,
         "components": components,
+        "smart_money_modifier": sm_modifier,
+        "smart_money": smart_money,
         "data_penalties": penalties,
         "blockers": blockers,
         "primary_reason": blockers[0] if blockers else ("quality_high" if total >= 65 else "quality_not_high_enough"),

@@ -31,6 +31,18 @@ TRADE_QUALITY_BUY_THRESHOLD = float(os.getenv("TRADE_QUALITY_BUY_THRESHOLD", "65
 TRADE_QUALITY_CAN_PROPOSE_BUY = os.getenv("TRADE_QUALITY_CAN_PROPOSE_BUY", "true").lower() in {"1", "true", "yes", "on"}
 STRATEGY_VERSION = os.getenv("STRATEGY_VERSION", "tq65_shadow60_risk_v1")
 
+SMART_MONEY_ENABLED = os.getenv("SMART_MONEY_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
+SMART_MONEY_SCORE_ENABLED = os.getenv("SMART_MONEY_SCORE_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
+SMART_MONEY_MAX_SCORE = float(os.getenv("SMART_MONEY_MAX_SCORE", "15"))
+SMART_MONEY_SHADOW_ONLY = os.getenv("SMART_MONEY_SHADOW_ONLY", "true").lower() in {"1", "true", "yes", "on"}
+SMART_MONEY_TIMEFRAMES = [
+    x.strip() for x in os.getenv("SMART_MONEY_TIMEFRAMES", "15m,1h,4h").split(",") if x.strip()
+]
+SMART_MONEY_SWING_LENGTH = int(os.getenv("SMART_MONEY_SWING_LENGTH", "5"))
+SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS = float(os.getenv("SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS", "60"))
+SMART_MONEY_MAX_TQ_BONUS = float(os.getenv("SMART_MONEY_MAX_TQ_BONUS", "0"))
+SMART_MONEY_NO_REPAINT = os.getenv("SMART_MONEY_NO_REPAINT", "true").lower() in {"1", "true", "yes", "on"}
+
 # ATR stop multipliers — shared by risk_engine.py and trader.py
 ATR_INITIAL_STOP_MULT = float(os.getenv("ATR_INITIAL_STOP_MULT", "1.5"))  # initial stop = entry - 1.5×ATR
 ATR_TRAIL_STOP_MULT   = float(os.getenv("ATR_TRAIL_STOP_MULT",   "2.0"))  # trailing stop = peak - 2.0×ATR
