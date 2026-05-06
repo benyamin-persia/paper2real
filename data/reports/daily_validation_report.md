@@ -1,6 +1,6 @@
 # Daily Validation Report
 
-Generated: 2026-05-06T22:10:16.257126+00:00
+Generated: 2026-05-06T22:12:58.495949+00:00
 Primary recommendation: **COLLECT_MORE_DATA**
 All recommendations: `COLLECT_MORE_DATA`
 
@@ -15,12 +15,12 @@ All recommendations: `COLLECT_MORE_DATA`
 
 ## Endpoint Statuses
 
-- /system-health: `ok=True` `http=200` `elapsed=12.886s`
-- /learning-status: `ok=True` `http=200` `elapsed=0.037s`
-- /risk-block-performance: `ok=True` `http=200` `elapsed=0.002s`
-- /shadow-performance: `ok=True` `http=200` `elapsed=0.013s`
-- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.006s`
-- /reports: `ok=True` `http=200` `elapsed=0.011s`
+- /system-health: `ok=True` `http=200` `elapsed=18.553s`
+- /learning-status: `ok=True` `http=200` `elapsed=0.098s`
+- /risk-block-performance: `ok=True` `http=200` `elapsed=0.019s`
+- /shadow-performance: `ok=True` `http=200` `elapsed=0.068s`
+- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.038s`
+- /reports: `ok=True` `http=200` `elapsed=0.074s`
 
 ## Learning Counts
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-06T22:10:16.257126+00:00",
+  "generated_at": "2026-05-06T22:12:58.495949+00:00",
   "system_health_status": "ok",
   "master_dataset_last_date": "2026-05-06",
   "master_dataset_rows": 532,
@@ -9,7 +9,7 @@
     "/system-health": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 12.886,
+      "elapsed_seconds": 18.553,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -17,7 +17,7 @@
     "/learning-status": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.037,
+      "elapsed_seconds": 0.098,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -25,7 +25,7 @@
     "/risk-block-performance": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.002,
+      "elapsed_seconds": 0.019,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -33,7 +33,7 @@
     "/shadow-performance": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.013,
+      "elapsed_seconds": 0.068,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -41,7 +41,7 @@
     "/smart-money-backtest": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.006,
+      "elapsed_seconds": 0.038,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -49,7 +49,7 @@
     "/reports": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.011,
+      "elapsed_seconds": 0.074,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -76,14 +76,14 @@
     "master_dataset_last_date": "2026-05-06",
     "master_dataset_rows": 532,
     "master_dataset_columns": 55,
-    "master_dataset_age_hours": 1.19,
+    "master_dataset_age_hours": 1.23,
     "stale_dataset_warning": false,
     "stale_data_warnings": [],
     "endpoint_health_summary": {
       "/system-health": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 12.886,
+        "elapsed_seconds": 18.553,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -91,7 +91,7 @@
       "/learning-status": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.037,
+        "elapsed_seconds": 0.098,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -99,7 +99,7 @@
       "/risk-block-performance": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.002,
+        "elapsed_seconds": 0.019,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -107,7 +107,7 @@
       "/shadow-performance": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.013,
+        "elapsed_seconds": 0.068,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -115,7 +115,7 @@
       "/smart-money-backtest": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.006,
+        "elapsed_seconds": 0.038,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -123,7 +123,7 @@
       "/reports": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.011,
+        "elapsed_seconds": 0.074,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -442,7 +442,7 @@
     "download_zip_safe": true,
     "secrets_excluded": true,
     "http_status": 200,
-    "elapsed_seconds": 0.452,
+    "elapsed_seconds": 9.06,
     "included_files_checked": 40,
     "included_files": [
       "paper_trader.db",
