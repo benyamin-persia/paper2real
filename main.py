@@ -1746,6 +1746,9 @@ async def reports():
 
 @app.get("/daily-validation-report")
 async def daily_validation_report_endpoint():
+    path = Path("data/reports/daily_validation_report.json")
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
     return await asyncio.to_thread(daily_validation_report.run, False)
 
 
