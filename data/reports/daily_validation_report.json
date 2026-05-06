@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-06T22:08:33.151974+00:00",
+  "generated_at": "2026-05-06T22:10:16.257126+00:00",
   "system_health_status": "ok",
   "master_dataset_last_date": "2026-05-06",
   "master_dataset_rows": 532,
@@ -9,7 +9,7 @@
     "/system-health": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 6.782,
+      "elapsed_seconds": 12.886,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -17,7 +17,7 @@
     "/learning-status": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.045,
+      "elapsed_seconds": 0.037,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -33,7 +33,7 @@
     "/shadow-performance": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.016,
+      "elapsed_seconds": 0.013,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -76,14 +76,14 @@
     "master_dataset_last_date": "2026-05-06",
     "master_dataset_rows": 532,
     "master_dataset_columns": 55,
-    "master_dataset_age_hours": 1.16,
+    "master_dataset_age_hours": 1.19,
     "stale_dataset_warning": false,
     "stale_data_warnings": [],
     "endpoint_health_summary": {
       "/system-health": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 6.782,
+        "elapsed_seconds": 12.886,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -91,7 +91,7 @@
       "/learning-status": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.045,
+        "elapsed_seconds": 0.037,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -107,7 +107,7 @@
       "/shadow-performance": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.016,
+        "elapsed_seconds": 0.013,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -442,7 +442,7 @@
     "download_zip_safe": true,
     "secrets_excluded": true,
     "http_status": 200,
-    "elapsed_seconds": 0.438,
+    "elapsed_seconds": 0.452,
     "included_files_checked": 40,
     "included_files": [
       "paper_trader.db",
