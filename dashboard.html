@@ -72,6 +72,10 @@ table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--mute
     <div class="panel"><div class="ptitle"><span>Missed Opportunity</span><span id="missedState">--</span></div><div id="missedBox"></div></div>
   </div>
   <div class="panel" style="margin-bottom:14px"><div class="ptitle"><span>Data Source Trust</span><span id="trustState">--</span></div><div id="trustBox" class="grid cols3"></div></div>
+  <div class="panel" style="margin-bottom:14px">
+    <div class="ptitle"><span>Daily Validation</span><span id="dailyValidationState">--</span></div>
+    <div class="grid cols3" id="dailyValidationBox"></div>
+  </div>
 
   <div class="tabs">
     <button class="tab active" onclick="tab(this,'trades')">Trades</button>
@@ -300,6 +304,26 @@ async function loadSmartMoney(){
   $("pdBox").textContent=JSON.stringify(pd.premium_discount_zones||[],null,2);
 }
 
+function progressCard(title,current,target,pctValue){
+  const pctNum=Math.max(0,Math.min(100,Number(pctValue||0)));
+  return `<div class="card"><div class="label">${title}</div><div class="value">${current} / ${target}</div><div class="hint"><div style="height:7px;background:#0a0f18;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:7px"><div style="height:100%;width:${pctNum}%;background:${pctNum>=100?'var(--green)':'var(--orange)'}"></div></div>${pctNum.toFixed(1)}%</div></div>`;
+}
+
+async function loadDailyValidation(){
+  const d=await j("/daily-validation-report");
+  const rec=d.final_recommendation||{}, health=d.system_health||{}, p=d.progress_targets||{};
+  $("dailyValidationState").textContent=(rec.recommendations||[rec.primary||"--"]).join(" | ");
+  $("dailyValidationState").className=(health.system_health_status==="ok"?"green":"yellow");
+  $("dailyValidationBox").innerHTML=[
+    `<div class="card"><div class="label">Recommendation</div><div class="value ${rec.primary==='KEEP_RUNNING'?'green':rec.primary==='INVESTIGATE_DATA_HEALTH'?'red':'yellow'}">${rec.primary||"--"}</div><div class="hint">${(rec.recommendations||[]).join(", ")}</div></div>`,
+    `<div class="card"><div class="label">System Health</div><div class="value ${health.system_health_status==='ok'?'green':'yellow'}">${health.system_health_status||"--"}</div><div class="hint">master ${health.master_dataset_rows||0} rows / ${health.master_dataset_columns||0} cols / ${health.master_dataset_last_date||"--"}</div></div>`,
+    `<div class="card"><div class="label">Ready To Tune</div><div class="value ${(d.risk_block_performance||{}).ready_to_tune?'green':'yellow'}">${(d.risk_block_performance||{}).ready_to_tune?'yes':'no'}</div><div class="hint">risk blockers need 30 samples minimum</div></div>`,
+    progressCard("Blocked BUYs",p.blocked_buy_candidates_current||0,p.blocked_buy_candidates_target||30,p.blocked_buy_candidates_pct||0),
+    progressCard("Shadow BUYs",p.shadow_buy_current||0,p.shadow_buy_target||100,p.shadow_buy_pct||0),
+    progressCard("Smart Money Shadows",p.shadow_smart_money_current||0,p.shadow_smart_money_target||50,p.shadow_smart_money_pct||0)
+  ].join("");
+}
+
 async function loadRiskHealth(){
   const [risk,health,tg,mc]=await Promise.all([j("/risk-status"),j("/system-health"),j("/telegram/status"),j("/market-context")]);
   $("riskStatus").textContent=(risk.consecutive_losses||0)+" loss streak";
@@ -355,14 +379,14 @@ async function scanNow(){
 }
 
 async function loadAll(){
-  const jobs=[loadPortfolio(),loadMarket(),loadPrice(),loadDecisions(),loadTrades(),loadTwitter(),loadApi(),loadAudit(),loadReports(),loadSmartMoney(),loadRiskHealth(),loadEvents(),loadLogs()];
+  const jobs=[loadPortfolio(),loadMarket(),loadPrice(),loadDecisions(),loadTrades(),loadTwitter(),loadApi(),loadAudit(),loadReports(),loadSmartMoney(),loadDailyValidation(),loadRiskHealth(),loadEvents(),loadLogs()];
   const res=await Promise.allSettled(jobs); const bad=res.find(x=>x.status==="rejected"); if(bad)console.error(bad.reason);
   $("status").textContent=bad?"Partial data loaded":"Live"; $("updated").textContent="Updated "+new Date().toLocaleTimeString();
 }
 
 loadAll();
 setInterval(()=>{loadPortfolio();loadPrice();loadMarket();loadLogs()},30000);
-setInterval(()=>{loadDecisions();loadTrades();loadTwitter();loadApi();loadAudit();loadReports();loadSmartMoney();loadRiskHealth();loadEvents()},60000);
+setInterval(()=>{loadDecisions();loadTrades();loadTwitter();loadApi();loadAudit();loadReports();loadSmartMoney();loadDailyValidation();loadRiskHealth();loadEvents()},60000);
 </script>
 </body>
 </html>

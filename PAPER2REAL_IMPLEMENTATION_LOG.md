@@ -333,3 +333,45 @@ Local verification completed:
 - Smart Money reports generate successfully from cached live BTC candles.
 - `/download/all.zip` includes Smart Money reports and excludes `.env`.
 - Dashboard tabs verified with Playwright: Trades, Decisions, Twitter Extracted, AI Brain Audit, Reports, Smart Money, Notifications, Live Logs, Downloads, Money Settings.
+
+## Daily Validation Report
+
+Status: implemented as reporting only.
+
+Safety rule:
+
+- No trading logic changed.
+- `risk_engine.py` unchanged.
+- Trade Quality thresholds unchanged.
+- Smart Money config unchanged.
+- Smart Money remains shadow-only and does not affect Trade Quality by default.
+
+Files:
+
+- `daily_validation_report.py`
+- `data/reports/daily_validation_report.json`
+- `data/reports/daily_validation_report.md`
+
+Endpoint:
+
+- `/daily-validation-report`
+
+Dashboard:
+
+- Added top-level `Daily Validation` card.
+- Shows current recommendation, system health, ready-to-tune status, and progress bars for:
+  - 30 blocked BUY candidates
+  - 100 shadow BUYs
+  - 50 Smart Money shadow candidates
+
+Recommendation rules:
+
+- If blocked BUY candidates are below 30, report includes `COLLECT_MORE_DATA`.
+- If shadow Smart Money candidates are below 50, Smart Money remains shadow-only.
+- If source health fails, report includes `INVESTIGATE_DATA_HEALTH`.
+- Report never recommends changing `risk_engine.py` before minimum sample size.
+
+Download:
+
+- `/download/all.zip` now includes `daily_validation_report.json` and `.md`.
+- Secrets remain excluded.

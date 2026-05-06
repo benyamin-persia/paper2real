@@ -25,6 +25,7 @@ import decision_evaluator
 import trade_quality
 import trade_quality_sweep
 import smart_money
+import daily_validation_report
 from data.collector import live_btc
 from data.collector import events as events_collector
 from config import (
@@ -1599,6 +1600,8 @@ async def download_all_artifacts():
         "data/reports/trade_quality_sweep.csv",
         "data/reports/risk_block_performance.json",
         "data/reports/risk_block_performance.csv",
+        "data/reports/daily_validation_report.json",
+        "data/reports/daily_validation_report.md",
         "data/reports/full_application_test_report.md",
         "data/reports/market_structure_events.csv",
         "data/reports/market_structure_events.json",
@@ -1739,6 +1742,11 @@ async def reports():
         "smart_money_backtest": _read_json("data/reports/smart_money_backtest.json"),
         "api_usage": trader.api_usage_summary(),
     }
+
+
+@app.get("/daily-validation-report")
+async def daily_validation_report_endpoint():
+    return await asyncio.to_thread(daily_validation_report.run)
 
 
 @app.get("/smart-money")
