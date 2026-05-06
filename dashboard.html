@@ -271,7 +271,7 @@ async function loadRiskHealth(){
   $("telegramState").className=tg.configured?"green":"yellow";
   $("telegramBox").innerHTML=`<div class="hint">enabled: ${tg.enabled}</div><div class="hint">min severity: ${tg.min_severity}</div><div class="hint">token configured: ${tg.bot_token_configured}</div><div class="hint">chat configured: ${tg.chat_id_configured}</div>`;
   const trust=[
-    ["BTC price", mc.price>0?"trusted":"bad"],
+    ["BTC price", mc.price>0?`trusted (${mc.live_candle_source||"unknown"})`:"bad"],
     ["Volume", mc.volume_quality||"unknown"],
     ["Events", mc.events_unavailable?"stale":"trusted"],
     ["Twitter", mc.twitter_unavailable?"stale":"trusted"],

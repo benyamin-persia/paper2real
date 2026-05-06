@@ -24,6 +24,7 @@ import notifier
 import decision_evaluator
 import trade_quality
 import trade_quality_sweep
+from data.collector import live_btc
 from data.collector import events as events_collector
 from config import (
     WEBHOOK_SECRET,
@@ -37,6 +38,7 @@ EVENTS_MAX_AGE_MINUTES = 20    # older than this → treat as missing
 MASTER_DATASET_MAX_AGE_HOURS = 36  # warn if training data is very stale
 PRICE_MAX_AGE_MINUTES = 20     # warn if latest candle is old
 LIVE_CANDLES_FILE = Path("data/raw/live_btc_15m.csv")
+LIVE_BTC_STATUS_FILE = Path("data/raw/live_btc_source_status.json")
 EVALUATOR_REFRESH_MINUTES = 60  # refresh AI feedback from completed decisions
 SCHEDULED_SCAN_COOLDOWN_MINUTES = 30
 
@@ -299,6 +301,8 @@ def _check_data_freshness(context: dict) -> list[str]:
         issues.append("WARNING: Fear & Greed unavailable — proceeding without sentiment")
     if context.get("volume_quality") != "reliable":
         issues.append("WARNING: Live BTC volume is unreliable - volume_ratio ignored as bearish evidence")
+    if (context.get("live_btc_source_status") or {}).get("buy_block"):
+        issues.append("BUY_BLOCK: Live BTC provider is using cached candles - blocking new BUY")
 
     # Check master_dataset.csv age (training data for pattern matching)
     master = Path("data/processed/master_dataset.csv")
@@ -911,42 +915,7 @@ async def get_btc_price() -> float:
 
 
 async def get_15m_candles() -> pd.DataFrame:
-    async with httpx.AsyncClient(timeout=30, headers={"user-agent": "Mozilla/5.0"}) as client:
-        try:
-            r = await client.get(YAHOO_15M_URL)
-            r.raise_for_status()
-            result = r.json()["chart"]["result"][0]
-            timestamps = result.get("timestamp", [])
-            quote = result["indicators"]["quote"][0]
-            df = pd.DataFrame(
-                {
-                    "timestamp": pd.to_datetime(timestamps, unit="s"),
-                    "open": quote.get("open", []),
-                    "high": quote.get("high", []),
-                    "low": quote.get("low", []),
-                    "close": quote.get("close", []),
-                    "volume": quote.get("volume", []),
-                }
-            )
-            df = df.dropna(subset=["timestamp", "open", "high", "low", "close"])
-            if len(df) >= 200:
-                return df.tail(250).reset_index(drop=True)
-        except Exception:
-            pass
-
-        r = await client.get(
-            COINBASE_CANDLES_URL,
-            params={"granularity": 900},
-        )
-        r.raise_for_status()
-        raw = r.json()
-
-    df = pd.DataFrame(raw, columns=["timestamp", "low", "high", "open", "close", "volume"])
-    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="s")
-    for col in ["open", "high", "low", "close", "volume"]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-    df = df.dropna(subset=["timestamp", "open", "high", "low", "close"])
-    return df.sort_values("timestamp").tail(250).reset_index(drop=True)
+    return await live_btc.get_live_candles()
 
 
 def _bb_column(bb: pd.DataFrame, prefix: str) -> str:
@@ -1012,6 +981,8 @@ async def get_market_context() -> dict:
         context = {
             "price":            round(price, 2),
             "price_timestamp":  price_timestamp,
+            "live_candle_source": str(df.get("source", pd.Series(["unknown"])).iloc[-1]) if "source" in df.columns else "unknown",
+            "live_btc_source_status": live_btc.read_status(),
             "rsi_14":           round(rsi, 1),
             "macd":             round(macd, 2),
             "macd_signal":      round(macd_s, 2),
@@ -1035,6 +1006,9 @@ async def get_market_context() -> dict:
             "exchange_hack_alert": None,
             "stablecoin_depeg":    None,
         }
+        if (context["live_btc_source_status"] or {}).get("buy_block"):
+            context["events_unavailable"] = True
+            context.setdefault("data_warnings", []).append("Live BTC provider is using cached candles - blocking new BUY")
 
         # Fear & Greed (daily, lightweight API call)
         try:
@@ -1575,6 +1549,7 @@ async def download_all_artifacts():
         "data/reports/risk_block_performance.json",
         "data/reports/risk_block_performance.csv",
         "data/raw/live_btc_15m.csv",
+        "data/raw/live_btc_source_status.json",
         "data/raw/twitter_playwright.json",
         "data/raw/twitter_tweets.csv",
         "data/raw/twitter_timing.csv",
@@ -1660,6 +1635,7 @@ async def system_health():
         "data/raw/events.json",
         "data/raw/twitter_playwright.json",
         "data/raw/live_btc_15m.csv",
+        "data/raw/live_btc_source_status.json",
         "data/processed/master_dataset.csv",
         "data/reports/ai_feedback_summary.json",
     ]:
