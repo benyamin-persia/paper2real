@@ -1746,7 +1746,7 @@ async def reports():
 
 @app.get("/daily-validation-report")
 async def daily_validation_report_endpoint():
-    return await asyncio.to_thread(daily_validation_report.run)
+    return await asyncio.to_thread(daily_validation_report.run, False)
 
 
 @app.get("/smart-money")

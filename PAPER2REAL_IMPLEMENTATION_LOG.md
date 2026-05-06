@@ -368,10 +368,57 @@ Recommendation rules:
 
 - If blocked BUY candidates are below 30, report includes `COLLECT_MORE_DATA`.
 - If shadow Smart Money candidates are below 50, Smart Money remains shadow-only.
-- If source health fails, report includes `INVESTIGATE_DATA_HEALTH`.
+- If source health fails, report includes `INVESTIGATE_ERROR`.
 - Report never recommends changing `risk_engine.py` before minimum sample size.
 
 Download:
 
 - `/download/all.zip` now includes `daily_validation_report.json` and `.md`.
 - Secrets remain excluded.
+
+## Unattended Validation Monitoring
+
+Status: implemented as reporting and safe publishing only.
+
+What changed:
+
+- `daily_validation_report.py` now checks local app endpoints directly:
+  - `/system-health`
+  - `/learning-status`
+  - `/risk-block-performance`
+  - `/shadow-performance`
+  - `/smart-money-backtest`
+  - `/reports`
+- It verifies `/download/all.zip` by opening the ZIP and scanning filenames plus safe text files for token, cookie, password, credential, private key, and API key patterns.
+- It emits flat report fields for scheduled monitoring:
+  - `generated_at`
+  - `system_health_status`
+  - `master_dataset_last_date`
+  - `master_dataset_rows`
+  - `master_dataset_columns`
+  - `stale_dataset_warning`
+  - `endpoint_statuses`
+  - `decisions_total`
+  - `claude_buy_count`
+  - `candidate_buy_count`
+  - `risk_blocked_candidates`
+  - `trades_executed`
+  - `shadow_buy_count`
+  - `shadow_smart_money_count`
+  - `ready_for_risk_block_review`
+  - `ready_for_smart_money_review`
+  - `download_zip_safe`
+  - `secrets_excluded`
+  - `errors`
+  - `final_recommendation`
+- `deploy/run_daily_validation_and_push.sh` runs the report inside the Docker container, then commits and pushes only:
+  - `data/reports/daily_validation_report.json`
+  - `data/reports/daily_validation_report.md`
+- `deploy/install_daily_validation_cron.sh` installs a 6-hour cron entry for the host runner.
+
+Publishing guardrails:
+
+- The scheduled Git push aborts if the report says the download ZIP is unsafe.
+- The scheduled Git push aborts if any staged file is outside the two safe report paths.
+- `.env`, API keys, Telegram tokens, cookies, private credentials, runtime DB files, logs, and ZIP downloads are never staged by the runner.
+- The `/daily-validation-report` dashboard endpoint runs report generation with auto-push disabled, so opening the dashboard cannot create Git commits.

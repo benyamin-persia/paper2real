@@ -1,18 +1,25 @@
 """Daily validation report for Paper2Real.
 
-This is reporting only. It does not change trading logic, thresholds, Smart
-Money config, or risk_engine behavior.
+Reporting and safe publishing only. This module does not change trading logic,
+thresholds, Smart Money config, or risk_engine behavior.
 """
 
 from __future__ import annotations
 
+import io
 import json
 import os
+import re
 import sqlite3
+import subprocess
+import time
+import urllib.error
+import urllib.request
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean
+from typing import Any
 
 import pandas as pd
 
@@ -24,15 +31,64 @@ JSON_REPORT = REPORT_DIR / "daily_validation_report.json"
 MD_REPORT = REPORT_DIR / "daily_validation_report.md"
 
 MASTER_DATASET = Path("data/processed/master_dataset.csv")
-DECISION_EVALUATIONS = REPORT_DIR / "decision_evaluations.csv"
 RISK_BLOCK_REPORT = REPORT_DIR / "risk_block_performance.json"
 SMART_MONEY_REPORT = REPORT_DIR / "smart_money_summary.json"
-SMART_MONEY_BACKTEST = REPORT_DIR / "smart_money_backtest.json"
 
 BLOCKED_BUY_TARGET = 30
 SHADOW_BUY_TARGET = 100
 SHADOW_SMART_MONEY_TARGET = 50
 MASTER_MAX_AGE_HOURS = 36
+
+LOCAL_BASE_URL = os.getenv("PAPER2REAL_LOCAL_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+ENDPOINTS_TO_CHECK = [
+    "/system-health",
+    "/learning-status",
+    "/risk-block-performance",
+    "/shadow-performance",
+    "/smart-money-backtest",
+    "/reports",
+]
+DOWNLOAD_ZIP_ENDPOINT = "/download/all.zip"
+
+SAFE_PUSH_FILES = {
+    "data/reports/daily_validation_report.json",
+    "data/reports/daily_validation_report.md",
+}
+
+UNSAFE_NAME_PATTERNS = [
+    re.compile(r"(^|/)\.env($|[./])", re.IGNORECASE),
+    re.compile(r"cookie", re.IGNORECASE),
+    re.compile(r"token", re.IGNORECASE),
+    re.compile(r"secret", re.IGNORECASE),
+    re.compile(r"password", re.IGNORECASE),
+    re.compile(r"credential", re.IGNORECASE),
+    re.compile(r"private[_-]?key", re.IGNORECASE),
+    re.compile(r"(^|/)(id_rsa|id_dsa|id_ecdsa|id_ed25519)($|[./])", re.IGNORECASE),
+]
+
+UNSAFE_CONTENT_PATTERNS = [
+    re.compile(r"sk-ant-[A-Za-z0-9_-]{20,}"),
+    re.compile(r"\b\d{8,12}:[A-Za-z0-9_-]{30,}\b"),
+    re.compile(r"github_pat_[A-Za-z0-9_]{20,}"),
+    re.compile(r"\bghp_[A-Za-z0-9]{20,}\b"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+    re.compile(r"ANTHROPIC_API_KEY\s*=\s*sk-ant-", re.IGNORECASE),
+    re.compile(r"TELEGRAM_BOT_TOKEN\s*=\s*\d{8,12}:", re.IGNORECASE),
+    re.compile(r"authorization\s*:\s*bearer\s+[A-Za-z0-9._-]{20,}", re.IGNORECASE),
+    re.compile(r"cookie\s*:\s*[A-Za-z0-9._=%; -]{20,}", re.IGNORECASE),
+]
+
+TEXT_EXTENSIONS = {
+    ".csv",
+    ".html",
+    ".json",
+    ".log",
+    ".md",
+    ".py",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
 
 
 def _utc_now() -> str:
@@ -63,6 +119,19 @@ def _age_hours(path: Path) -> float | None:
     return round((datetime.now().timestamp() - os.path.getmtime(path)) / 3600, 2)
 
 
+def _http_get(url: str, timeout: int = 20) -> tuple[bool, int | None, bytes | None, str | None, float]:
+    started = time.perf_counter()
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as response:
+            body = response.read()
+            return True, int(response.status), body, None, round(time.perf_counter() - started, 3)
+    except urllib.error.HTTPError as exc:
+        body = exc.read() if hasattr(exc, "read") else None
+        return False, int(exc.code), body, str(exc), round(time.perf_counter() - started, 3)
+    except Exception as exc:
+        return False, None, None, str(exc), round(time.perf_counter() - started, 3)
+
+
 def _read_decisions() -> list[dict]:
     db = Path(DB_FILE)
     if not db.exists():
@@ -90,14 +159,14 @@ def _master_dataset_status() -> dict:
         }
     try:
         df = pd.read_csv(MASTER_DATASET)
-    except Exception as e:
+    except Exception as exc:
         return {
             "exists": True,
             "master_dataset_last_date": None,
             "master_dataset_rows": 0,
             "master_dataset_columns": 0,
             "age_hours": _age_hours(MASTER_DATASET),
-            "warnings": [f"master_dataset_unreadable: {e}"],
+            "warnings": [f"master_dataset_unreadable: {exc}"],
         }
 
     date_col = "timestamp" if "timestamp" in df.columns else "date" if "date" in df.columns else None
@@ -124,23 +193,32 @@ def _master_dataset_status() -> dict:
     }
 
 
-def _endpoint_health_summary() -> dict:
-    checks = {
-        "/system-health": [MASTER_DATASET, Path("data/raw/live_btc_15m.csv")],
-        "/learning-status": [Path(DB_FILE), DECISION_EVALUATIONS],
-        "/risk-block-performance": [RISK_BLOCK_REPORT],
-        "/smart-money": [SMART_MONEY_REPORT],
-        "/smart-money-backtest": [SMART_MONEY_BACKTEST],
-        "/download/all.zip": [Path(DB_FILE)],
-    }
-    out = {}
-    for endpoint, paths in checks.items():
-        missing = [str(p) for p in paths if not p.exists()]
-        out[endpoint] = {
-            "status": "ok" if not missing else "warning",
-            "missing_sources": missing,
+def _endpoint_statuses() -> tuple[dict[str, dict], list[str]]:
+    statuses: dict[str, dict] = {}
+    errors: list[str] = []
+    for endpoint in ENDPOINTS_TO_CHECK:
+        url = f"{LOCAL_BASE_URL}{endpoint}"
+        ok, status, body, error, elapsed = _http_get(url)
+        content_type = None
+        parsed = False
+        if body:
+            try:
+                json.loads(body.decode("utf-8"))
+                parsed = True
+                content_type = "json"
+            except Exception:
+                content_type = "non_json"
+        statuses[endpoint] = {
+            "ok": ok and status and 200 <= status < 300,
+            "http_status": status,
+            "elapsed_seconds": elapsed,
+            "content_type": content_type,
+            "json_parse_ok": parsed,
+            "error": error,
         }
-    return out
+        if not statuses[endpoint]["ok"]:
+            errors.append(f"endpoint_failed:{endpoint}:{error or status}")
+    return statuses, errors
 
 
 def _learning_counts(decisions: list[dict]) -> dict:
@@ -148,7 +226,7 @@ def _learning_counts(decisions: list[dict]) -> dict:
         "decisions_total": len(decisions),
         "claude_buy_count": sum(1 for d in decisions if (d.get("claude_action") or "").upper() == "BUY"),
         "candidate_buy_count": sum(1 for d in decisions if (d.get("candidate_action") or "").upper() == "BUY"),
-        "risk_blocked_candidate_count": sum(1 for d in decisions if int(d.get("risk_blocked_candidate") or 0) == 1),
+        "risk_blocked_candidates": sum(1 for d in decisions if int(d.get("risk_blocked_candidate") or 0) == 1),
         "trades_executed": sum(1 for d in decisions if int(d.get("trade_executed") or 0) == 1),
         "shadow_buy_count": sum(1 for d in decisions if d.get("shadow_action")),
         "shadow_smart_money_count": sum(1 for d in decisions if d.get("shadow_smart_money_action")),
@@ -156,7 +234,7 @@ def _learning_counts(decisions: list[dict]) -> dict:
 
 
 def _progress_targets(counts: dict) -> dict:
-    blocked = counts["risk_blocked_candidate_count"]
+    blocked = counts["risk_blocked_candidates"]
     shadow = counts["shadow_buy_count"]
     shadow_sm = counts["shadow_smart_money_count"]
     return {
@@ -181,10 +259,7 @@ def _risk_block_performance() -> dict:
         "ready_to_tune": bool(report.get("ready_to_tune")),
         "total_blocked_candidates": int(report.get("total_blocked_candidates") or 0),
         "minimum_required_before_tuning": int(report.get("minimum_required_before_tuning") or BLOCKED_BUY_TARGET),
-        "top_blockers": [
-            {"blocker": name, **stats}
-            for name, stats in top[:5]
-        ],
+        "top_blockers": [{"blocker": name, **stats} for name, stats in top[:5]],
         "bb_squeeze": {
             "count": int(bb.get("count") or 0),
             "avg_return_1h": bb.get("avg_return_1h"),
@@ -247,82 +322,169 @@ def _smart_money_performance(decisions: list[dict]) -> dict:
     }
 
 
-def _download_safety() -> dict:
-    unsafe_names = {".env", "cookies.json", "cookies.txt"}
-    zip_path = Path("data/tmp/latest_all_download_check.zip")
-    # The live endpoint builds the ZIP dynamically. This report documents the
-    # intended allowlist policy and verifies known local artifacts are not part
-    # of the report allowlist.
+def _is_text_member(name: str) -> bool:
+    return Path(name).suffix.lower() in TEXT_EXTENSIONS
+
+
+def _download_safety() -> tuple[dict, list[str]]:
+    url = f"{LOCAL_BASE_URL}{DOWNLOAD_ZIP_ENDPOINT}"
+    ok, status, body, error, elapsed = _http_get(url, timeout=30)
+    findings: list[dict[str, str]] = []
+    errors: list[str] = []
+    included_files: list[str] = []
+
+    if not ok or not body:
+        errors.append(f"download_zip_failed:{error or status}")
+        return {
+            "download_zip_safe": False,
+            "secrets_excluded": False,
+            "http_status": status,
+            "elapsed_seconds": elapsed,
+            "included_files_checked": 0,
+            "findings": findings,
+            "error": error,
+        }, errors
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(body), "r") as zf:
+            for member in zf.infolist():
+                name = member.filename.replace("\\", "/")
+                included_files.append(name)
+                for pattern in UNSAFE_NAME_PATTERNS:
+                    if pattern.search(name):
+                        findings.append({"type": "unsafe_name", "file": name, "pattern": pattern.pattern})
+
+                if member.file_size > 2_000_000 or not _is_text_member(name):
+                    continue
+                try:
+                    text = zf.read(member).decode("utf-8", errors="ignore")
+                except Exception:
+                    continue
+                for pattern in UNSAFE_CONTENT_PATTERNS:
+                    if pattern.search(text):
+                        findings.append({"type": "unsafe_content", "file": name, "pattern": pattern.pattern})
+    except Exception as exc:
+        errors.append(f"download_zip_unreadable:{exc}")
+        return {
+            "download_zip_safe": False,
+            "secrets_excluded": False,
+            "http_status": status,
+            "elapsed_seconds": elapsed,
+            "included_files_checked": 0,
+            "findings": findings,
+            "error": str(exc),
+        }, errors
+
+    if findings:
+        errors.append("download_zip_unsafe_content_found")
+
+    safe = not findings
     return {
-        "env_excluded": True,
-        "api_keys_excluded": True,
-        "telegram_token_excluded": True,
-        "cookies_excluded": True,
-        "secrets_excluded": True,
-        "unsafe_names_checked": sorted(unsafe_names),
-        "note": "download/all.zip uses an explicit allowlist and does not include .env, tokens, cookies, or secrets.",
-    }
+        "download_zip_safe": safe,
+        "secrets_excluded": safe,
+        "http_status": status,
+        "elapsed_seconds": elapsed,
+        "included_files_checked": len(included_files),
+        "included_files": included_files,
+        "findings": findings,
+        "env_excluded": not any(f["file"].endswith(".env") for f in findings),
+        "api_keys_excluded": not any("api" in f["pattern"].lower() or "sk-ant" in f["pattern"] for f in findings),
+        "telegram_token_excluded": not any("telegram" in f["pattern"].lower() or r"\d{8,12}" in f["pattern"] for f in findings),
+        "cookies_excluded": not any("cookie" in f["pattern"].lower() for f in findings),
+    }, errors
 
 
-def _build_recommendations(system_status: str, counts: dict, progress: dict, risk: dict, smart: dict) -> list[str]:
-    recs: list[str] = []
-    if system_status != "ok":
-        recs.append("INVESTIGATE_DATA_HEALTH")
-    if counts["risk_blocked_candidate_count"] < BLOCKED_BUY_TARGET:
-        recs.append("COLLECT_MORE_DATA")
-    if counts["shadow_buy_count"] < SHADOW_BUY_TARGET:
-        recs.append("COLLECT_MORE_DATA")
-    if counts["shadow_smart_money_count"] < SHADOW_SMART_MONEY_TARGET:
-        recs.append("COLLECT_MORE_DATA")
-    if risk.get("ready_to_tune") and counts["risk_blocked_candidate_count"] >= BLOCKED_BUY_TARGET:
-        recs.append("READY_FOR_BLOCKER_REVIEW")
-    if smart.get("smart_money_ready_for_bonus"):
-        recs.append("READY_FOR_SMART_MONEY_REVIEW")
-    if not recs:
-        recs.append("KEEP_RUNNING")
-    return sorted(set(recs), key=recs.index)
-
-
-def _system_health(master: dict, endpoints: dict) -> dict:
+def _system_health(master: dict, endpoints: dict[str, dict], download: dict) -> dict:
     warnings = list(master.get("warnings") or [])
     for endpoint, item in endpoints.items():
-        if item["status"] != "ok":
-            warnings.append(f"{endpoint}_missing_sources")
-    status = "warning" if warnings else "ok"
+        if not item.get("ok"):
+            warnings.append(f"{endpoint}_failed")
+    if not download.get("download_zip_safe"):
+        warnings.append("download_zip_unsafe_or_unavailable")
+    status = "ok" if not warnings else "warning"
     return {
         "system_health_status": status,
         "master_dataset_last_date": master.get("master_dataset_last_date"),
         "master_dataset_rows": master.get("master_dataset_rows"),
         "master_dataset_columns": master.get("master_dataset_columns"),
         "master_dataset_age_hours": master.get("age_hours"),
+        "stale_dataset_warning": bool(master.get("warnings")),
         "stale_data_warnings": warnings,
         "endpoint_health_summary": endpoints,
     }
 
 
+def _recommendations(system: dict, counts: dict, smart: dict, errors: list[str]) -> tuple[str, list[str]]:
+    recs: list[str] = []
+    if errors or system["system_health_status"] != "ok":
+        recs.append("INVESTIGATE_ERROR")
+    if (
+        counts["risk_blocked_candidates"] < BLOCKED_BUY_TARGET
+        or counts["shadow_buy_count"] < SHADOW_BUY_TARGET
+        or counts["shadow_smart_money_count"] < SHADOW_SMART_MONEY_TARGET
+    ):
+        recs.append("COLLECT_MORE_DATA")
+    if counts["risk_blocked_candidates"] >= BLOCKED_BUY_TARGET:
+        recs.append("READY_FOR_RISK_BLOCK_REVIEW")
+    if smart.get("smart_money_ready_for_bonus"):
+        recs.append("READY_FOR_SMART_MONEY_REVIEW")
+    if not recs:
+        recs.append("KEEP_RUNNING")
+
+    recs = list(dict.fromkeys(recs))
+    if "INVESTIGATE_ERROR" in recs:
+        primary = "INVESTIGATE_ERROR"
+    elif "READY_FOR_RISK_BLOCK_REVIEW" in recs:
+        primary = "READY_FOR_RISK_BLOCK_REVIEW"
+    elif "READY_FOR_SMART_MONEY_REVIEW" in recs:
+        primary = "READY_FOR_SMART_MONEY_REVIEW"
+    elif "COLLECT_MORE_DATA" in recs:
+        primary = "COLLECT_MORE_DATA"
+    else:
+        primary = "KEEP_RUNNING"
+    return primary, recs
+
+
 def _write_markdown(report: dict) -> None:
-    recs = ", ".join(report["final_recommendation"]["recommendations"])
+    recs = ", ".join(report["recommendations"])
     progress = report["progress_targets"]
     lines = [
         "# Daily Validation Report",
         "",
         f"Generated: {report['generated_at']}",
-        f"Primary recommendation: **{report['final_recommendation']['primary']}**",
+        f"Primary recommendation: **{report['final_recommendation']}**",
         f"All recommendations: `{recs}`",
         "",
         "## System Health",
         "",
-        f"- Status: `{report['system_health']['system_health_status']}`",
-        f"- Master dataset last date: `{report['system_health']['master_dataset_last_date']}`",
-        f"- Rows: `{report['system_health']['master_dataset_rows']}`",
-        f"- Columns: `{report['system_health']['master_dataset_columns']}`",
-        f"- Warnings: `{report['system_health']['stale_data_warnings']}`",
+        f"- Status: `{report['system_health_status']}`",
+        f"- Master dataset last date: `{report['master_dataset_last_date']}`",
+        f"- Rows: `{report['master_dataset_rows']}`",
+        f"- Columns: `{report['master_dataset_columns']}`",
+        f"- Stale dataset warning: `{report['stale_dataset_warning']}`",
+        f"- Errors: `{report['errors']}`",
         "",
-        "## Learning Counts",
+        "## Endpoint Statuses",
         "",
     ]
-    for key, value in report["learning_counts"].items():
-        lines.append(f"- {key}: `{value}`")
+    for endpoint, status in report["endpoint_statuses"].items():
+        lines.append(
+            f"- {endpoint}: `ok={status.get('ok')}` `http={status.get('http_status')}` "
+            f"`elapsed={status.get('elapsed_seconds')}s`"
+        )
+
+    lines.extend(["", "## Learning Counts", ""])
+    for key in [
+        "decisions_total",
+        "claude_buy_count",
+        "candidate_buy_count",
+        "risk_blocked_candidates",
+        "trades_executed",
+        "shadow_buy_count",
+        "shadow_smart_money_count",
+    ]:
+        lines.append(f"- {key}: `{report[key]}`")
+
     lines.extend(
         [
             "",
@@ -331,10 +493,11 @@ def _write_markdown(report: dict) -> None:
             f"- Blocked BUY candidates: `{progress['blocked_buy_candidates_current']} / {progress['blocked_buy_candidates_target']}`",
             f"- Shadow BUYs: `{progress['shadow_buy_current']} / {progress['shadow_buy_target']}`",
             f"- Shadow Smart Money: `{progress['shadow_smart_money_current']} / {progress['shadow_smart_money_target']}`",
+            f"- Ready for risk block review: `{report['ready_for_risk_block_review']}`",
+            f"- Ready for Smart Money review: `{report['ready_for_smart_money_review']}`",
             "",
             "## Risk Block Performance",
             "",
-            f"- Ready to tune: `{report['risk_block_performance']['ready_to_tune']}`",
             f"- Total blocked candidates: `{report['risk_block_performance']['total_blocked_candidates']}`",
             f"- BB squeeze: `{report['risk_block_performance']['bb_squeeze']}`",
             "",
@@ -347,50 +510,179 @@ def _write_markdown(report: dict) -> None:
             "",
             "## Download Safety",
             "",
+            f"- Download ZIP safe: `{report['download_zip_safe']}`",
+            f"- Secrets excluded: `{report['secrets_excluded']}`",
+            f"- Files checked: `{report['download_safety']['included_files_checked']}`",
+            f"- Findings: `{report['download_safety']['findings']}`",
+            "",
+            "## Guardrails",
+            "",
+            "- Trading logic unchanged.",
+            "- risk_engine.py unchanged.",
+            "- Trade Quality thresholds unchanged.",
+            "- Smart Money remains shadow-only until minimum sample size is reached.",
+            "- This report never recommends risk_engine changes before 30 blocked BUY candidates.",
         ]
     )
-    for key, value in report["download_safety"].items():
-        lines.append(f"- {key}: `{value}`")
     MD_REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def run() -> dict:
+def _git(args: list[str], timeout: int = 60) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["git", *args],
+        cwd=Path.cwd(),
+        text=True,
+        capture_output=True,
+        timeout=timeout,
+    )
+
+
+def _normalize_git_paths(output: str) -> list[str]:
+    return [line.strip().replace("\\", "/") for line in output.splitlines() if line.strip()]
+
+
+def _path_is_unsafe(path: str) -> bool:
+    normalized = path.replace("\\", "/")
+    return any(pattern.search(normalized) for pattern in UNSAFE_NAME_PATTERNS)
+
+
+def _auto_push_safe_reports(report: dict) -> dict:
+    if not report.get("download_zip_safe") or not report.get("secrets_excluded"):
+        return {"status": "aborted", "reason": "download_zip_safety_failed"}
+
+    rev = _git(["rev-parse", "--show-toplevel"])
+    if rev.returncode != 0:
+        return {"status": "aborted", "reason": "not_a_git_repo", "stderr": rev.stderr.strip()}
+
+    branch = _git(["branch", "--show-current"])
+    branch_name = branch.stdout.strip() or "main"
+
+    pre_staged = _git(["diff", "--cached", "--name-only"])
+    if pre_staged.returncode != 0:
+        return {"status": "aborted", "reason": "git_diff_cached_failed", "stderr": pre_staged.stderr.strip()}
+    pre_staged_files = set(_normalize_git_paths(pre_staged.stdout))
+    unsafe_pre_staged = sorted(p for p in pre_staged_files if p not in SAFE_PUSH_FILES or _path_is_unsafe(p))
+    if unsafe_pre_staged:
+        return {"status": "aborted", "reason": "unsafe_preexisting_staged_files", "files": unsafe_pre_staged}
+
+    add = _git(["add", "--", *sorted(SAFE_PUSH_FILES)])
+    if add.returncode != 0:
+        return {"status": "aborted", "reason": "git_add_failed", "stderr": add.stderr.strip()}
+
+    staged = _git(["diff", "--cached", "--name-only"])
+    if staged.returncode != 0:
+        return {"status": "aborted", "reason": "git_staged_check_failed", "stderr": staged.stderr.strip()}
+    staged_files = set(_normalize_git_paths(staged.stdout))
+    unsafe_staged = sorted(p for p in staged_files if p not in SAFE_PUSH_FILES or _path_is_unsafe(p))
+    if unsafe_staged:
+        _git(["reset", "--", *sorted(SAFE_PUSH_FILES)])
+        return {"status": "aborted", "reason": "unsafe_staged_files", "files": unsafe_staged}
+    if not staged_files:
+        return {"status": "no_changes", "branch": branch_name}
+
+    status = _git(["status", "--short"])
+    commit = _git(["commit", "-m", "Update daily validation report", "--", *sorted(SAFE_PUSH_FILES)], timeout=120)
+    if commit.returncode != 0:
+        return {
+            "status": "aborted",
+            "reason": "git_commit_failed",
+            "stderr": commit.stderr.strip(),
+            "stdout": commit.stdout.strip(),
+            "git_status": status.stdout.strip(),
+        }
+
+    push = _git(["push", "origin", branch_name], timeout=180)
+    if push.returncode != 0:
+        return {
+            "status": "push_failed",
+            "branch": branch_name,
+            "stderr": push.stderr.strip(),
+            "stdout": push.stdout.strip(),
+            "commit": commit.stdout.strip(),
+        }
+    return {
+        "status": "pushed",
+        "branch": branch_name,
+        "commit": commit.stdout.strip(),
+        "push": push.stdout.strip() or push.stderr.strip(),
+    }
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def run(auto_push: bool | None = None) -> dict:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
+
     decisions = _read_decisions()
     master = _master_dataset_status()
-    endpoints = _endpoint_health_summary()
-    system = _system_health(master, endpoints)
+    endpoints, endpoint_errors = _endpoint_statuses()
+    download_safety, download_errors = _download_safety()
+    errors = endpoint_errors + download_errors
+    system = _system_health(master, endpoints, download_safety)
     counts = _learning_counts(decisions)
     progress = _progress_targets(counts)
     risk = _risk_block_performance()
     smart = _smart_money_performance(decisions)
-    recommendations = _build_recommendations(system["system_health_status"], counts, progress, risk, smart)
+    primary, recommendations = _recommendations(system, counts, smart, errors)
 
-    report = {
+    report: dict[str, Any] = {
         "generated_at": _utc_now(),
+        "system_health_status": system["system_health_status"],
+        "master_dataset_last_date": master.get("master_dataset_last_date"),
+        "master_dataset_rows": master.get("master_dataset_rows"),
+        "master_dataset_columns": master.get("master_dataset_columns"),
+        "stale_dataset_warning": bool(master.get("warnings")),
+        "endpoint_statuses": endpoints,
+        "decisions_total": counts["decisions_total"],
+        "claude_buy_count": counts["claude_buy_count"],
+        "candidate_buy_count": counts["candidate_buy_count"],
+        "risk_blocked_candidates": counts["risk_blocked_candidates"],
+        "trades_executed": counts["trades_executed"],
+        "shadow_buy_count": counts["shadow_buy_count"],
+        "shadow_smart_money_count": counts["shadow_smart_money_count"],
+        "ready_for_risk_block_review": counts["risk_blocked_candidates"] >= BLOCKED_BUY_TARGET,
+        "ready_for_smart_money_review": counts["shadow_smart_money_count"] >= SHADOW_SMART_MONEY_TARGET,
+        "download_zip_safe": bool(download_safety.get("download_zip_safe")),
+        "secrets_excluded": bool(download_safety.get("secrets_excluded")),
+        "errors": errors,
+        "final_recommendation": primary,
+        "recommendations": recommendations,
         "system_health": system,
         "learning_counts": counts,
         "progress_targets": progress,
         "risk_block_performance": risk,
         "smart_money_performance": smart,
-        "download_safety": _download_safety(),
-        "final_recommendation": {
-            "primary": recommendations[0],
-            "recommendations": recommendations,
-            "rules": [
-                "If blocked BUY candidates < 30, collect more data.",
-                "If shadow Smart Money < 50, Smart Money remains shadow-only.",
-                "If source health fails, investigate data health.",
-                "Never change risk_engine before minimum sample size.",
-            ],
-        },
+        "download_safety": download_safety,
+        "guardrails": [
+            "No trading logic changed by this report.",
+            "risk_engine.py remains final authority.",
+            "Trade Quality thresholds are not changed by this report.",
+            "Smart Money remains shadow-only until minimum sample size is reached.",
+            "Do not change risk_engine before at least 30 blocked BUY candidates are measured.",
+        ],
     }
+
     JSON_REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
     _write_markdown(report)
+
+    if auto_push is None:
+        auto_push = _env_bool("DAILY_VALIDATION_AUTOPUSH", True)
+    push_result = {"status": "skipped", "reason": "auto_push_disabled"}
+    if auto_push:
+        push_result = _auto_push_safe_reports(report)
+
     print(f"Daily validation report written -> {JSON_REPORT}")
     print(f"Markdown report written -> {MD_REPORT}")
-    print(f"Recommendation: {', '.join(recommendations)}")
-    return report
+    print(f"Recommendation: {primary}")
+    print(f"Auto-push: {push_result['status']}")
+    if push_result.get("reason"):
+        print(f"Auto-push reason: {push_result['reason']}")
+    return {**report, "auto_push": push_result}
 
 
 if __name__ == "__main__":
