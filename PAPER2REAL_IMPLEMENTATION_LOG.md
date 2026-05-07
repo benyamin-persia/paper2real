@@ -422,3 +422,60 @@ Publishing guardrails:
 - The scheduled Git push aborts if any staged file is outside the two safe report paths.
 - `.env`, API keys, Telegram tokens, cookies, private credentials, runtime DB files, logs, and ZIP downloads are never staged by the runner.
 - The `/daily-validation-report` dashboard endpoint runs report generation with auto-push disabled, so opening the dashboard cannot create Git commits.
+
+## 1-Hour Learning-Only Scans
+
+Status: implemented as evidence collection only.
+
+Why this exists:
+
+- Normal paper scans are intentionally conservative and run slowly.
+- Learning-only scans collect candidate BUY, risk-block, shadow BUY, and Smart Money shadow evidence faster.
+- The goal is better measurement, not new trade execution.
+
+Guardrails:
+
+- Learning-only scans never execute BUY.
+- Learning-only scans never execute SELL.
+- Learning-only scans never change portfolio balance.
+- Learning-only scans never open or close paper trades.
+- `risk_engine.py` remains final authority for final action labeling.
+- `bb_squeeze`, daily loss limit, monthly loss limit, max drawdown, max open trades, and consecutive loss protection remain unchanged.
+- Trade Quality thresholds remain unchanged.
+- Smart Money remains shadow-only.
+- `SMART_MONEY_MAX_TQ_BONUS` remains `0`.
+
+Scheduling:
+
+- `deploy/run_learning_only_scan.sh` triggers the local app endpoint `/learning-only-scan`.
+- `deploy/install_learning_only_cron.sh` installs an hourly cron entry.
+- The runner uses a host lock directory to avoid overlapping cron runs.
+- The app endpoint also uses the existing scan lock, so it will skip if a normal scan is already running.
+
+Claude usage:
+
+- Learning-only scans use selective Claude calls.
+- Claude is called only when the scan has meaningful evidence:
+  - Trade Quality score >= 55
+  - Smart Money score >= 60
+  - BTC moved more than 0.75% in the last hour
+  - critical event or depeg exists
+  - candidate action could become BUY
+  - risk blocker changed
+  - new BOS/CHoCH appeared
+  - new liquidity sweep appeared
+- Boring scans use deterministic evidence logging with `claude_called = 0`.
+
+Duplicate suppression:
+
+- Duplicate learning-only scans are not stored as full decision rows.
+- Suppressed duplicates are logged as local events with event type `learning_only_scan_skipped_duplicate`.
+- Telegram is not used for routine learning-only scans or duplicate suppression.
+
+Daily validation:
+
+- The validation report now tracks learning-only scan count, live paper scan count, duplicate suppression, Claude calls from learning scans, estimated learning API cost, and estimated days to sample targets.
+- Tuning remains blocked until minimum sample targets are reached:
+  - 30 risk-blocked BUY candidates
+  - 100 shadow BUY records
+  - 50 Smart Money shadow records

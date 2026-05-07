@@ -103,6 +103,12 @@ def init_db():
         pass
     for col in (
         "risk_summary TEXT",
+        "scan_mode TEXT",
+        "learning_scan_type TEXT",
+        "claude_called INTEGER",
+        "duplicate_suppressed INTEGER DEFAULT 0",
+        "meaningful_change_reason TEXT",
+        "candle_timestamp TEXT",
         "invalid_if_json TEXT",
         "historical_summary_json TEXT",
         "trade_quality_json TEXT",
@@ -474,6 +480,17 @@ def log_decision(
     candidate_source = candidate.get("source") or candidate.get("candidate_source") or "none"
     candidate_confidence = candidate.get("confidence")
     candidate_reason = candidate.get("reason") or candidate.get("candidate_reason") or ""
+    scan_mode = market.get("scan_mode") or trigger
+    learning_scan_type = market.get("learning_scan_type")
+    claude_called = int(market.get("claude_called") if market.get("claude_called") is not None else bool(usage))
+    duplicate_suppressed = int(market.get("duplicate_suppressed") or 0)
+    meaningful_change_reason = market.get("meaningful_change_reason") or ""
+    candle_timestamp = market.get("candle_timestamp")
+    if not candle_timestamp and market.get("price_timestamp"):
+        try:
+            candle_timestamp = datetime.fromtimestamp(float(market["price_timestamp"])).isoformat()
+        except Exception:
+            candle_timestamp = str(market.get("price_timestamp"))
     risk_blocked_candidate = int(
         candidate_action == "BUY"
         and (final.get("action") or "").upper() == "HOLD"
@@ -516,7 +533,9 @@ def log_decision(
     con = sqlite3.connect(DB_FILE)
     con.execute(
         f"""INSERT INTO decisions
-           (timestamp, trigger, btc_price, rsi_14, fear_greed, funding_rate,
+           (timestamp, trigger, scan_mode, learning_scan_type, claude_called,
+            duplicate_suppressed, meaningful_change_reason, candle_timestamp,
+            btc_price, rsi_14, fear_greed, funding_rate,
             claude_action, claude_conf, claude_reason,
             final_action, blocked_by, block_reason,
             position_usd, stop_price, trade_executed,
@@ -541,10 +560,16 @@ def log_decision(
             shadow_action, shadow_entry_price, shadow_score, shadow_reason,
             shadow_stop_price, shadow_take_profit_price,
             ai_model, ai_prompt, ai_response, input_tokens, output_tokens, api_cost_usd)
-           VALUES ({','.join(['?'] * 77)})""",
+           VALUES ({','.join(['?'] * 83)})""",
         (
             int(time.time()),
             trigger,
+            scan_mode,
+            learning_scan_type,
+            claude_called,
+            duplicate_suppressed,
+            meaningful_change_reason[:700],
+            candle_timestamp,
             market.get("price"),
             market.get("rsi_14"),
             market.get("fear_greed_index"),

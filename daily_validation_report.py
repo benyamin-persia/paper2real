@@ -23,7 +23,14 @@ from typing import Any
 
 import pandas as pd
 
-from config import DB_FILE
+from config import (
+    DB_FILE,
+    LEARNING_ONLY_SCAN_ENABLED,
+    LEARNING_ONLY_SCAN_INTERVAL_MINUTES,
+    LEARNING_ONLY_MAX_PER_DAY,
+    AI_INPUT_USD_PER_MILLION_TOKENS,
+    AI_OUTPUT_USD_PER_MILLION_TOKENS,
+)
 
 
 REPORT_DIR = Path("data/reports")
@@ -147,6 +154,21 @@ def _read_decisions() -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def _read_events() -> list[dict]:
+    db = Path(DB_FILE)
+    if not db.exists():
+        return []
+    con = sqlite3.connect(db)
+    con.row_factory = sqlite3.Row
+    try:
+        rows = con.execute("SELECT * FROM events ORDER BY id ASC").fetchall()
+    except sqlite3.OperationalError:
+        rows = []
+    finally:
+        con.close()
+    return [dict(r) for r in rows]
+
+
 def _master_dataset_status() -> dict:
     if not MASTER_DATASET.exists():
         return {
@@ -221,7 +243,17 @@ def _endpoint_statuses() -> tuple[dict[str, dict], list[str]]:
     return statuses, errors
 
 
-def _learning_counts(decisions: list[dict]) -> dict:
+def _learning_counts(decisions: list[dict], events: list[dict]) -> dict:
+    learning_rows = [
+        d for d in decisions
+        if d.get("scan_mode") == "learning_only" or d.get("trigger") == "learning_only_scan"
+    ]
+    live_rows = [d for d in decisions if d not in learning_rows]
+    duplicate_events = [
+        e for e in events
+        if e.get("event_type") == "learning_only_scan_skipped_duplicate"
+    ]
+    last_learning = max((int(d.get("timestamp") or 0) for d in learning_rows), default=0)
     return {
         "decisions_total": len(decisions),
         "claude_buy_count": sum(1 for d in decisions if (d.get("claude_action") or "").upper() == "BUY"),
@@ -230,6 +262,11 @@ def _learning_counts(decisions: list[dict]) -> dict:
         "trades_executed": sum(1 for d in decisions if int(d.get("trade_executed") or 0) == 1),
         "shadow_buy_count": sum(1 for d in decisions if d.get("shadow_action")),
         "shadow_smart_money_count": sum(1 for d in decisions if d.get("shadow_smart_money_action")),
+        "learning_only_scans_total": len(learning_rows),
+        "live_paper_scans_total": len(live_rows),
+        "last_learning_only_scan_time": datetime.fromtimestamp(last_learning, timezone.utc).isoformat() if last_learning else None,
+        "duplicate_learning_scans_suppressed": len(duplicate_events),
+        "claude_calls_from_learning_scans": sum(int(d.get("claude_called") or 0) for d in learning_rows),
     }
 
 
@@ -247,6 +284,74 @@ def _progress_targets(counts: dict) -> dict:
         "shadow_smart_money_current": shadow_sm,
         "shadow_smart_money_target": SHADOW_SMART_MONEY_TARGET,
         "shadow_smart_money_pct": round(min(shadow_sm / SHADOW_SMART_MONEY_TARGET, 1) * 100, 2),
+    }
+
+
+def _learning_cost_estimates(decisions: list[dict]) -> dict:
+    learning_rows = [
+        d for d in decisions
+        if d.get("scan_mode") == "learning_only" or d.get("trigger") == "learning_only_scan"
+    ]
+    max_scans = min(LEARNING_ONLY_MAX_PER_DAY, int(1440 / max(1, LEARNING_ONLY_SCAN_INTERVAL_MINUTES)))
+    if not learning_rows:
+        return {
+            "estimated_learning_api_cost_daily": 0.0,
+            "estimated_learning_api_cost_monthly": 0.0,
+        }
+    per_scan_costs = []
+    for row in learning_rows:
+        if row.get("api_cost_usd") is not None:
+            per_scan_costs.append(float(row.get("api_cost_usd") or 0))
+        else:
+            input_tokens = int(row.get("input_tokens") or 0)
+            output_tokens = int(row.get("output_tokens") or 0)
+            per_scan_costs.append(
+                input_tokens / 1_000_000 * AI_INPUT_USD_PER_MILLION_TOKENS
+                + output_tokens / 1_000_000 * AI_OUTPUT_USD_PER_MILLION_TOKENS
+            )
+    avg_cost = mean(per_scan_costs) if per_scan_costs else 0.0
+    daily = round(avg_cost * max_scans, 6)
+    return {
+        "estimated_learning_api_cost_daily": daily,
+        "estimated_learning_api_cost_monthly": round(daily * 30, 6),
+    }
+
+
+def _estimated_days_to_targets(decisions: list[dict], counts: dict) -> dict:
+    learning_rows = [
+        d for d in decisions
+        if d.get("scan_mode") == "learning_only" or d.get("trigger") == "learning_only_scan"
+    ]
+    if len(learning_rows) < 2:
+        return {
+            "estimated_days_to_30_blocked": None,
+            "estimated_days_to_100_shadow": None,
+            "estimated_days_to_50_smart_money": None,
+        }
+    timestamps = sorted(int(d.get("timestamp") or 0) for d in learning_rows if d.get("timestamp"))
+    observed_days = max((timestamps[-1] - timestamps[0]) / 86400, 1 / 24)
+    learning_blocked = sum(int(d.get("risk_blocked_candidate") or 0) == 1 for d in learning_rows)
+    learning_shadow = sum(1 for d in learning_rows if d.get("shadow_action"))
+    learning_shadow_sm = sum(1 for d in learning_rows if d.get("shadow_smart_money_action"))
+
+    def days_remaining(current: int, target: int, observed_count: int):
+        if current >= target:
+            return 0.0
+        rate = observed_count / observed_days if observed_days > 0 else 0
+        if rate <= 0:
+            return None
+        return round((target - current) / rate, 2)
+
+    return {
+        "estimated_days_to_30_blocked": days_remaining(
+            counts["risk_blocked_candidates"], BLOCKED_BUY_TARGET, learning_blocked
+        ),
+        "estimated_days_to_100_shadow": days_remaining(
+            counts["shadow_buy_count"], SHADOW_BUY_TARGET, learning_shadow
+        ),
+        "estimated_days_to_50_smart_money": days_remaining(
+            counts["shadow_smart_money_count"], SHADOW_SMART_MONEY_TARGET, learning_shadow_sm
+        ),
     }
 
 
@@ -496,6 +601,22 @@ def _write_markdown(report: dict) -> None:
             f"- Ready for risk block review: `{report['ready_for_risk_block_review']}`",
             f"- Ready for Smart Money review: `{report['ready_for_smart_money_review']}`",
             "",
+            "## Learning-Only Scans",
+            "",
+            f"- Enabled: `{report['learning_only_scan_enabled']}`",
+            f"- Interval minutes: `{report['learning_only_interval_minutes']}`",
+            f"- Learning-only scans total: `{report['learning_only_scans_total']}`",
+            f"- Live paper scans total: `{report['live_paper_scans_total']}`",
+            f"- Last learning-only scan: `{report['last_learning_only_scan_time']}`",
+            f"- Duplicate scans suppressed: `{report['duplicate_learning_scans_suppressed']}`",
+            f"- Claude calls from learning scans: `{report['claude_calls_from_learning_scans']}`",
+            f"- Estimated learning API cost daily: `${report['estimated_learning_api_cost_daily']}`",
+            f"- Estimated learning API cost monthly: `${report['estimated_learning_api_cost_monthly']}`",
+            f"- Estimated days to 30 blocked BUY candidates: `{report['estimated_days_to_30_blocked']}`",
+            f"- Estimated days to 100 shadow BUYs: `{report['estimated_days_to_100_shadow']}`",
+            f"- Estimated days to 50 Smart Money shadows: `{report['estimated_days_to_50_smart_money']}`",
+            "- Learning-only scans do not execute trades or mutate portfolio balance.",
+            "",
             "## Risk Block Performance",
             "",
             f"- Total blocked candidates: `{report['risk_block_performance']['total_blocked_candidates']}`",
@@ -619,13 +740,16 @@ def run(auto_push: bool | None = None) -> dict:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
     decisions = _read_decisions()
+    events = _read_events()
     master = _master_dataset_status()
     endpoints, endpoint_errors = _endpoint_statuses()
     download_safety, download_errors = _download_safety()
     errors = endpoint_errors + download_errors
     system = _system_health(master, endpoints, download_safety)
-    counts = _learning_counts(decisions)
+    counts = _learning_counts(decisions, events)
     progress = _progress_targets(counts)
+    cost_estimates = _learning_cost_estimates(decisions)
+    days_estimates = _estimated_days_to_targets(decisions, counts)
     risk = _risk_block_performance()
     smart = _smart_money_performance(decisions)
     primary, recommendations = _recommendations(system, counts, smart, errors)
@@ -645,6 +769,15 @@ def run(auto_push: bool | None = None) -> dict:
         "trades_executed": counts["trades_executed"],
         "shadow_buy_count": counts["shadow_buy_count"],
         "shadow_smart_money_count": counts["shadow_smart_money_count"],
+        "learning_only_scan_enabled": LEARNING_ONLY_SCAN_ENABLED,
+        "learning_only_interval_minutes": LEARNING_ONLY_SCAN_INTERVAL_MINUTES,
+        "learning_only_scans_total": counts["learning_only_scans_total"],
+        "live_paper_scans_total": counts["live_paper_scans_total"],
+        "last_learning_only_scan_time": counts["last_learning_only_scan_time"],
+        "duplicate_learning_scans_suppressed": counts["duplicate_learning_scans_suppressed"],
+        "claude_calls_from_learning_scans": counts["claude_calls_from_learning_scans"],
+        **cost_estimates,
+        **days_estimates,
         "ready_for_risk_block_review": counts["risk_blocked_candidates"] >= BLOCKED_BUY_TARGET,
         "ready_for_smart_money_review": counts["shadow_smart_money_count"] >= SHADOW_SMART_MONEY_TARGET,
         "download_zip_safe": bool(download_safety.get("download_zip_safe")),
@@ -655,6 +788,8 @@ def run(auto_push: bool | None = None) -> dict:
         "system_health": system,
         "learning_counts": counts,
         "progress_targets": progress,
+        "learning_cost_estimates": cost_estimates,
+        "learning_days_estimates": days_estimates,
         "risk_block_performance": risk,
         "smart_money_performance": smart,
         "download_safety": download_safety,

@@ -43,6 +43,12 @@ SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS = float(os.getenv("SMART_MONEY_MIN_SCORE_FOR
 SMART_MONEY_MAX_TQ_BONUS = float(os.getenv("SMART_MONEY_MAX_TQ_BONUS", "0"))
 SMART_MONEY_NO_REPAINT = os.getenv("SMART_MONEY_NO_REPAINT", "true").lower() in {"1", "true", "yes", "on"}
 
+LEARNING_ONLY_SCAN_ENABLED = os.getenv("LEARNING_ONLY_SCAN_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
+LEARNING_ONLY_SCAN_INTERVAL_MINUTES = int(os.getenv("LEARNING_ONLY_SCAN_INTERVAL_MINUTES", "60"))
+LEARNING_ONLY_SCAN_EXECUTES_TRADES = os.getenv("LEARNING_ONLY_SCAN_EXECUTES_TRADES", "false").lower() in {"1", "true", "yes", "on"}
+LEARNING_ONLY_CALL_CLAUDE_MODE = os.getenv("LEARNING_ONLY_CALL_CLAUDE_MODE", "selective").lower()
+LEARNING_ONLY_MAX_PER_DAY = int(os.getenv("LEARNING_ONLY_MAX_PER_DAY", "24"))
+
 # ATR stop multipliers — shared by risk_engine.py and trader.py
 ATR_INITIAL_STOP_MULT = float(os.getenv("ATR_INITIAL_STOP_MULT", "1.5"))  # initial stop = entry - 1.5×ATR
 ATR_TRAIL_STOP_MULT   = float(os.getenv("ATR_TRAIL_STOP_MULT",   "2.0"))  # trailing stop = peak - 2.0×ATR

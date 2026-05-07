@@ -34,6 +34,11 @@ from config import (
     TRADE_QUALITY_BUY_THRESHOLD,
     TRADE_QUALITY_CAN_PROPOSE_BUY,
     STRATEGY_VERSION,
+    LEARNING_ONLY_SCAN_ENABLED,
+    LEARNING_ONLY_SCAN_INTERVAL_MINUTES,
+    LEARNING_ONLY_SCAN_EXECUTES_TRADES,
+    LEARNING_ONLY_CALL_CLAUDE_MODE,
+    LEARNING_ONLY_MAX_PER_DAY,
 )
 
 EVENTS_REFRESH_MINUTES = 15    # how often to re-scrape CryptoPanic
@@ -117,6 +122,186 @@ def _build_candidate_decision(context: dict, claude_out: dict) -> tuple[dict, di
         "_api_usage": claude_out.get("_api_usage"),
     }
     return pre_risk_tq, candidate, risk_input_decision
+
+
+def _learning_placeholder_decision(reason: str = "Deterministic learning-only scan; Claude not called.") -> dict:
+    return {
+        "action": "HOLD",
+        "confidence": 0,
+        "reason": reason,
+        "risk_summary": "learning_only_no_claude",
+        "invalid_if": [],
+        "historical_summary": {},
+        "_audit": {
+            "model": "deterministic_learning_only",
+            "prompt": "",
+            "response": reason,
+        },
+        "_api_usage": {"input_tokens": 0, "output_tokens": 0},
+    }
+
+
+def _context_candle_timestamp(context: dict) -> str | None:
+    if not context.get("price_timestamp"):
+        return None
+    try:
+        return datetime.fromtimestamp(float(context["price_timestamp"])).isoformat()
+    except Exception:
+        return str(context.get("price_timestamp"))
+
+
+def _btc_move_last_hour_pct() -> float | None:
+    try:
+        df = pd.read_csv(LIVE_CANDLES_FILE)
+        if df.empty or len(df) < 5:
+            return None
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+        df["close"] = pd.to_numeric(df["close"], errors="coerce")
+        df = df.dropna(subset=["timestamp", "close"]).sort_values("timestamp")
+        latest = df.iloc[-1]
+        cutoff = latest["timestamp"] - pd.Timedelta(hours=1)
+        prior = df[df["timestamp"] <= cutoff]
+        base = prior.iloc[-1] if not prior.empty else df.iloc[max(0, len(df) - 5)]
+        if float(base["close"]) <= 0:
+            return None
+        return round((float(latest["close"]) - float(base["close"])) / float(base["close"]) * 100, 4)
+    except Exception:
+        return None
+
+
+def _parse_dt(value) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).replace(tzinfo=None)
+    except Exception:
+        return None
+
+
+def _latest_smart_money_structure_event(context: dict) -> dict | None:
+    sm = context.get("smart_money") or {}
+    latest = None
+    latest_dt = None
+    for tf_data in (sm.get("market_structure") or {}).values():
+        event = tf_data.get("latest_event") if isinstance(tf_data, dict) else None
+        if not event:
+            continue
+        dt = _parse_dt(event.get("event_time"))
+        if dt and (latest_dt is None or dt > latest_dt):
+            latest = event
+            latest_dt = dt
+    return latest
+
+
+def _latest_smart_money_sweep(context: dict) -> dict | None:
+    sm = context.get("smart_money") or {}
+    latest = None
+    latest_dt = None
+    for tf_data in (sm.get("liquidity") or {}).values():
+        sweep = tf_data.get("latest_sweep") if isinstance(tf_data, dict) else None
+        if not sweep:
+            continue
+        dt = _parse_dt(sweep.get("swept_at"))
+        if dt and (latest_dt is None or dt > latest_dt):
+            latest = sweep
+            latest_dt = dt
+    return latest
+
+
+def _is_recent_event(event: dict | None, time_key: str, context: dict, max_minutes: int = 75) -> bool:
+    if not event:
+        return False
+    event_dt = _parse_dt(event.get(time_key))
+    candle_dt = _parse_dt(_context_candle_timestamp(context))
+    if not event_dt or not candle_dt:
+        return False
+    delta_min = abs((candle_dt - event_dt).total_seconds()) / 60
+    return delta_min <= max_minutes
+
+
+def _last_learning_decision() -> dict | None:
+    for row in trader.get_decisions(limit=300):
+        if row.get("scan_mode") == "learning_only" or row.get("trigger") == "learning_only_scan":
+            return row
+    return None
+
+
+def _learning_meaningful_reasons(context: dict, pre_risk_tq: dict, candidate: dict, final: dict) -> list[str]:
+    reasons: list[str] = []
+    tq_score = float(pre_risk_tq.get("score") or 0)
+    sm_score = float(context.get("smart_money_score") or 0)
+    move_1h = _btc_move_last_hour_pct()
+    context["btc_move_1h_pct"] = move_1h
+
+    if tq_score >= 55:
+        reasons.append(f"trade_quality_score_{tq_score:.1f}_gte_55")
+    if sm_score >= 60:
+        reasons.append(f"smart_money_score_{sm_score:.1f}_gte_60")
+    if move_1h is not None and abs(move_1h) > 0.75:
+        reasons.append(f"btc_1h_move_{move_1h:.2f}_pct")
+    if context.get("exchange_hack_alert") or context.get("stablecoin_depeg"):
+        reasons.append("critical_event_or_depeg_exists")
+    if candidate.get("action") == "BUY":
+        reasons.append("candidate_action_could_be_buy")
+
+    last = _last_learning_decision()
+    if last and (last.get("risk_blocker") or last.get("blocked_by")) != final.get("blocked_by"):
+        reasons.append("risk_blocker_changed")
+
+    event = _latest_smart_money_structure_event(context)
+    if event and "choch" in str(event.get("event_type", "")).lower() and _is_recent_event(event, "event_time", context):
+        reasons.append("new_major_choch")
+    elif event and "bos" in str(event.get("event_type", "")).lower() and _is_recent_event(event, "event_time", context):
+        reasons.append("new_major_bos")
+
+    sweep = _latest_smart_money_sweep(context)
+    if sweep and _is_recent_event(sweep, "swept_at", context):
+        reasons.append("new_liquidity_sweep")
+
+    return reasons
+
+
+def _should_call_claude_learning(reasons: list[str]) -> bool:
+    mode = LEARNING_ONLY_CALL_CLAUDE_MODE
+    if mode == "never":
+        return False
+    if mode == "always":
+        return True
+    return bool(reasons)
+
+
+def _should_suppress_duplicate_learning(context: dict, candidate: dict, final: dict, pre_risk_tq: dict, reasons: list[str]) -> tuple[bool, str]:
+    last = _last_learning_decision()
+    if not last:
+        return False, "no_prior_learning_scan"
+
+    candle_ts = _context_candle_timestamp(context)
+    same_candle = bool(candle_ts and last.get("candle_timestamp") == candle_ts)
+    same_candidate = (last.get("candidate_action") or "HOLD").upper() == (candidate.get("action") or "HOLD").upper()
+    same_final = (last.get("final_action") or "HOLD").upper() == (final.get("action") or "HOLD").upper()
+    same_blocker = (last.get("risk_blocker") or last.get("blocked_by") or "") == (final.get("blocked_by") or "")
+    tq_delta = abs(float(pre_risk_tq.get("score") or 0) - float(last.get("pre_risk_tq_score") or last.get("tq_score") or 0))
+    sm_delta = abs(float(context.get("smart_money_score") or 0) - float(last.get("smart_money_score") or 0))
+    last_price = float(last.get("btc_price") or 0)
+    price_move = abs((float(context.get("price") or 0) - last_price) / last_price * 100) if last_price > 0 else 999
+    no_new_structure = not any(r in reasons for r in ("new_major_bos", "new_major_choch", "new_liquidity_sweep"))
+
+    suppress = (
+        same_candle
+        and same_candidate
+        and same_final
+        and same_blocker
+        and tq_delta < 5
+        and sm_delta < 5
+        and no_new_structure
+        and price_move < 1
+    )
+    reason = (
+        f"same_candle={same_candle}, same_candidate={same_candidate}, same_final={same_final}, "
+        f"same_blocker={same_blocker}, tq_delta={tq_delta:.2f}, sm_delta={sm_delta:.2f}, "
+        f"price_move={price_move:.2f}, no_new_structure={no_new_structure}"
+    )
+    return suppress, reason
 
 
 def _classify_twitter_alert(text: str) -> tuple[str, bool]:
@@ -252,6 +437,7 @@ EVENT_SCAN_CHECK_MINUTES = 5
 EVENT_SCAN_COOLDOWN_MINUTES = 30
 EVENT_SCAN_MAX_PER_DAY = 3
 SCAN_LOCK = asyncio.Lock()
+LEARNING_ONLY_LAST_READY = {"risk_block": False, "smart_money": False}
 
 
 async def _notify_scan_result(trigger: str, context: dict, claude_out: dict, final: dict, trade_result: dict | None = None):
@@ -463,6 +649,161 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
     except Exception as e:
         log.error("Scan failed: %s", e)
         await notifier.notify("CRITICAL", "app_scan_failed", f"Scan failed: {e}", source=trigger, status_text="failed")
+
+
+async def _run_learning_only_scan(trigger: str = "learning_only_scan") -> dict:
+    """Run the analysis pipeline for learning evidence only. Never mutates portfolio."""
+    if not LEARNING_ONLY_SCAN_ENABLED:
+        return {"status": "disabled", "reason": "LEARNING_ONLY_SCAN_ENABLED=false"}
+    if LEARNING_ONLY_SCAN_EXECUTES_TRADES:
+        return {"status": "blocked", "reason": "LEARNING_ONLY_SCAN_EXECUTES_TRADES must remain false"}
+    if SCAN_LOCK.locked():
+        msg = "learning_only_scan_skipped_overlap"
+        log.warning(msg)
+        trader.log_event(
+            "WARNING",
+            msg,
+            "Learning-only scan skipped because another scan is running.",
+            source="learning_only",
+            status="skipped",
+            metadata={"scan_mode": "learning_only"},
+        )
+        return {"status": "skipped", "reason": msg}
+
+    async with SCAN_LOCK:
+        try:
+            context = await get_market_context()
+            context["scan_mode"] = "learning_only"
+            context["learning_scan_type"] = "hourly_evidence"
+            context["candle_timestamp"] = _context_candle_timestamp(context)
+
+            issues = _check_data_freshness(context)
+            for issue in issues:
+                log.warning("LEARNING DATA: %s", issue)
+                if issue.startswith("CRITICAL"):
+                    await notifier.notify(
+                        "CRITICAL",
+                        "learning_only_scan_failed",
+                        issue,
+                        source="learning_only",
+                        status_text="failed",
+                        metadata={"scan_mode": "learning_only", "price": context.get("price")},
+                    )
+                elif "Training dataset" in issue:
+                    trader.log_event(
+                        "WARNING",
+                        "stale_dataset",
+                        issue,
+                        source="learning_only",
+                        status="warning",
+                        metadata={"scan_mode": "learning_only"},
+                    )
+            if any(issue.startswith("CRITICAL") for issue in issues):
+                return {"status": "skipped", "reason": "critical_data_missing", "issues": issues}
+
+            price = context["price"]
+            summary = trader.portfolio_summary(price)
+            closed = [t for t in trader.get_all_trades() if t["closed"]]
+
+            deterministic = _learning_placeholder_decision()
+            pre_risk_tq, candidate, risk_input_decision = _build_candidate_decision(context, deterministic)
+            final = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+            reasons = _learning_meaningful_reasons(context, pre_risk_tq, candidate, final)
+            claude_called = 0
+            claude_out = deterministic
+
+            if _should_call_claude_learning(reasons):
+                claude_out = brain.decide(context, summary)
+                claude_called = 1
+                pre_risk_tq, candidate, risk_input_decision = _build_candidate_decision(context, claude_out)
+                final = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+                reasons = _learning_meaningful_reasons(context, pre_risk_tq, candidate, final)
+
+            post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
+            context["pre_risk_trade_quality"] = pre_risk_tq
+            context["post_risk_trade_quality"] = post_risk_tq
+            context["trade_quality"] = post_risk_tq
+            context["claude_called"] = claude_called
+            context["duplicate_suppressed"] = 0
+            context["meaningful_change_reason"] = ", ".join(reasons) if reasons else "deterministic_boring_scan"
+
+            duplicate, duplicate_reason = _should_suppress_duplicate_learning(context, candidate, final, pre_risk_tq, reasons)
+            if duplicate:
+                trader.log_event(
+                    "INFO",
+                    "learning_only_scan_skipped_duplicate",
+                    "Duplicate learning-only scan suppressed.",
+                    source="learning_only",
+                    status="skipped",
+                    metadata={
+                        "scan_mode": "learning_only",
+                        "duplicate_suppressed": 1,
+                        "reason": duplicate_reason,
+                        "candle_timestamp": context.get("candle_timestamp"),
+                        "candidate_action": candidate.get("action"),
+                        "final_action": final.get("action"),
+                        "risk_blocker": final.get("blocked_by"),
+                        "trade_quality_score": pre_risk_tq.get("score"),
+                        "smart_money_score": context.get("smart_money_score"),
+                    },
+                )
+                log.info("LEARNING ONLY duplicate suppressed: %s", duplicate_reason)
+                return {
+                    "status": "duplicate_suppressed",
+                    "duplicate_suppressed": 1,
+                    "reason": duplicate_reason,
+                    "claude_called": claude_called,
+                    "meaningful_change_reason": context["meaningful_change_reason"],
+                }
+
+            # Evidence-only logging. No BUY/SELL execution and no trailing stop mutation.
+            trader.log_decision(
+                context,
+                claude_out,
+                final,
+                False,
+                trigger=trigger,
+                candidate=candidate,
+                pre_risk_tq=pre_risk_tq,
+                post_risk_tq=post_risk_tq,
+                strategy_version=STRATEGY_VERSION,
+            )
+            log.info(
+                "LEARNING ONLY | BTC=$%s | Claude called=%s | Candidate=%s/%s | Final=%s%s | TQ=%s | SM=%s",
+                f"{price:,.0f}",
+                claude_called,
+                candidate.get("action"),
+                candidate.get("source"),
+                final.get("action"),
+                f" [blocked:{final.get('blocked_by')}]" if final.get("blocked_by") else "",
+                pre_risk_tq.get("score"),
+                context.get("smart_money_score"),
+            )
+            return {
+                "status": "logged",
+                "scan_mode": "learning_only",
+                "trigger": trigger,
+                "claude_called": claude_called,
+                "candidate_action": candidate.get("action"),
+                "candidate_source": candidate.get("source"),
+                "final_action": final.get("action"),
+                "risk_blocker": final.get("blocked_by"),
+                "trade_executed": False,
+                "portfolio_mutated": False,
+                "meaningful_change_reason": context["meaningful_change_reason"],
+                "trade_quality_score": pre_risk_tq.get("score"),
+                "smart_money_score": context.get("smart_money_score"),
+            }
+        except Exception as e:
+            log.error("Learning-only scan failed: %s", e)
+            await notifier.notify(
+                "CRITICAL",
+                "learning_only_scan_failed",
+                f"Learning-only scan failed: {e}",
+                source="learning_only",
+                status_text="failed",
+            )
+            return {"status": "failed", "error": str(e)}
 
 
 async def _auto_scan_loop():
@@ -1212,6 +1553,12 @@ async def manual_scan():
     await _notify_scan_result("manual", context, risk_input_decision, final, result.get("trade"))
 
     return result
+
+
+@app.post("/learning-only-scan")
+async def learning_only_scan():
+    """Run one learning-only evidence scan. This endpoint never executes trades."""
+    return await _run_learning_only_scan()
 
 
 @app.get("/portfolio")
