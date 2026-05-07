@@ -712,6 +712,36 @@ async def _run_learning_only_scan(trigger: str = "learning_only_scan") -> dict:
             claude_called = 0
             claude_out = deterministic
 
+            duplicate, duplicate_reason = _should_suppress_duplicate_learning(context, candidate, final, pre_risk_tq, reasons)
+            if duplicate:
+                trader.log_event(
+                    "INFO",
+                    "learning_only_scan_skipped_duplicate",
+                    "Duplicate learning-only scan suppressed before Claude call.",
+                    source="learning_only",
+                    status="skipped",
+                    metadata={
+                        "scan_mode": "learning_only",
+                        "duplicate_suppressed": 1,
+                        "claude_called": 0,
+                        "reason": duplicate_reason,
+                        "candle_timestamp": context.get("candle_timestamp"),
+                        "candidate_action": candidate.get("action"),
+                        "final_action": final.get("action"),
+                        "risk_blocker": final.get("blocked_by"),
+                        "trade_quality_score": pre_risk_tq.get("score"),
+                        "smart_money_score": context.get("smart_money_score"),
+                    },
+                )
+                log.info("LEARNING ONLY duplicate suppressed before Claude: %s", duplicate_reason)
+                return {
+                    "status": "duplicate_suppressed",
+                    "duplicate_suppressed": 1,
+                    "reason": duplicate_reason,
+                    "claude_called": 0,
+                    "meaningful_change_reason": ", ".join(reasons) if reasons else "deterministic_boring_scan",
+                }
+
             if _should_call_claude_learning(reasons):
                 claude_out = brain.decide(context, summary)
                 claude_called = 1
