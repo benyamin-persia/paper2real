@@ -220,7 +220,7 @@ def _endpoint_statuses() -> tuple[dict[str, dict], list[str]]:
     errors: list[str] = []
     for endpoint in ENDPOINTS_TO_CHECK:
         url = f"{LOCAL_BASE_URL}{endpoint}"
-        ok, status, body, error, elapsed = _http_get(url)
+        ok, status, body, error, elapsed = _http_get(url, timeout=60)
         content_type = None
         parsed = False
         if body:
