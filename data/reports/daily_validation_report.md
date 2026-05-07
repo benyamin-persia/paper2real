@@ -1,6 +1,6 @@
 # Daily Validation Report
 
-Generated: 2026-05-07T03:08:17.252982+00:00
+Generated: 2026-05-07T03:10:50.280170+00:00
 Primary recommendation: **COLLECT_MORE_DATA**
 All recommendations: `COLLECT_MORE_DATA`
 
@@ -15,12 +15,12 @@ All recommendations: `COLLECT_MORE_DATA`
 
 ## Endpoint Statuses
 
-- /system-health: `ok=True` `http=200` `elapsed=18.045s`
-- /learning-status: `ok=True` `http=200` `elapsed=0.071s`
-- /risk-block-performance: `ok=True` `http=200` `elapsed=0.008s`
-- /shadow-performance: `ok=True` `http=200` `elapsed=0.044s`
-- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.015s`
-- /reports: `ok=True` `http=200` `elapsed=0.029s`
+- /system-health: `ok=True` `http=200` `elapsed=24.886s`
+- /learning-status: `ok=True` `http=200` `elapsed=0.149s`
+- /risk-block-performance: `ok=True` `http=200` `elapsed=0.012s`
+- /shadow-performance: `ok=True` `http=200` `elapsed=0.074s`
+- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.036s`
+- /reports: `ok=True` `http=200` `elapsed=0.056s`
 
 ## Learning Counts
 
@@ -47,7 +47,7 @@ All recommendations: `COLLECT_MORE_DATA`
 - Learning-only scans total: `1`
 - Live paper scans total: `38`
 - Last learning-only scan: `2026-05-07T03:03:35+00:00`
-- Duplicate scans suppressed: `2`
+- Duplicate scans suppressed: `3`
 - Claude calls from learning scans: `1`
 - Estimated learning API cost daily: `$0.213984`
 - Estimated learning API cost monthly: `$6.41952`

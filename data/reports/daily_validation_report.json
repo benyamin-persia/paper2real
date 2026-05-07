@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-07T03:08:17.252982+00:00",
+  "generated_at": "2026-05-07T03:10:50.280170+00:00",
   "system_health_status": "ok",
   "master_dataset_last_date": "2026-05-06",
   "master_dataset_rows": 532,
@@ -9,7 +9,7 @@
     "/system-health": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 18.045,
+      "elapsed_seconds": 24.886,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -17,7 +17,7 @@
     "/learning-status": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.071,
+      "elapsed_seconds": 0.149,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -25,7 +25,7 @@
     "/risk-block-performance": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.008,
+      "elapsed_seconds": 0.012,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -33,7 +33,7 @@
     "/shadow-performance": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.044,
+      "elapsed_seconds": 0.074,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -41,7 +41,7 @@
     "/smart-money-backtest": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.015,
+      "elapsed_seconds": 0.036,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -49,7 +49,7 @@
     "/reports": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.029,
+      "elapsed_seconds": 0.056,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -67,7 +67,7 @@
   "learning_only_scans_total": 1,
   "live_paper_scans_total": 38,
   "last_learning_only_scan_time": "2026-05-07T03:03:35+00:00",
-  "duplicate_learning_scans_suppressed": 2,
+  "duplicate_learning_scans_suppressed": 3,
   "claude_calls_from_learning_scans": 1,
   "estimated_learning_api_cost_daily": 0.213984,
   "estimated_learning_api_cost_monthly": 6.41952,
@@ -88,14 +88,14 @@
     "master_dataset_last_date": "2026-05-06",
     "master_dataset_rows": 532,
     "master_dataset_columns": 55,
-    "master_dataset_age_hours": 6.15,
+    "master_dataset_age_hours": 6.19,
     "stale_dataset_warning": false,
     "stale_data_warnings": [],
     "endpoint_health_summary": {
       "/system-health": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 18.045,
+        "elapsed_seconds": 24.886,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -103,7 +103,7 @@
       "/learning-status": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.071,
+        "elapsed_seconds": 0.149,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -111,7 +111,7 @@
       "/risk-block-performance": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.008,
+        "elapsed_seconds": 0.012,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -119,7 +119,7 @@
       "/shadow-performance": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.044,
+        "elapsed_seconds": 0.074,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -127,7 +127,7 @@
       "/smart-money-backtest": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.015,
+        "elapsed_seconds": 0.036,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -135,7 +135,7 @@
       "/reports": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.029,
+        "elapsed_seconds": 0.056,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -153,7 +153,7 @@
     "learning_only_scans_total": 1,
     "live_paper_scans_total": 38,
     "last_learning_only_scan_time": "2026-05-07T03:03:35+00:00",
-    "duplicate_learning_scans_suppressed": 2,
+    "duplicate_learning_scans_suppressed": 3,
     "claude_calls_from_learning_scans": 1
   },
   "progress_targets": {
@@ -469,7 +469,7 @@
     "download_zip_safe": true,
     "secrets_excluded": true,
     "http_status": 200,
-    "elapsed_seconds": 3.518,
+    "elapsed_seconds": 15.602,
     "included_files_checked": 40,
     "included_files": [
       "paper_trader.db",
