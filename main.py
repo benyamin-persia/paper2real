@@ -226,6 +226,16 @@ def _last_learning_decision() -> dict | None:
     return None
 
 
+def _learning_scans_today_count() -> int:
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+    return sum(
+        1
+        for row in trader.get_decisions(limit=1000)
+        if (row.get("scan_mode") == "learning_only" or row.get("trigger") == "learning_only_scan")
+        and int(row.get("timestamp") or 0) >= int(today_start)
+    )
+
+
 def _learning_meaningful_reasons(context: dict, pre_risk_tq: dict, candidate: dict, final: dict) -> list[str]:
     reasons: list[str] = []
     tq_score = float(pre_risk_tq.get("score") or 0)
@@ -657,6 +667,18 @@ async def _run_learning_only_scan(trigger: str = "learning_only_scan") -> dict:
         return {"status": "disabled", "reason": "LEARNING_ONLY_SCAN_ENABLED=false"}
     if LEARNING_ONLY_SCAN_EXECUTES_TRADES:
         return {"status": "blocked", "reason": "LEARNING_ONLY_SCAN_EXECUTES_TRADES must remain false"}
+    scans_today = _learning_scans_today_count()
+    if scans_today >= LEARNING_ONLY_MAX_PER_DAY:
+        msg = "learning_only_scan_skipped_daily_cap"
+        trader.log_event(
+            "INFO",
+            msg,
+            f"Learning-only scan skipped because daily cap {LEARNING_ONLY_MAX_PER_DAY} is reached.",
+            source="learning_only",
+            status="skipped",
+            metadata={"scan_mode": "learning_only", "scans_today": scans_today},
+        )
+        return {"status": "skipped", "reason": msg, "scans_today": scans_today, "max_per_day": LEARNING_ONLY_MAX_PER_DAY}
     if SCAN_LOCK.locked():
         msg = "learning_only_scan_skipped_overlap"
         log.warning(msg)
