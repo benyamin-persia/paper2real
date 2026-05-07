@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-05-07T03:06:57.785420+00:00",
-  "system_health_status": "warning",
+  "generated_at": "2026-05-07T03:08:17.252982+00:00",
+  "system_health_status": "ok",
   "master_dataset_last_date": "2026-05-06",
   "master_dataset_rows": 532,
   "master_dataset_columns": 55,
   "stale_dataset_warning": false,
   "endpoint_statuses": {
     "/system-health": {
-      "ok": false,
-      "http_status": null,
-      "elapsed_seconds": 20.155,
-      "content_type": null,
-      "json_parse_ok": false,
-      "error": "timed out"
+      "ok": true,
+      "http_status": 200,
+      "elapsed_seconds": 18.045,
+      "content_type": "json",
+      "json_parse_ok": true,
+      "error": null
     },
     "/learning-status": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 2.16,
+      "elapsed_seconds": 0.071,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -25,7 +25,7 @@
     "/risk-block-performance": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.012,
+      "elapsed_seconds": 0.008,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -33,7 +33,7 @@
     "/shadow-performance": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.062,
+      "elapsed_seconds": 0.044,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -41,7 +41,7 @@
     "/smart-money-backtest": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.027,
+      "elapsed_seconds": 0.015,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -49,7 +49,7 @@
     "/reports": {
       "ok": true,
       "http_status": 200,
-      "elapsed_seconds": 0.042,
+      "elapsed_seconds": 0.029,
       "content_type": "json",
       "json_parse_ok": true,
       "error": null
@@ -78,37 +78,32 @@
   "ready_for_smart_money_review": false,
   "download_zip_safe": true,
   "secrets_excluded": true,
-  "errors": [
-    "endpoint_failed:/system-health:timed out"
-  ],
-  "final_recommendation": "INVESTIGATE_ERROR",
+  "errors": [],
+  "final_recommendation": "COLLECT_MORE_DATA",
   "recommendations": [
-    "INVESTIGATE_ERROR",
     "COLLECT_MORE_DATA"
   ],
   "system_health": {
-    "system_health_status": "warning",
+    "system_health_status": "ok",
     "master_dataset_last_date": "2026-05-06",
     "master_dataset_rows": 532,
     "master_dataset_columns": 55,
-    "master_dataset_age_hours": 6.13,
+    "master_dataset_age_hours": 6.15,
     "stale_dataset_warning": false,
-    "stale_data_warnings": [
-      "/system-health_failed"
-    ],
+    "stale_data_warnings": [],
     "endpoint_health_summary": {
       "/system-health": {
-        "ok": false,
-        "http_status": null,
-        "elapsed_seconds": 20.155,
-        "content_type": null,
-        "json_parse_ok": false,
-        "error": "timed out"
+        "ok": true,
+        "http_status": 200,
+        "elapsed_seconds": 18.045,
+        "content_type": "json",
+        "json_parse_ok": true,
+        "error": null
       },
       "/learning-status": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 2.16,
+        "elapsed_seconds": 0.071,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -116,7 +111,7 @@
       "/risk-block-performance": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.012,
+        "elapsed_seconds": 0.008,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -124,7 +119,7 @@
       "/shadow-performance": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.062,
+        "elapsed_seconds": 0.044,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -132,7 +127,7 @@
       "/smart-money-backtest": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.027,
+        "elapsed_seconds": 0.015,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -140,7 +135,7 @@
       "/reports": {
         "ok": true,
         "http_status": 200,
-        "elapsed_seconds": 0.042,
+        "elapsed_seconds": 0.029,
         "content_type": "json",
         "json_parse_ok": true,
         "error": null
@@ -474,7 +469,7 @@
     "download_zip_safe": true,
     "secrets_excluded": true,
     "http_status": 200,
-    "elapsed_seconds": 10.571,
+    "elapsed_seconds": 3.518,
     "included_files_checked": 40,
     "included_files": [
       "paper_trader.db",

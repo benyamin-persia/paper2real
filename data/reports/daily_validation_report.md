@@ -1,26 +1,26 @@
 # Daily Validation Report
 
-Generated: 2026-05-07T03:06:57.785420+00:00
-Primary recommendation: **INVESTIGATE_ERROR**
-All recommendations: `INVESTIGATE_ERROR, COLLECT_MORE_DATA`
+Generated: 2026-05-07T03:08:17.252982+00:00
+Primary recommendation: **COLLECT_MORE_DATA**
+All recommendations: `COLLECT_MORE_DATA`
 
 ## System Health
 
-- Status: `warning`
+- Status: `ok`
 - Master dataset last date: `2026-05-06`
 - Rows: `532`
 - Columns: `55`
 - Stale dataset warning: `False`
-- Errors: `['endpoint_failed:/system-health:timed out']`
+- Errors: `[]`
 
 ## Endpoint Statuses
 
-- /system-health: `ok=False` `http=None` `elapsed=20.155s`
-- /learning-status: `ok=True` `http=200` `elapsed=2.16s`
-- /risk-block-performance: `ok=True` `http=200` `elapsed=0.012s`
-- /shadow-performance: `ok=True` `http=200` `elapsed=0.062s`
-- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.027s`
-- /reports: `ok=True` `http=200` `elapsed=0.042s`
+- /system-health: `ok=True` `http=200` `elapsed=18.045s`
+- /learning-status: `ok=True` `http=200` `elapsed=0.071s`
+- /risk-block-performance: `ok=True` `http=200` `elapsed=0.008s`
+- /shadow-performance: `ok=True` `http=200` `elapsed=0.044s`
+- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.015s`
+- /reports: `ok=True` `http=200` `elapsed=0.029s`
 
 ## Learning Counts
 
