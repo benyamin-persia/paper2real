@@ -1,6 +1,6 @@
 # Daily Validation Report
 
-Generated: 2026-05-08T22:00:17.500975+00:00
+Generated: 2026-05-09T04:00:19.225172+00:00
 Primary recommendation: **READY_FOR_RISK_BLOCK_REVIEW**
 All recommendations: `COLLECT_MORE_DATA, READY_FOR_RISK_BLOCK_REVIEW`
 
@@ -15,28 +15,28 @@ All recommendations: `COLLECT_MORE_DATA, READY_FOR_RISK_BLOCK_REVIEW`
 
 ## Endpoint Statuses
 
-- /system-health: `ok=True` `http=200` `elapsed=14.175s`
-- /learning-status: `ok=True` `http=200` `elapsed=0.098s`
+- /system-health: `ok=True` `http=200` `elapsed=11.421s`
+- /learning-status: `ok=True` `http=200` `elapsed=0.069s`
 - /risk-block-performance: `ok=True` `http=200` `elapsed=0.002s`
-- /shadow-performance: `ok=True` `http=200` `elapsed=0.079s`
-- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.007s`
-- /reports: `ok=True` `http=200` `elapsed=0.013s`
+- /shadow-performance: `ok=True` `http=200` `elapsed=0.078s`
+- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.022s`
+- /reports: `ok=True` `http=200` `elapsed=0.039s`
 
 ## Learning Counts
 
-- decisions_total: `81`
+- decisions_total: `87`
 - claude_buy_count: `1`
-- candidate_buy_count: `32`
-- risk_blocked_candidates: `32`
+- candidate_buy_count: `38`
+- risk_blocked_candidates: `38`
 - trades_executed: `0`
-- shadow_buy_count: `41`
-- shadow_smart_money_count: `45`
+- shadow_buy_count: `47`
+- shadow_smart_money_count: `46`
 
 ## Progress Targets
 
-- Blocked BUY candidates: `32 / 30`
-- Shadow BUYs: `41 / 100`
-- Shadow Smart Money: `45 / 50`
+- Blocked BUY candidates: `38 / 30`
+- Shadow BUYs: `47 / 100`
+- Shadow Smart Money: `46 / 50`
 - Ready for risk block review: `True`
 - Ready for Smart Money review: `False`
 
@@ -44,29 +44,29 @@ All recommendations: `COLLECT_MORE_DATA, READY_FOR_RISK_BLOCK_REVIEW`
 
 - Enabled: `True`
 - Interval minutes: `60`
-- Learning-only scans total: `43`
+- Learning-only scans total: `49`
 - Live paper scans total: `38`
-- Last learning-only scan: `2026-05-08T21:00:17+00:00`
+- Last learning-only scan: `2026-05-09T03:00:15+00:00`
 - Duplicate scans suppressed: `4`
-- Claude calls from learning scans: `43`
-- Estimated learning API cost daily: `$0.176825`
-- Estimated learning API cost monthly: `$5.30475`
+- Claude calls from learning scans: `49`
+- Estimated learning API cost daily: `$0.174782`
+- Estimated learning API cost monthly: `$5.24346`
 - Estimated days to 30 blocked BUY candidates: `0.0`
-- Estimated days to 100 shadow BUYs: `3.82`
-- Estimated days to 50 Smart Money shadows: `0.22`
+- Estimated days to 100 shadow BUYs: `3.21`
+- Estimated days to 50 Smart Money shadows: `0.19`
 - Learning-only scans do not execute trades or mutate portfolio balance.
 
 ## Risk Block Performance
 
-- Total blocked candidates: `32`
-- BB squeeze: `{'count': 26, 'avg_return_1h': 0.0011, 'avg_return_4h': 0.026, 'avg_return_24h': -1.0172, 'blocked_winners_1h': 0, 'blocked_winners_4h': 0, 'blocked_winners_24h': 0, 'saved_losses_1h': 0, 'saved_losses_4h': 0, 'saved_losses_24h': 8, 'verdict': 'not_enough_data'}`
+- Total blocked candidates: `38`
+- BB squeeze: `{'count': 32, 'avg_return_1h': 0.0115, 'avg_return_4h': 0.0611, 'avg_return_24h': -0.9254, 'blocked_winners_1h': 0, 'blocked_winners_4h': 0, 'blocked_winners_24h': 0, 'saved_losses_1h': 0, 'saved_losses_4h': 0, 'saved_losses_24h': 8, 'verdict': 'neutral'}`
 
 ## Smart Money Performance
 
-- Shadow count: `45`
+- Shadow count: `46`
 - Ready for bonus: `False`
-- Score distribution: `{'0-39': 0, '40-59': 3, '60-79': 37, '80-100': 8}`
-- Bias distribution: `{'bullish': 9, 'bearish': 39}`
+- Score distribution: `{'0-39': 0, '40-59': 8, '60-79': 38, '80-100': 8}`
+- Bias distribution: `{'bullish': 12, 'bearish': 42}`
 
 ## Download Safety
 
