@@ -27,6 +27,12 @@ STATUS_FILE = Path("data/raw/live_btc_source_status.json")
 MIN_CANDLES = 100
 MAX_AGE_MINUTES = 20
 
+# Reuse one Playwright fetch briefly so /portfolio, /system-health, and scans do not each launch a browser (TrueNAS was spending ~30–90s per call).
+_LIVE_CACHE_LOCK = asyncio.Lock()
+_cached_live_df: pd.DataFrame | None = None
+_cached_live_mono: float = 0.0
+LIVE_CANDLE_CACHE_TTL_SEC = 45.0
+
 
 def _clean(df: pd.DataFrame, source: str) -> pd.DataFrame:
     if df.empty:
@@ -225,7 +231,7 @@ def _save(df: pd.DataFrame, status: dict) -> None:
     STATUS_FILE.write_text(json.dumps(status, indent=2), encoding="utf-8")
 
 
-async def get_live_candles() -> pd.DataFrame:
+async def _fetch_live_candles_playwright() -> pd.DataFrame:
     status = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "selected_source": None,
@@ -263,6 +269,22 @@ async def get_live_candles() -> pd.DataFrame:
     STATUS_FILE.parent.mkdir(parents=True, exist_ok=True)
     STATUS_FILE.write_text(json.dumps(status, indent=2), encoding="utf-8")
     raise RuntimeError("No live BTC candle source available")
+
+
+async def get_live_candles() -> pd.DataFrame:
+    global _cached_live_df, _cached_live_mono
+    async with _LIVE_CACHE_LOCK:
+        now = time.monotonic()
+        if (
+            _cached_live_df is not None
+            and not _cached_live_df.empty
+            and (now - _cached_live_mono) < LIVE_CANDLE_CACHE_TTL_SEC
+        ):
+            return _cached_live_df.copy()
+        df = await _fetch_live_candles_playwright()
+        _cached_live_df = df
+        _cached_live_mono = time.monotonic()
+        return df.copy()
 
 
 def read_status() -> dict:

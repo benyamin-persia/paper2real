@@ -1372,8 +1372,12 @@ def _bb_column(bb: pd.DataFrame, prefix: str) -> str:
     return matches[0]
 
 
-async def get_market_context() -> dict:
-    """Fetch real-time market data, indicators, and all critical override signals."""
+async def get_market_context(*, health_snapshot: bool = False) -> dict:
+    """Fetch real-time market data, indicators, and all critical override signals.
+
+    health_snapshot=True skips Smart Money + TA recompute (still loads candles, fear/greed, CSV context).
+    Used by /system-health so the dashboard does not run full analysis on every refresh.
+    """
     async with httpx.AsyncClient(timeout=30) as client:
         df = await get_15m_candles()
         for col in ["open", "high", "low", "close", "volume"]:
@@ -1471,7 +1475,7 @@ async def get_market_context() -> dict:
         context.update(_load_daily_context())
 
         # Smart Money Structure Layer. Evidence only; it never executes or bypasses risk_engine.
-        if SMART_MONEY_ENABLED:
+        if SMART_MONEY_ENABLED and not health_snapshot:
             try:
                 sm = smart_money.analyze(df, context=context, save=True)
             except Exception as e:
@@ -1501,7 +1505,7 @@ async def get_market_context() -> dict:
             ):
                 context[key] = sm.get(key)
 
-        if TA_FORECAST_ENABLED:
+        if TA_FORECAST_ENABLED and not health_snapshot:
             try:
                 indicators = technical_analysis.run(save=True)
                 sr = support_resistance.run(save=True)
@@ -2177,7 +2181,7 @@ async def risk_status():
 
 @app.get("/system-health")
 async def system_health():
-    context = await get_market_context()
+    context = await get_market_context(health_snapshot=True)
     issues = _check_data_freshness(context)
     files = {}
     for path in [
