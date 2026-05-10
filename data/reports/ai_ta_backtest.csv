@@ -1,0 +1,7 @@
+threshold,total_signals,bullish_signals,bearish_signals,win_rate_15m,avg_return_15m,win_rate_1h,avg_return_1h,win_rate_4h,avg_return_4h,win_rate_24h,avg_return_24h,max_adverse_move,max_favorable_move,profit_factor_if_traded,best_horizon
+60,0,0,0,0,0,0,0,0,0,0,0,0,0,,15m
+65,0,0,0,0,0,0,0,0,0,0,0,0,0,,15m
+70,0,0,0,0,0,0,0,0,0,0,0,0,0,,15m
+75,0,0,0,0,0,0,0,0,0,0,0,0,0,,15m
+80,0,0,0,0,0,0,0,0,0,0,0,0,0,,15m
+85,0,0,0,0,0,0,0,0,0,0,0,0,0,,15m

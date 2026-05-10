@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-05-10T02:52:24.082668+00:00",
+  "shadow_buy_count": 72,
+  "minimum_required": 100,
+  "ready_for_review": false,
+  "win_rate_1h": 47.83,
+  "win_rate_4h": 46.97,
+  "win_rate_24h": 45.65,
+  "avg_return_1h": -0.064,
+  "avg_return_4h": -0.0202,
+  "avg_return_24h": -0.4619,
+  "median_return_1h": -0.0067,
+  "median_return_4h": -0.0462,
+  "median_return_24h": -0.2162,
+  "max_favorable_move": 1.0424,
+  "max_adverse_move": -2.3833,
+  "best_horizon": "4h",
+  "worst_horizon": "24h",
+  "positive_expectancy": false,
+  "final_shadow_buy_recommendation": "COLLECT_MORE_DATA"
+}

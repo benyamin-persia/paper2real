@@ -1,0 +1,14 @@
+FROM paper2real:latest
+
+ENV PYTHONUNBUFFERED=1
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+WORKDIR /app
+
+RUN mkdir -p /ms-playwright \
+    && cp -a /root/.cache/ms-playwright/. /ms-playwright/ \
+    && chmod -R a+rx /ms-playwright \
+    && useradd --uid 1000 --create-home appuser 2>/dev/null || true
+
+USER 1000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

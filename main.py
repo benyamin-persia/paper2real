@@ -26,6 +26,15 @@ import trade_quality
 import trade_quality_sweep
 import smart_money
 import daily_validation_report
+import technical_analysis
+import support_resistance
+import chart_patterns
+import ta_forecast
+import ta_backtest
+import shadow_buy_review
+import ai_technical_analyst
+import ai_ta_evaluator
+import ai_ta_backtest
 from data.collector import live_btc
 from data.collector import events as events_collector
 from config import (
@@ -39,6 +48,8 @@ from config import (
     LEARNING_ONLY_SCAN_EXECUTES_TRADES,
     LEARNING_ONLY_CALL_CLAUDE_MODE,
     LEARNING_ONLY_MAX_PER_DAY,
+    TA_FORECAST_ENABLED,
+    AI_TA_ENABLED,
 )
 
 EVENTS_REFRESH_MINUTES = 15    # how often to re-scrape CryptoPanic
@@ -403,6 +414,26 @@ def _read_json_file(path: str | Path, fallback=None):
         return fallback
 
 
+def _attach_ai_ta(context: dict, candidate: dict, final: dict) -> None:
+    if not AI_TA_ENABLED:
+        context["ai_ta"] = {"ai_ta_called": 0, "ai_ta_bias": "neutral", "ai_ta_score": 0, "ai_ta_confidence": 0}
+        return
+    try:
+        context["ai_ta"] = ai_technical_analyst.analyze(context, candidate, final)
+    except Exception as e:
+        log.warning("AI TA analysis failed: %s", e)
+        context["ai_ta"] = {
+            "ai_ta_called": 1,
+            "ai_ta_model": "error",
+            "ai_ta_bias": "neutral",
+            "ai_ta_score": 0,
+            "ai_ta_confidence": 0,
+            "ai_ta_reason": f"ai_ta_error: {e}",
+            "should_trade": False,
+            "risk_engine_respected": True,
+        }
+
+
 def _save_live_candles(df: pd.DataFrame) -> None:
     """Cache latest live 15m candles so decision_evaluator.py can score outcomes."""
     try:
@@ -607,6 +638,7 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
         context["pre_risk_trade_quality"] = pre_risk_tq
         closed     = [t for t in trader.get_all_trades() if t["closed"]]
         final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+        _attach_ai_ta(context, candidate, final)
         post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
         context["post_risk_trade_quality"] = post_risk_tq
         context["trade_quality"] = post_risk_tq
@@ -771,6 +803,7 @@ async def _run_learning_only_scan(trigger: str = "learning_only_scan") -> dict:
                 final = risk_engine.evaluate(risk_input_decision, context, summary, closed)
                 reasons = _learning_meaningful_reasons(context, pre_risk_tq, candidate, final)
 
+            _attach_ai_ta(context, candidate, final)
             post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
             context["pre_risk_trade_quality"] = pre_risk_tq
             context["post_risk_trade_quality"] = post_risk_tq
@@ -1468,6 +1501,30 @@ async def get_market_context() -> dict:
             ):
                 context[key] = sm.get(key)
 
+        if TA_FORECAST_ENABLED:
+            try:
+                indicators = technical_analysis.run(save=True)
+                sr = support_resistance.run(save=True)
+                patterns = chart_patterns.run(save=True)
+                forecast = ta_forecast.run(save=True)
+                context["technical_indicators"] = indicators
+                context["support_resistance"] = sr
+                context["chart_patterns"] = patterns
+                context["ta_forecast"] = forecast
+                context["ta_score"] = forecast.get("ta_score")
+                context["ta_bias"] = forecast.get("ta_bias")
+                context["ta_confidence"] = forecast.get("ta_confidence")
+            except Exception as e:
+                log.warning("TA forecast analysis failed: %s", e)
+                context["ta_forecast"] = {
+                    "ta_score": 0,
+                    "ta_bias": "neutral",
+                    "ta_confidence": 0,
+                    "ta_reason": f"analysis_failed: {e}",
+                    "shadow_only": True,
+                    "can_execute_trade": False,
+                }
+
         # Tier 1 Twitter — read cached scrape output (written by background loop)
         context.update(_get_twitter_context())
 
@@ -1513,6 +1570,7 @@ async def tradingview_webhook(request: Request):
     context["pre_risk_trade_quality"] = pre_risk_tq
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
     final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+    _attach_ai_ta(context, candidate, final)
     post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
     context["post_risk_trade_quality"] = post_risk_tq
     context["trade_quality"] = post_risk_tq
@@ -1567,6 +1625,7 @@ async def manual_scan():
     context["pre_risk_trade_quality"] = pre_risk_tq
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
     final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+    _attach_ai_ta(context, candidate, final)
     post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
     context["post_risk_trade_quality"] = post_risk_tq
     context["trade_quality"] = post_risk_tq
@@ -1999,6 +2058,27 @@ async def download_all_artifacts():
         "data/reports/trade_quality_sweep.csv",
         "data/reports/risk_block_performance.json",
         "data/reports/risk_block_performance.csv",
+        "data/reports/risk_block_review.json",
+        "data/reports/risk_block_review.md",
+        "data/reports/smart_money_review.json",
+        "data/reports/smart_money_review.md",
+        "data/reports/shadow_buy_review.json",
+        "data/reports/shadow_buy_review.md",
+        "data/reports/technical_indicators.csv",
+        "data/reports/technical_indicators.json",
+        "data/reports/support_resistance_zones.csv",
+        "data/reports/support_resistance_zones.json",
+        "data/reports/chart_patterns.csv",
+        "data/reports/chart_patterns.json",
+        "data/reports/ta_forecast.json",
+        "data/reports/ta_backtest.csv",
+        "data/reports/ta_backtest.json",
+        "data/reports/ta_summary.json",
+        "data/reports/ai_ta_performance.json",
+        "data/reports/ai_ta_performance.csv",
+        "data/reports/ai_ta_backtest.json",
+        "data/reports/ai_ta_backtest.csv",
+        "data/reports/ai_ta_summary.json",
         "data/reports/daily_validation_report.json",
         "data/reports/daily_validation_report.md",
         "data/reports/full_application_test_report.md",
@@ -2149,6 +2229,79 @@ async def daily_validation_report_endpoint():
     if path.exists():
         return json.loads(path.read_text(encoding="utf-8"))
     return await asyncio.to_thread(daily_validation_report.run, False)
+
+
+@app.get("/shadow-buy-review")
+async def shadow_buy_review_endpoint():
+    path = Path("data/reports/shadow_buy_review.json")
+    if not path.exists():
+        return await asyncio.to_thread(shadow_buy_review.run)
+    return _read_json_file(path, {"shadow_buy_count": 0, "minimum_required": 100, "ready_for_review": False})
+
+
+@app.get("/technical-analysis")
+async def technical_analysis_endpoint():
+    path = Path("data/reports/technical_indicators.json")
+    if not path.exists():
+        return await asyncio.to_thread(technical_analysis.run)
+    return _read_json_file(path, {"count": 0, "latest": {}, "rows": []})
+
+
+@app.get("/support-resistance")
+async def support_resistance_endpoint():
+    path = Path("data/reports/support_resistance_zones.json")
+    if not path.exists():
+        return await asyncio.to_thread(support_resistance.run)
+    return _read_json_file(path, {"count": 0, "zones": []})
+
+
+@app.get("/chart-patterns")
+async def chart_patterns_endpoint():
+    path = Path("data/reports/chart_patterns.json")
+    if not path.exists():
+        return await asyncio.to_thread(chart_patterns.run)
+    return _read_json_file(path, {"count": 0, "patterns": []})
+
+
+@app.get("/ta-forecast")
+async def ta_forecast_endpoint():
+    path = Path("data/reports/ta_forecast.json")
+    if not path.exists():
+        return await asyncio.to_thread(ta_forecast.run)
+    return _read_json_file(path, {"ta_score": 0, "ta_bias": "neutral", "ta_confidence": 0})
+
+
+@app.get("/ta-backtest")
+async def ta_backtest_endpoint():
+    path = Path("data/reports/ta_backtest.json")
+    if not path.exists():
+        return await asyncio.to_thread(ta_backtest.run)
+    return _read_json_file(path, {"thresholds": [], "best_threshold": None})
+
+
+@app.get("/ai-technical-analyst")
+async def ai_technical_analyst_endpoint():
+    path = Path("data/reports/ai_technical_analyst.json")
+    if path.exists():
+        return _read_json_file(path, {"ai_ta_called": 0, "ai_ta_bias": "neutral"})
+    forecast = _read_json_file("data/reports/ta_forecast.json", {"ta_score": 0, "ta_bias": "neutral", "ta_confidence": 0})
+    return ai_technical_analyst.analyze({"ta_forecast": forecast}, force=True)
+
+
+@app.get("/ai-ta-performance")
+async def ai_ta_performance_endpoint():
+    path = Path("data/reports/ai_ta_performance.json")
+    if not path.exists():
+        return await asyncio.to_thread(ai_ta_evaluator.run)
+    return _read_json_file(path, {"ai_ta_total_predictions": 0, "ai_ta_shadow_candidates": 0})
+
+
+@app.get("/ai-ta-backtest")
+async def ai_ta_backtest_endpoint():
+    path = Path("data/reports/ai_ta_backtest.json")
+    if not path.exists():
+        return await asyncio.to_thread(ai_ta_backtest.run)
+    return _read_json_file(path, {"mode": "deterministic_ai_ta_replay", "thresholds": []})
 
 
 @app.get("/smart-money")

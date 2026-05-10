@@ -1,0 +1,15 @@
+order_block_id,timeframe,type,created_at,price_low,price_high,bos_event_id,mitigated,mitigated_at,strength_score,active
+15m_ob_1,15m,bearish,2026-05-08T12:15:00,80240.2,80300.0,15m_structure_1,True,2026-05-08T14:15:00,40,False
+15m_ob_2,15m,bullish,2026-05-09T01:45:00,80324.9,80420.1,15m_structure_3,True,2026-05-09T02:15:00,40,False
+15m_ob_3,15m,bullish,2026-05-09T01:45:00,80324.9,80420.1,15m_structure_4,True,2026-05-09T02:30:00,40,False
+15m_ob_4,15m,bullish,2026-05-09T03:30:00,80310.1,80424.7,15m_structure_5,True,2026-05-09T04:30:00,40,False
+15m_ob_5,15m,bullish,2026-05-09T15:00:00,80243.1,80344.9,15m_structure_8,False,,60,True
+15m_ob_6,15m,bullish,2026-05-09T16:45:00,80600.0,80645.3,15m_structure_9,True,2026-05-09T23:30:00,40,False
+15m_ob_7,15m,bullish,2026-05-10T07:45:00,80726.5,80773.3,15m_structure_10,True,2026-05-10T09:30:00,40,False
+15m_ob_8,15m,bullish,2026-05-10T08:30:00,80798.2,80876.2,15m_structure_11,True,2026-05-10T09:15:00,40,False
+15m_ob_9,15m,bullish,2026-05-10T10:30:00,80765.0,80797.5,15m_structure_12,True,2026-05-10T11:15:00,40,False
+15m_ob_10,15m,bullish,2026-05-10T13:00:00,80880.0,80919.0,15m_structure_13,True,2026-05-10T13:30:00,40,False
+15m_ob_11,15m,bullish,2026-05-10T15:15:00,80961.2,81038.3,15m_structure_14,False,,60,True
+1h_ob_1,1h,bullish,2026-05-09T00:00:00,80106.8,80242.9,1h_structure_1,True,2026-05-09T07:00:00,60,False
+1h_ob_2,1h,bullish,2026-05-09T15:00:00,80243.1,80380.4,1h_structure_2,False,,80,True
+1h_ob_3,1h,bullish,2026-05-10T14:00:00,80896.7,80984.8,1h_structure_3,False,,80,True

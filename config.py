@@ -43,6 +43,31 @@ SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS = float(os.getenv("SMART_MONEY_MIN_SCORE_FOR
 SMART_MONEY_MAX_TQ_BONUS = float(os.getenv("SMART_MONEY_MAX_TQ_BONUS", "0"))
 SMART_MONEY_NO_REPAINT = os.getenv("SMART_MONEY_NO_REPAINT", "true").lower() in {"1", "true", "yes", "on"}
 
+TA_FORECAST_ENABLED = os.getenv("TA_FORECAST_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
+TA_FORECAST_SHADOW_ONLY = os.getenv("TA_FORECAST_SHADOW_ONLY", "true").lower() in {"1", "true", "yes", "on"}
+TA_FORECAST_MAX_TQ_BONUS = float(os.getenv("TA_FORECAST_MAX_TQ_BONUS", "0"))
+TA_FORECAST_TIMEFRAMES = [x.strip() for x in os.getenv("TA_FORECAST_TIMEFRAMES", "15m,1h,4h").split(",") if x.strip()]
+TA_FORECAST_MIN_CONFIDENCE_FOR_BONUS = float(os.getenv("TA_FORECAST_MIN_CONFIDENCE_FOR_BONUS", "70"))
+TA_FORECAST_NO_REPAINT = os.getenv("TA_FORECAST_NO_REPAINT", "true").lower() in {"1", "true", "yes", "on"}
+TA_SHADOW_MIN_SCORE = float(os.getenv("TA_SHADOW_MIN_SCORE", "70"))
+TA_SHADOW_MIN_CONFIDENCE = float(os.getenv("TA_SHADOW_MIN_CONFIDENCE", "65"))
+
+AI_TA_ENABLED = os.getenv("AI_TA_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
+AI_TA_SHADOW_ONLY = os.getenv("AI_TA_SHADOW_ONLY", "true").lower() in {"1", "true", "yes", "on"}
+AI_TA_MAX_TQ_BONUS = float(os.getenv("AI_TA_MAX_TQ_BONUS", "0"))
+AI_TA_MODEL = os.getenv("AI_TA_MODEL", "claude-haiku-4-5")
+AI_TA_CALL_MODE = os.getenv("AI_TA_CALL_MODE", "selective")
+AI_TA_MIN_TQ_TO_CALL = float(os.getenv("AI_TA_MIN_TQ_TO_CALL", "55"))
+AI_TA_MIN_SMART_MONEY_TO_CALL = float(os.getenv("AI_TA_MIN_SMART_MONEY_TO_CALL", "60"))
+AI_TA_TIMEFRAMES = [x.strip() for x in os.getenv("AI_TA_TIMEFRAMES", "15m,1h,4h").split(",") if x.strip()]
+AI_TA_USE_CLOSED_CANDLES_ONLY = os.getenv("AI_TA_USE_CLOSED_CANDLES_ONLY", "true").lower() in {"1", "true", "yes", "on"}
+AI_TA_NO_REPAINT = os.getenv("AI_TA_NO_REPAINT", "true").lower() in {"1", "true", "yes", "on"}
+AI_TA_MAX_RECENT_CANDLES = int(os.getenv("AI_TA_MAX_RECENT_CANDLES", "120"))
+AI_TA_SHADOW_MIN_SCORE = float(os.getenv("AI_TA_SHADOW_MIN_SCORE", "70"))
+AI_TA_SHADOW_MIN_CONFIDENCE = float(os.getenv("AI_TA_SHADOW_MIN_CONFIDENCE", "65"))
+AI_TA_BACKTEST_CALLS_AI = os.getenv("AI_TA_BACKTEST_CALLS_AI", "false").lower() in {"1", "true", "yes", "on"}
+AI_TA_BACKTEST_MAX_AI_CALLS = int(os.getenv("AI_TA_BACKTEST_MAX_AI_CALLS", "100"))
+
 LEARNING_ONLY_SCAN_ENABLED = os.getenv("LEARNING_ONLY_SCAN_ENABLED", "true").lower() in {"1", "true", "yes", "on"}
 LEARNING_ONLY_SCAN_INTERVAL_MINUTES = int(os.getenv("LEARNING_ONLY_SCAN_INTERVAL_MINUTES", "60"))
 LEARNING_ONLY_SCAN_EXECUTES_TRADES = os.getenv("LEARNING_ONLY_SCAN_EXECUTES_TRADES", "false").lower() in {"1", "true", "yes", "on"}

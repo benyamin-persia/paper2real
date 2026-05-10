@@ -1,0 +1,10 @@
+pattern_id,timeframe,pattern_type,direction,detected_at,price,confidence,invalidated,invalidated_at,reason
+15m-bull-engulf-120,15m,bullish engulfing,bullish,2026-05-10T19:15:00+00:00,81449.7,65,False,,current candle engulfs prior body
+15m-strong-bull-120,15m,strong bullish candle,bullish,2026-05-10T19:15:00+00:00,81449.7,60,False,,large bullish body
+15m-higher-low-120,15m,higher low setup,bullish,2026-05-10T19:15:00+00:00,81449.7,58,False,,latest swing low is higher
+15m-double-top-120,15m,double top,bearish,2026-05-10T19:15:00+00:00,81449.7,55,False,,two nearby swing highs
+15m-rsi-bear-div-120,15m,bearish RSI divergence,bearish,2026-05-10T19:15:00+00:00,81449.7,62,False,,price higher while RSI weakens
+15m-macd-bear-div-120,15m,bearish MACD divergence,bearish,2026-05-10T19:15:00+00:00,81449.7,60,False,,price higher while MACD histogram weakens
+1h-higher-low-62,1h,higher low setup,bullish,2026-05-10T18:00:00+00:00,81426.1,58,False,,latest swing low is higher
+1h-double-top-62,1h,double top,bearish,2026-05-10T18:00:00+00:00,81426.1,55,False,,two nearby swing highs
+1h-double-bottom-62,1h,double bottom,bullish,2026-05-10T18:00:00+00:00,81426.1,55,False,,two nearby swing lows

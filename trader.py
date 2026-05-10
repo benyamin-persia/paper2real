@@ -9,6 +9,8 @@ from config import (
     AI_INPUT_USD_PER_MILLION_TOKENS, AI_OUTPUT_USD_PER_MILLION_TOKENS,
     SHADOW_BUY_SCORE_THRESHOLD, STRATEGY_VERSION,
     SMART_MONEY_MIN_SCORE_FOR_BUY_BONUS,
+    TA_SHADOW_MIN_SCORE, TA_SHADOW_MIN_CONFIDENCE,
+    AI_TA_SHADOW_MIN_SCORE, AI_TA_SHADOW_MIN_CONFIDENCE,
 )
 
 
@@ -176,6 +178,45 @@ def init_db():
         "shadow_future_return_1h REAL",
         "shadow_future_return_4h REAL",
         "shadow_future_return_24h REAL",
+        "ta_score REAL",
+        "ta_bias TEXT",
+        "ta_confidence REAL",
+        "ta_prediction_15m TEXT",
+        "ta_prediction_1h TEXT",
+        "ta_prediction_4h TEXT",
+        "ta_prediction_24h TEXT",
+        "ta_reason TEXT",
+        "ta_json TEXT",
+        "shadow_ta_action TEXT",
+        "shadow_ta_score REAL",
+        "shadow_ta_bias TEXT",
+        "shadow_ta_confidence REAL",
+        "shadow_ta_reason TEXT",
+        "shadow_ta_future_return_15m REAL",
+        "shadow_ta_future_return_1h REAL",
+        "shadow_ta_future_return_4h REAL",
+        "shadow_ta_future_return_24h REAL",
+        "ai_ta_called INTEGER",
+        "ai_ta_model TEXT",
+        "ai_ta_score REAL",
+        "ai_ta_bias TEXT",
+        "ai_ta_confidence REAL",
+        "ai_ta_prediction_15m TEXT",
+        "ai_ta_prediction_1h TEXT",
+        "ai_ta_prediction_4h TEXT",
+        "ai_ta_prediction_24h TEXT",
+        "ai_ta_best_horizon TEXT",
+        "ai_ta_reason TEXT",
+        "ai_ta_json TEXT",
+        "shadow_ai_ta_action TEXT",
+        "shadow_ai_ta_score REAL",
+        "shadow_ai_ta_bias TEXT",
+        "shadow_ai_ta_confidence REAL",
+        "shadow_ai_ta_reason TEXT",
+        "shadow_ai_ta_future_return_15m REAL",
+        "shadow_ai_ta_future_return_1h REAL",
+        "shadow_ai_ta_future_return_4h REAL",
+        "shadow_ai_ta_future_return_24h REAL",
         "ai_model TEXT",
         "ai_prompt TEXT",
         "ai_response TEXT",
@@ -530,6 +571,48 @@ def log_decision(
             shadow_sm_score = sm_score_float
             shadow_sm_bias = smart_money_bias
             shadow_sm_reason = smart_money_reason or "smart_money_score_above_shadow_threshold"
+    ta_forecast = market.get("ta_forecast") or {}
+    ta_score = ta_forecast.get("ta_score")
+    ta_bias = ta_forecast.get("ta_bias")
+    ta_confidence = ta_forecast.get("ta_confidence")
+    shadow_ta_action = None
+    shadow_ta_score = None
+    shadow_ta_bias = None
+    shadow_ta_confidence = None
+    shadow_ta_reason = None
+    if final.get("action") == "HOLD" and ta_score is not None and ta_confidence is not None:
+        try:
+            ta_score_float = float(ta_score)
+            ta_conf_float = float(ta_confidence)
+        except Exception:
+            ta_score_float = ta_conf_float = 0.0
+        if ta_score_float >= TA_SHADOW_MIN_SCORE and ta_conf_float >= TA_SHADOW_MIN_CONFIDENCE and ta_bias in {"bullish", "bearish"}:
+            shadow_ta_action = "BUY" if ta_bias == "bullish" else "SELL_OR_RISK_WARNING"
+            shadow_ta_score = ta_score_float
+            shadow_ta_bias = ta_bias
+            shadow_ta_confidence = ta_conf_float
+            shadow_ta_reason = ta_forecast.get("ta_reason") or "ta_score_above_shadow_threshold"
+    ai_ta = market.get("ai_ta") or {}
+    ai_ta_score = ai_ta.get("ai_ta_score")
+    ai_ta_bias = ai_ta.get("ai_ta_bias")
+    ai_ta_confidence = ai_ta.get("ai_ta_confidence")
+    shadow_ai_ta_action = None
+    shadow_ai_ta_score = None
+    shadow_ai_ta_bias = None
+    shadow_ai_ta_confidence = None
+    shadow_ai_ta_reason = None
+    if final.get("action") == "HOLD" and ai_ta_score is not None and ai_ta_confidence is not None:
+        try:
+            ai_score_float = float(ai_ta_score)
+            ai_conf_float = float(ai_ta_confidence)
+        except Exception:
+            ai_score_float = ai_conf_float = 0.0
+        if ai_score_float >= AI_TA_SHADOW_MIN_SCORE and ai_conf_float >= AI_TA_SHADOW_MIN_CONFIDENCE and ai_ta_bias in {"bullish", "bearish"}:
+            shadow_ai_ta_action = "BUY" if ai_ta_bias == "bullish" else "SELL_OR_RISK_WARNING"
+            shadow_ai_ta_score = ai_score_float
+            shadow_ai_ta_bias = ai_ta_bias
+            shadow_ai_ta_confidence = ai_conf_float
+            shadow_ai_ta_reason = ai_ta.get("ai_ta_reason") or ai_ta.get("main_reason") or "ai_ta_score_above_shadow_threshold"
     con = sqlite3.connect(DB_FILE)
     con.execute(
         f"""INSERT INTO decisions
@@ -559,8 +642,17 @@ def log_decision(
             tq_historical_match, tq_data_quality, tq_risk_safety, tq_primary_reason,
             shadow_action, shadow_entry_price, shadow_score, shadow_reason,
             shadow_stop_price, shadow_take_profit_price,
+            ta_score, ta_bias, ta_confidence, ta_prediction_15m, ta_prediction_1h,
+            ta_prediction_4h, ta_prediction_24h, ta_reason, ta_json,
+            shadow_ta_action, shadow_ta_score, shadow_ta_bias, shadow_ta_confidence,
+            shadow_ta_reason,
+            ai_ta_called, ai_ta_model, ai_ta_score, ai_ta_bias, ai_ta_confidence,
+            ai_ta_prediction_15m, ai_ta_prediction_1h, ai_ta_prediction_4h,
+            ai_ta_prediction_24h, ai_ta_best_horizon, ai_ta_reason, ai_ta_json,
+            shadow_ai_ta_action, shadow_ai_ta_score, shadow_ai_ta_bias,
+            shadow_ai_ta_confidence, shadow_ai_ta_reason,
             ai_model, ai_prompt, ai_response, input_tokens, output_tokens, api_cost_usd)
-           VALUES ({','.join(['?'] * 83)})""",
+           VALUES ({','.join(['?'] * 114)})""",
         (
             int(time.time()),
             trigger,
@@ -639,6 +731,37 @@ def log_decision(
             shadow_reason,
             shadow_stop,
             shadow_tp,
+            ta_score,
+            ta_bias,
+            ta_confidence,
+            ta_forecast.get("prediction_15m"),
+            ta_forecast.get("prediction_1h"),
+            ta_forecast.get("prediction_4h"),
+            ta_forecast.get("prediction_24h"),
+            ta_forecast.get("ta_reason"),
+            json_dumps_safe(ta_forecast),
+            shadow_ta_action,
+            shadow_ta_score,
+            shadow_ta_bias,
+            shadow_ta_confidence,
+            shadow_ta_reason,
+            int(ai_ta.get("ai_ta_called") or 0),
+            ai_ta.get("ai_ta_model"),
+            ai_ta_score,
+            ai_ta_bias,
+            ai_ta_confidence,
+            ai_ta.get("prediction_15m"),
+            ai_ta.get("prediction_1h"),
+            ai_ta.get("prediction_4h"),
+            ai_ta.get("prediction_24h"),
+            ai_ta.get("best_horizon"),
+            ai_ta.get("ai_ta_reason") or ai_ta.get("main_reason"),
+            json_dumps_safe(ai_ta),
+            shadow_ai_ta_action,
+            shadow_ai_ta_score,
+            shadow_ai_ta_bias,
+            shadow_ai_ta_confidence,
+            shadow_ai_ta_reason,
             audit.get("model"),
             audit.get("prompt"),
             audit.get("response"),

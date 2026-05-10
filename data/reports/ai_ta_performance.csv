@@ -1,0 +1,2 @@
+ai_ta_total_predictions,ai_ta_shadow_candidates,ai_ta_bullish_count,ai_ta_bearish_count,ai_ta_neutral_count,win_rate_15m,win_rate_1h,win_rate_4h,win_rate_24h,avg_directional_return_15m,avg_directional_return_1h,avg_directional_return_4h,avg_directional_return_24h,best_horizon,worst_horizon,invalid_json_count,should_trade_violation_count,risk_engine_violation_count
+2,2,2,0,0,0,0,0,0,0,0,0,0,4h,24h,0,0,0

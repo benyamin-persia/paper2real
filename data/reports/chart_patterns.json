@@ -1,0 +1,113 @@
+{
+  "count": 9,
+  "patterns": [
+    {
+      "pattern_id": "15m-bull-engulf-120",
+      "timeframe": "15m",
+      "pattern_type": "bullish engulfing",
+      "direction": "bullish",
+      "detected_at": "2026-05-10T19:15:00+00:00",
+      "price": 81449.7,
+      "confidence": 65,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "current candle engulfs prior body"
+    },
+    {
+      "pattern_id": "15m-strong-bull-120",
+      "timeframe": "15m",
+      "pattern_type": "strong bullish candle",
+      "direction": "bullish",
+      "detected_at": "2026-05-10T19:15:00+00:00",
+      "price": 81449.7,
+      "confidence": 60,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "large bullish body"
+    },
+    {
+      "pattern_id": "15m-higher-low-120",
+      "timeframe": "15m",
+      "pattern_type": "higher low setup",
+      "direction": "bullish",
+      "detected_at": "2026-05-10T19:15:00+00:00",
+      "price": 81449.7,
+      "confidence": 58,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "latest swing low is higher"
+    },
+    {
+      "pattern_id": "15m-double-top-120",
+      "timeframe": "15m",
+      "pattern_type": "double top",
+      "direction": "bearish",
+      "detected_at": "2026-05-10T19:15:00+00:00",
+      "price": 81449.7,
+      "confidence": 55,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "two nearby swing highs"
+    },
+    {
+      "pattern_id": "15m-rsi-bear-div-120",
+      "timeframe": "15m",
+      "pattern_type": "bearish RSI divergence",
+      "direction": "bearish",
+      "detected_at": "2026-05-10T19:15:00+00:00",
+      "price": 81449.7,
+      "confidence": 62,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "price higher while RSI weakens"
+    },
+    {
+      "pattern_id": "15m-macd-bear-div-120",
+      "timeframe": "15m",
+      "pattern_type": "bearish MACD divergence",
+      "direction": "bearish",
+      "detected_at": "2026-05-10T19:15:00+00:00",
+      "price": 81449.7,
+      "confidence": 60,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "price higher while MACD histogram weakens"
+    },
+    {
+      "pattern_id": "1h-higher-low-62",
+      "timeframe": "1h",
+      "pattern_type": "higher low setup",
+      "direction": "bullish",
+      "detected_at": "2026-05-10T18:00:00+00:00",
+      "price": 81426.1,
+      "confidence": 58,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "latest swing low is higher"
+    },
+    {
+      "pattern_id": "1h-double-top-62",
+      "timeframe": "1h",
+      "pattern_type": "double top",
+      "direction": "bearish",
+      "detected_at": "2026-05-10T18:00:00+00:00",
+      "price": 81426.1,
+      "confidence": 55,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "two nearby swing highs"
+    },
+    {
+      "pattern_id": "1h-double-bottom-62",
+      "timeframe": "1h",
+      "pattern_type": "double bottom",
+      "direction": "bullish",
+      "detected_at": "2026-05-10T18:00:00+00:00",
+      "price": 81426.1,
+      "confidence": 55,
+      "invalidated": false,
+      "invalidated_at": null,
+      "reason": "two nearby swing lows"
+    }
+  ]
+}

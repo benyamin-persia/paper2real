@@ -1,0 +1,20 @@
+{
+  "ai_ta_total_predictions": 2,
+  "ai_ta_shadow_candidates": 2,
+  "ai_ta_bullish_count": 2,
+  "ai_ta_bearish_count": 0,
+  "ai_ta_neutral_count": 0,
+  "win_rate_15m": 0,
+  "win_rate_1h": 0,
+  "win_rate_4h": 0,
+  "win_rate_24h": 0,
+  "avg_directional_return_15m": 0,
+  "avg_directional_return_1h": 0,
+  "avg_directional_return_4h": 0,
+  "avg_directional_return_24h": 0,
+  "best_horizon": "4h",
+  "worst_horizon": "24h",
+  "invalid_json_count": 0,
+  "should_trade_violation_count": 0,
+  "risk_engine_violation_count": 0
+}

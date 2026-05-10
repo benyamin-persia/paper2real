@@ -1,189 +1,314 @@
 {
-  "last_updated": "2026-05-01T15:29:04.331742+00:00",
-  "has_critical": false,
-  "exchange_hack_alert": null,
+  "last_updated": "2026-05-10T19:19:01.432316+00:00",
+  "has_critical": true,
+  "exchange_hack_alert": "Bitcoin Network Flooded With 200,000 'Ghosts', Core Dev Jameson Lopp Warns About Stealth Sybil Attack  u.today",
   "stablecoin_depeg": null,
-  "critical_alerts": [],
+  "critical_alerts": [
+    {
+      "headline": "Bitcoin Network Flooded With 200,000 'Ghosts', Core Dev Jameson Lopp Warns About Stealth Sybil Attack  u.today",
+      "url": "https://cryptopanic.com/news/bitcoin/32322305/Bitcoin-Network-Flooded-With-200000-Ghosts-Core-Dev-Jameson-Lopp-Warns-About-Stealth-Sybil-Attack",
+      "published_at": "Sun May 10 2026 15:02:00 GMT+0000 (Coordinated Universal Time)",
+      "source": "u.today",
+      "category": "BTC_DIRECT",
+      "alert_type": "exchange_hack_alert",
+      "matched_keywords": [
+        "attack"
+      ],
+      "is_critical": true
+    },
+    {
+      "headline": "Ripple's 'North Star' XRP Doubles ETF Inflows Amid Tokenization Breakthrough; SHIB Decouples From Dogecoin; Bitcoin Eyes $94,500 as 'Sell in May' Trigger: Bollinger Bands - Morning Crypto Report  u.today",
+      "url": "https://cryptopanic.com/news/bitcoin/32320589/Ripples-North-Star-XRP-Doubles-ETF-Inflows-Amid-Tokenization-Breakthrough-SHIB-Decouples-From-Dogecoin-Bitcoin-Eyes-94500-as-Sell-in-May-Trigger-Bollinger-Bands-Morning-Crypto-Report",
+      "published_at": "Sun May 10 2026 13:25:15 GMT+0000 (Coordinated Universal Time)",
+      "source": "u.today",
+      "category": "BTC_DIRECT",
+      "alert_type": "exchange_hack_alert",
+      "matched_keywords": [
+        "ban"
+      ],
+      "is_critical": true
+    }
+  ],
   "important_news": [
     {
-      "headline": "***",
-      "url": "https://cryptopanic.com/news/bitcoin/31925239/Earning-075324-Bitcoins-Daily-The-BTC-Ecosystem-Revenue-Model-Sparks-Widespread-Discussion",
+      "headline": "BTC Leads Market Recovery: BTCEcosystem Surges, Generating $9,200 in Daily Revenue\u2014Lock in Daily Payouts with No Hidden Fees  btcecosystem.com",
+      "url": "https://cryptopanic.com/news/bitcoin/31925239/BTC-Leads-Market-Recovery-BTCEcosystem-Surges-Generating-9200-in-Daily-RevenueLock-in-Daily-Payouts-with-No-Hidden-Fees",
       "published_at": "",
-      "importance": 0
+      "source": "btcecosystem.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "24min",
-      "url": "https://cryptopanic.com/news/bitcoin/32050681/BlackRock-Deposits-26K-ETH-226-BTC-to-Coinbase-Prime",
-      "published_at": "Fri May 01 2026 11:05:00 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Michael Saylor's Bitcoin Strategy: Fund Dividends, Kill Dilution Narrative  SimplyBitcoin",
+      "url": "https://cryptopanic.com/news/bitcoin/32325169/Michael-Saylors-Bitcoin-Strategy-Fund-Dividends-Kill-Dilution-Narrative",
+      "published_at": "Sun May 10 2026 19:00:43 GMT+0000 (Coordinated Universal Time)",
+      "source": "SimplyBitcoin",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "35min",
-      "url": "https://cryptopanic.com/news/bitcoin/32050288/Bitcoin-Crossed-78000-as-Iran-Sent-New-Peace-Proposal-to-US",
-      "published_at": "Fri May 01 2026 10:53:56 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "BTC, XRP on the Move Amid Trump\u2019s Latest Message on Iran: Details  cryptopotato.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32325059/BTC-XRP-on-the-Move-Amid-Trumps-Latest-Message-on-Iran-Details",
+      "published_at": "Sun May 10 2026 18:41:56 GMT+0000 (Coordinated Universal Time)",
+      "source": "cryptopotato.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "39min",
-      "url": "https://cryptopanic.com/news/bitcoin/32051015/Crypto-Youtubers-Predict-Bitcoin-Bottom-and-Bear-Market-Cycle",
-      "published_at": "Fri May 01 2026 10:50:12 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Saylor signals another Bitcoin buy, after hinting at selling in Q1 earnings call  cointelegraph.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32325873/Saylor-signals-another-Bitcoin-buy-after-hinting-at-selling-in-Q1-earnings-call",
+      "published_at": "Sun May 10 2026 18:40:00 GMT+0000 (Coordinated Universal Time)",
+      "source": "cointelegraph.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "50min",
-      "url": "https://cryptopanic.com/news/bitcoin/32050287/MSTR-Surges-33-In-April-Is-Peter-Schiff-Wrong-About-The-Largest-Ponzi-In-The-World",
-      "published_at": "Fri May 01 2026 10:38:51 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "CME Is Launching a Bitcoin Product Wall Street Has Never Seen Before  livebitcoinnews.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32324200/CME-Is-Launching-a-Bitcoin-Product-Wall-Street-Has-Never-Seen-Before",
+      "published_at": "Sun May 10 2026 17:45:27 GMT+0000 (Coordinated Universal Time)",
+      "source": "livebitcoinnews.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "1h",
-      "url": "https://cryptopanic.com/news/bitcoin/32048745/Brazil-Bans-Crypto-in-Cross-Border-Payments",
-      "published_at": "Fri May 01 2026 10:05:16 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin price bottom still ahead? \u2013 78% of BTC supply shift signals\u2026  ambcrypto.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32323469/Bitcoin-price-bottom-still-ahead-78-of-BTC-supply-shift-signals",
+      "published_at": "Sun May 10 2026 17:00:59 GMT+0000 (Coordinated Universal Time)",
+      "source": "ambcrypto.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "2h",
-      "url": "https://cryptopanic.com/news/bitcoin/32050417/Institutional-demand-to-drive-bitcoin-market-cap-to-16-trillion-by-2030-Ark-Invest",
-      "published_at": "Fri May 01 2026 09:31:53 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin's 2.3% Growth Funds Dividends: A Smart Strategy  SimplyBitcoin",
+      "url": "https://cryptopanic.com/news/bitcoin/32323678/Bitcoins-23-Growth-Funds-Dividends-A-Smart-Strategy",
+      "published_at": "Sun May 10 2026 17:00:43 GMT+0000 (Coordinated Universal Time)",
+      "source": "SimplyBitcoin",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "2h",
-      "url": "https://cryptopanic.com/news/bitcoin/32048572/SHIB-Joins-BTC-ETH-XRP-SOL-in-Japan-Lending-Push-via-SBI-VC-Trade",
-      "published_at": "Fri May 01 2026 09:10:00 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Crypto Firms Race to 'Quantum-Proof' Wallets Before Bitcoin, Ethereum Networks Catch Up  decrypt.co 2 sources",
+      "url": "https://cryptopanic.com/news/bitcoin/32323382/Crypto-Firms-Race-to-Quantum-Proof-Wallets-Before-Bitcoin-Ethereum-Networks-Catch-Up",
+      "published_at": "Sun May 10 2026 16:49:28 GMT+0000 (Coordinated Universal Time)",
+      "source": "decrypt.co",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "2h",
-      "url": "https://cryptopanic.com/news/bitcoin/32047004/Bitcoin-Eyes-60K-200WMA-as-ETF-Pressure-Builds-While-BTC-Tests-76200-Lows",
-      "published_at": "Fri May 01 2026 09:00:10 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin\u2019s Rise Happened \u201cAgainst the Tide,\u201d CZ Explains  livebitcoinnews.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32323354/Bitcoins-Rise-Happened-Against-the-Tide-CZ-Explains",
+      "published_at": "Sun May 10 2026 16:45:55 GMT+0000 (Coordinated Universal Time)",
+      "source": "livebitcoinnews.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "3h",
-      "url": "https://cryptopanic.com/news/bitcoin/32046945/77-Billion-XRP-is-Exposed-to-Quantum-Computing-Threats-Report",
-      "published_at": "Fri May 01 2026 08:48:21 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Ethereum down 35% versus Bitcoin in a year: Will the ETH price downtrend continue?  cointelegraph.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32324158/Ethereum-down-35-versus-Bitcoin-in-a-year-Will-the-ETH-price-downtrend-continue",
+      "published_at": "Sun May 10 2026 16:13:27 GMT+0000 (Coordinated Universal Time)",
+      "source": "cointelegraph.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "3h",
-      "url": "https://cryptopanic.com/news/bitcoin/32046948/Bitcoin-Reclaims-77000-Ethereum-XRP-Dogecoin-Bump-1",
-      "published_at": "Fri May 01 2026 08:33:56 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Agentic Commerce Will Run on Crypto Rails, PayPal and Google Tell Consensus Miami  btcusa.com 2 sources",
+      "url": "https://cryptopanic.com/news/bitcoin/32325016/Agentic-Commerce-Will-Run-on-Crypto-Rails-PayPal-and-Google-Tell-Consensus-Miami",
+      "published_at": "Sun May 10 2026 16:04:19 GMT+0000 (Coordinated Universal Time)",
+      "source": "btcusa.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "3h",
-      "url": "https://cryptopanic.com/news/bitcoin/32046954/Analyst-shares-new-Bitcoin-prediction-for-all-of-2026",
-      "published_at": "Fri May 01 2026 08:30:00 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "How Well Do YOU Know Bitcoin?  CryptoTips",
+      "url": "https://cryptopanic.com/news/bitcoin/32323225/How-Well-Do-YOU-Know-Bitcoin",
+      "published_at": "Sun May 10 2026 16:00:05 GMT+0000 (Coordinated Universal Time)",
+      "source": "CryptoTips",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "3h",
-      "url": "https://cryptopanic.com/news/bitcoin/32046895/OpenAI-Foundation-CFO-Joins-1-Billion-XRP-Treasury-Bitcoins-Worst-Case-by-May-2026-Detailed-by-Expert-Trader-183-Million-Capital-Flight-Hits-Ethereum-ETFs-Amid-DeFi-Hack-Wave-Morning-Crypto-Report",
-      "published_at": "Fri May 01 2026 08:27:15 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Morgan Stanley\u2019s MSBT ends first trading month with 0 outflows amid Bitcoin ETFs 6-week inflow streak  cryptoslate.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32322470/Morgan-Stanleys-MSBT-ends-first-trading-month-with-0-outflows-amid-Bitcoin-ETFs-6-week-inflow-streak",
+      "published_at": "Sun May 10 2026 16:00:04 GMT+0000 (Coordinated Universal Time)",
+      "source": "cryptoslate.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "3h",
-      "url": "https://cryptopanic.com/news/bitcoin/32045589/Satoshi-Still-Owns-More-BTC-Than-Coinbase-and-BlackRock-Combined",
-      "published_at": "Fri May 01 2026 08:05:00 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin Was Changed Forever on This Day 16 Years Ago  u.today",
+      "url": "https://cryptopanic.com/news/bitcoin/32322386/Bitcoin-Was-Changed-Forever-on-This-Day-16-Years-Ago",
+      "published_at": "Sun May 10 2026 15:20:00 GMT+0000 (Coordinated Universal Time)",
+      "source": "u.today",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "3h",
-      "url": "https://cryptopanic.com/news/bitcoin/32045377/Bhutans-Bitcoin-sell-offs-hit-200-mln-Is-the-country-letting-go-of-its-BTC-reserve",
-      "published_at": "Fri May 01 2026 08:00:33 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin: The Calm Eye of the Storm  SimplyBitcoin",
+      "url": "https://cryptopanic.com/news/bitcoin/32322303/Bitcoin-The-Calm-Eye-of-the-Storm",
+      "published_at": "Sun May 10 2026 15:00:48 GMT+0000 (Coordinated Universal Time)",
+      "source": "SimplyBitcoin",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "4h",
-      "url": "https://cryptopanic.com/news/bitcoin/32048763/Japan-Launches-SBI-Visa-crypto-card-Letting-Users-earn-BTC-ETH-and-XRP-rewards",
-      "published_at": "Fri May 01 2026 07:56:38 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin dominance weakens again \u2013 Will 2017 and 2021 history repeat?  ambcrypto.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32321618/Bitcoin-dominance-weakens-again-Will-2017-and-2021-history-repeat",
+      "published_at": "Sun May 10 2026 15:00:44 GMT+0000 (Coordinated Universal Time)",
+      "source": "ambcrypto.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "4h",
-      "url": "https://cryptopanic.com/news/bitcoin/32045260/Bitcoin-Closes-April-Up-12-as-Strategys-MSTR-Posts-First-Positive-Month-Since-July",
-      "published_at": "Fri May 01 2026 07:47:53 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Making Bitcoin Babies: Sovereignty Starts in the Womb | Bitcoin 2026  BitcoinMagazine",
+      "url": "https://cryptopanic.com/news/bitcoin/32322297/Making-Bitcoin-Babies-Sovereignty-Starts-in-the-Womb-Bitcoin-2026",
+      "published_at": "Sun May 10 2026 15:00:43 GMT+0000 (Coordinated Universal Time)",
+      "source": "BitcoinMagazine",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "4h",
-      "url": "https://cryptopanic.com/news/bitcoin/32047653/Bitcoin-bounces-as-big-tech-earnings-fuel-optimism-short-term-pressures-remain",
-      "published_at": "Fri May 01 2026 07:15:02 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin holds $80K into weekly close as traders say BTC price dip not yet over  cointelegraph.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32322328/Bitcoin-holds-80K-into-weekly-close-as-traders-say-BTC-price-dip-not-yet-over",
+      "published_at": "Sun May 10 2026 14:56:21 GMT+0000 (Coordinated Universal Time)",
+      "source": "cointelegraph.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "4h",
-      "url": "https://cryptopanic.com/news/bitcoin/32045203/Ripple-CEO-Sends-Strong-XRP-Signal-From-Las-Vegas",
-      "published_at": "Fri May 01 2026 07:10:21 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "BTC vs. ETH vs. XRP ETFs: Which Pulled the Most Money Last Week?  cryptopotato.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32321572/BTC-vs-ETH-vs-XRP-ETFs-Which-Pulled-the-Most-Money-Last-Week",
+      "published_at": "Sun May 10 2026 14:45:50 GMT+0000 (Coordinated Universal Time)",
+      "source": "cryptopotato.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "4h",
-      "url": "https://cryptopanic.com/news/bitcoin/32043798/Bitcoin-is-repeating-a-2022-pattern-and-this-time-were-missing-the-buyers-for-what-came-next",
-      "published_at": "Fri May 01 2026 07:00:38 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Saylor Posts \u2018Back to Work\u2019 Signal as Strategy Eyes More Bitcoin After One-Week Pause  bitcoin.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32321537/Saylor-Posts-Back-to-Work-Signal-as-Strategy-Eyes-More-Bitcoin-After-One-Week-Pause",
+      "published_at": "Sun May 10 2026 14:33:23 GMT+0000 (Coordinated Universal Time)",
+      "source": "bitcoin.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32045195/Bitcoin-ETFs-draw-2B-in-April-for-highest-monthly-inflows-this-year",
-      "published_at": "Fri May 01 2026 06:53:44 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Has Donald Trump been a net positive for Bitcoin or created an unbreakable partisan divide?  cryptoslate.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32321538/Has-Donald-Trump-been-a-net-positive-for-Bitcoin-or-created-an-unbreakable-partisan-divide",
+      "published_at": "Sun May 10 2026 14:30:46 GMT+0000 (Coordinated Universal Time)",
+      "source": "cryptoslate.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32045732/CLARITY-Act-Petition-Gains-Momentum-What-Does-it-Mean",
-      "published_at": "Fri May 01 2026 06:48:37 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin Price Prediction: Where Is BTC Headed Next Week? Key Levels to Watch  cryptopotato.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32321505/Bitcoin-Price-Prediction-Where-Is-BTC-Headed-Next-Week-Key-Levels-to-Watch",
+      "published_at": "Sun May 10 2026 14:15:06 GMT+0000 (Coordinated Universal Time)",
+      "source": "cryptopotato.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32043620/Bitcoin-BTC-Holds-Above-76000-With-13-Percent-April-Gain-as-Fed-Rate-Hold-and-Iran-Risk-Keep-Bulls-Cautious",
-      "published_at": "Fri May 01 2026 06:48:00 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin\u2019s Kimchi Premium hits 1.98% as holders lock in biggest profits since December  cryptopolitan.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32321496/Bitcoins-Kimchi-Premium-hits-198-as-holders-lock-in-biggest-profits-since-December",
+      "published_at": "Sun May 10 2026 14:03:53 GMT+0000 (Coordinated Universal Time)",
+      "source": "cryptopolitan.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32045211/XRP-Price-Follows-Bitcoin-Bill-Morgan-Explains-XRP-BTC-Correlation",
-      "published_at": "Fri May 01 2026 06:36:28 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "American Bitcoin Reports Loss Despite Operational Growth  cryptodnes.bg",
+      "url": "https://cryptopanic.com/news/bitcoin/32321507/American-Bitcoin-Reports-Loss-Despite-Operational-Growth",
+      "published_at": "Sun May 10 2026 14:01:06 GMT+0000 (Coordinated Universal Time)",
+      "source": "cryptodnes.bg",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32043547/Bitwise-CIO-Altcoin-Season-Is-Over-Bitcoin-Could-Hit-1M-in-5-Years",
-      "published_at": "Fri May 01 2026 06:33:15 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Nearly 80% Of Bitcoin Supply Hasn\u2019t Moved As Long-Term Holders Tighten Grip  newsbtc.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32321553/Nearly-80-Of-Bitcoin-Supply-Hasnt-Moved-As-Long-Term-Holders-Tighten-Grip",
+      "published_at": "Sun May 10 2026 14:00:30 GMT+0000 (Coordinated Universal Time)",
+      "source": "newsbtc.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32044703/Bitcoin-ticks-higher-but-remains-range-bound-as-traders-keep-short-bias",
-      "published_at": "Fri May 01 2026 06:20:23 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "The Jobs Numbers Changed the Narrative \u2014 Bitcoin Saw It First  techgaged.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32320640/The-Jobs-Numbers-Changed-the-Narrative-Bitcoin-Saw-It-First",
+      "published_at": "Sun May 10 2026 13:56:45 GMT+0000 (Coordinated Universal Time)",
+      "source": "techgaged.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32042902/Heres-how-much-Bitcoin-ETFs-recorded-in-inflows-in-April-2026",
-      "published_at": "Fri May 01 2026 06:15:44 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Bitcoin Price Prediction: BTC Targets $363K Above $80K  coinpaper.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32320585/Bitcoin-Price-Prediction-BTC-Targets-363K-Above-80K",
+      "published_at": "Sun May 10 2026 13:38:08 GMT+0000 (Coordinated Universal Time)",
+      "source": "coinpaper.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     },
     {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32043134/Can-Bitcoin-Ride-A-Stock-Market-Breakout-80K-Next-If-SP-500-Keeps-Rallying",
-      "published_at": "Fri May 01 2026 06:13:42 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
-    },
-    {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32042917/Five-Things-That-Will-Define-Crypto-in-May-2026",
-      "published_at": "Fri May 01 2026 06:13:35 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
-    },
-    {
-      "headline": "5h",
-      "url": "https://cryptopanic.com/news/bitcoin/32044504/Altcoins-Stuck-Since-February-Will-ADA-SOL-LTC-SUI-and-LINK-Finally-Break-Out-This-Month",
-      "published_at": "Fri May 01 2026 06:09:57 GMT-0400 (Eastern Daylight Time)",
-      "importance": 0
+      "headline": "Weekend Round-Up: Bitcoin's Million-Dollar Future, Trump Sons' Billion-Dollar Investment And More  feeds2.benzinga.com",
+      "url": "https://cryptopanic.com/news/bitcoin/32320598/Weekend-Round-Up-Bitcoins-Million-Dollar-Future-Trump-Sons-Billion-Dollar-Investment-And-More",
+      "published_at": "Sun May 10 2026 13:31:24 GMT+0000 (Coordinated Universal Time)",
+      "source": "feeds2.benzinga.com",
+      "category": "BTC_DIRECT",
+      "importance": 0,
+      "matched_keywords": [],
+      "is_critical": false
     }
   ],
   "scrape_error": null

@@ -1,0 +1,206 @@
+{
+  "smart_money_score": 60,
+  "smart_money_bullish_score": 60,
+  "smart_money_bearish_score": 45,
+  "smart_money_bias": "bullish",
+  "smart_money_reason": "higher_timeframe_bullish, bullish_bos_or_choch, bearish_liquidity_sweep, price_in_premium, active_bullish_order_block, active_bullish_fvg, active_bearish_fvg",
+  "structure_state": "bullish: HH/HL/HH/HH",
+  "liquidity_state": "bearish_sweep",
+  "order_block_state": "2 active",
+  "fvg_state": "6 active",
+  "premium_discount_state": "premium",
+  "timeframe_alignment": "bullish",
+  "market_structure": {
+    "15m": {
+      "trend": "bullish",
+      "structure_state": "bullish: HH/HL/HH/HH",
+      "latest_event": {
+        "event_id": "15m_structure_14",
+        "timeframe": "15m",
+        "event_time": "2026-05-10T15:30:00",
+        "event_type": "bullish_BOS",
+        "price": 81112.5,
+        "broken_level": 81050.0,
+        "previous_structure": "bullish",
+        "new_structure": "bullish",
+        "confidence": 70,
+        "confirmed_by_closed_candle": true
+      },
+      "events_count": 14,
+      "swings_count": 29
+    },
+    "1h": {
+      "trend": "bullish",
+      "structure_state": "bullish: HH/HL/HH/HL",
+      "latest_event": {
+        "event_id": "1h_structure_3",
+        "timeframe": "1h",
+        "event_time": "2026-05-10T16:00:00",
+        "event_type": "bullish_BOS",
+        "price": 81474.1,
+        "broken_level": 81050.0,
+        "previous_structure": "bullish",
+        "new_structure": "bullish",
+        "confidence": 70,
+        "confirmed_by_closed_candle": true
+      },
+      "events_count": 3,
+      "swings_count": 6
+    },
+    "4h": {
+      "trend": "neutral",
+      "structure_state": "neutral",
+      "latest_event": null,
+      "events_count": 0,
+      "swings_count": 0
+    }
+  },
+  "liquidity": {
+    "15m": {
+      "liquidity_state": "bearish_sweep",
+      "latest_sweep": {
+        "zone_id": "15m_liq_36",
+        "timeframe": "15m",
+        "zone_type": "equal_highs",
+        "price_low": 80886.7,
+        "price_high": 80954.1,
+        "created_at": "2026-05-10T11:00:00",
+        "swept": true,
+        "swept_at": "2026-05-10T13:45:00",
+        "sweep_type": "bearish_sweep",
+        "active": false
+      },
+      "active_count": 24
+    },
+    "1h": {
+      "liquidity_state": "bearish_sweep",
+      "latest_sweep": {
+        "zone_id": "1h_liq_3",
+        "timeframe": "1h",
+        "zone_type": "swing_high_liquidity",
+        "price_low": 80589.28,
+        "price_high": 80718.32,
+        "created_at": "2026-05-09T04:00:00",
+        "swept": true,
+        "swept_at": "2026-05-09T23:00:00",
+        "sweep_type": "bearish_sweep",
+        "active": false
+      },
+      "active_count": 4
+    },
+    "4h": {
+      "liquidity_state": "no_recent_sweep",
+      "latest_sweep": null,
+      "active_count": 0
+    }
+  },
+  "order_blocks": {
+    "15m": {
+      "order_block_state": "2 active",
+      "active_count": 2,
+      "latest_order_block": {
+        "order_block_id": "15m_ob_11",
+        "timeframe": "15m",
+        "type": "bullish",
+        "created_at": "2026-05-10T15:15:00",
+        "price_low": 80961.2,
+        "price_high": 81038.3,
+        "bos_event_id": "15m_structure_14",
+        "mitigated": false,
+        "mitigated_at": null,
+        "strength_score": 60,
+        "active": true
+      }
+    },
+    "1h": {
+      "order_block_state": "2 active",
+      "active_count": 2,
+      "latest_order_block": {
+        "order_block_id": "1h_ob_3",
+        "timeframe": "1h",
+        "type": "bullish",
+        "created_at": "2026-05-10T14:00:00",
+        "price_low": 80896.7,
+        "price_high": 80984.8,
+        "bos_event_id": "1h_structure_3",
+        "mitigated": false,
+        "mitigated_at": null,
+        "strength_score": 80,
+        "active": true
+      }
+    },
+    "4h": {
+      "order_block_state": "0 active",
+      "active_count": 0,
+      "latest_order_block": null
+    }
+  },
+  "fair_value_gaps": {
+    "15m": {
+      "fvg_state": "6 active",
+      "active_count": 6,
+      "latest_fvg": {
+        "fvg_id": "15m_fvg_72",
+        "timeframe": "15m",
+        "type": "bearish",
+        "created_at": "2026-05-10T18:45:00",
+        "price_low": 81286.0,
+        "price_high": 81330.0,
+        "filled": true,
+        "filled_at": "2026-05-10T19:00:00",
+        "strength_score": 0,
+        "active": false
+      }
+    },
+    "1h": {
+      "fvg_state": "2 active",
+      "active_count": 2,
+      "latest_fvg": {
+        "fvg_id": "1h_fvg_13",
+        "timeframe": "1h",
+        "type": "bullish",
+        "created_at": "2026-05-10T17:00:00",
+        "price_low": 81080.2,
+        "price_high": 81189.6,
+        "filled": false,
+        "filled_at": null,
+        "strength_score": 75,
+        "active": true
+      }
+    },
+    "4h": {
+      "fvg_state": "none",
+      "active_count": 0,
+      "latest_fvg": null
+    }
+  },
+  "premium_discount": {
+    "15m": {
+      "timeframe": "15m",
+      "range_high": 81533.1,
+      "range_low": 79233.8,
+      "equilibrium": 80383.45,
+      "current_zone": "premium",
+      "current_price": 81360.1,
+      "created_at": "2026-05-10T19:00:00"
+    },
+    "1h": {
+      "timeframe": "1h",
+      "range_high": 81050.0,
+      "range_low": 79529.9,
+      "equilibrium": 80289.95,
+      "current_zone": "premium",
+      "current_price": 81426.1,
+      "created_at": "2026-05-10T18:00:00"
+    },
+    "4h": {
+      "timeframe": "4h",
+      "range_high": 81480.6,
+      "range_low": 79233.8,
+      "equilibrium": 80357.2,
+      "current_zone": "premium",
+      "current_price": 81474.1,
+      "created_at": "2026-05-10T16:00:00"
+    }
+  }
+}

@@ -1,24 +1,40 @@
 {
-  "generated_at": "2026-05-05T22:21:07.199792+00:00",
-  "total_blocked_candidates": 2,
+  "generated_at": "2026-05-10T18:54:56.227724+00:00",
+  "total_blocked_candidates": 79,
   "minimum_required_before_tuning": 30,
-  "ready_to_tune": false,
+  "ready_to_tune": true,
   "blockers": {
     "bb_squeeze": {
-      "count": 2,
-      "avg_return_1h": -0.3133,
-      "avg_return_4h": null,
-      "avg_return_24h": null,
+      "count": 45,
+      "avg_return_1h": 0.0123,
+      "avg_return_4h": 0.1216,
+      "avg_return_24h": -0.1626,
       "blocked_winners_1h": 0,
       "blocked_winners_4h": 0,
       "blocked_winners_24h": 0,
       "saved_losses_1h": 0,
       "saved_losses_4h": 0,
-      "saved_losses_24h": 0,
-      "neutral_1h": 1,
-      "neutral_4h": 0,
-      "neutral_24h": 0,
-      "verdict": "not_enough_data"
+      "saved_losses_24h": 9,
+      "neutral_1h": 43,
+      "neutral_4h": 45,
+      "neutral_24h": 26,
+      "verdict": "neutral"
+    },
+    "exchange_alert": {
+      "count": 34,
+      "avg_return_1h": -0.1192,
+      "avg_return_4h": -0.0103,
+      "avg_return_24h": -0.262,
+      "blocked_winners_1h": 0,
+      "blocked_winners_4h": 0,
+      "blocked_winners_24h": 0,
+      "saved_losses_1h": 2,
+      "saved_losses_4h": 0,
+      "saved_losses_24h": 6,
+      "neutral_1h": 28,
+      "neutral_4h": 30,
+      "neutral_24h": 9,
+      "verdict": "neutral"
     }
   }
 }

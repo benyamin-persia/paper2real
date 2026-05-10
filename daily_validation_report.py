@@ -30,6 +30,10 @@ from config import (
     LEARNING_ONLY_MAX_PER_DAY,
     AI_INPUT_USD_PER_MILLION_TOKENS,
     AI_OUTPUT_USD_PER_MILLION_TOKENS,
+    TA_FORECAST_ENABLED,
+    TA_FORECAST_SHADOW_ONLY,
+    AI_TA_ENABLED,
+    AI_TA_SHADOW_ONLY,
 )
 
 
@@ -53,6 +57,15 @@ ENDPOINTS_TO_CHECK = [
     "/risk-block-performance",
     "/shadow-performance",
     "/smart-money-backtest",
+    "/shadow-buy-review",
+    "/technical-analysis",
+    "/support-resistance",
+    "/chart-patterns",
+    "/ta-forecast",
+    "/ta-backtest",
+    "/ai-technical-analyst",
+    "/ai-ta-performance",
+    "/ai-ta-backtest",
     "/reports",
 ]
 DOWNLOAD_ZIP_ENDPOINT = "/download/all.zip"
@@ -600,6 +613,9 @@ def _write_markdown(report: dict) -> None:
             f"- Shadow Smart Money: `{progress['shadow_smart_money_current']} / {progress['shadow_smart_money_target']}`",
             f"- Ready for risk block review: `{report['ready_for_risk_block_review']}`",
             f"- Ready for Smart Money review: `{report['ready_for_smart_money_review']}`",
+            f"- Shadow BUY review: `{report.get('shadow_buy_review_count')} / {report.get('shadow_buy_review_target')}` `{report.get('shadow_buy_review_recommendation')}`",
+            f"- TA shadow progress: `{report.get('ta_shadow_count')} / 50` ready_for_bonus=`{report.get('ta_ready_for_bonus')}`",
+            f"- AI TA shadow progress: `{report.get('ai_ta_shadow_count')} / 50` ready_for_bonus=`{report.get('ai_ta_ready_for_bonus')}`",
             "",
             "## Learning-Only Scans",
             "",
@@ -628,6 +644,18 @@ def _write_markdown(report: dict) -> None:
             f"- Ready for bonus: `{report['smart_money_performance']['smart_money_ready_for_bonus']}`",
             f"- Score distribution: `{report['smart_money_performance']['smart_money_score_distribution']}`",
             f"- Bias distribution: `{report['smart_money_performance']['smart_money_bias_distribution']}`",
+            "",
+            "## TA / AI TA Shadow Layers",
+            "",
+            f"- TA enabled: `{report.get('ta_forecast_enabled')}` shadow_only=`{report.get('ta_forecast_shadow_only')}`",
+            f"- TA shadow count: `{report.get('ta_shadow_count')}`",
+            f"- TA avg future return 4h: `{report.get('ta_future_return_4h')}`",
+            f"- AI TA enabled: `{report.get('ai_ta_enabled')}` shadow_only=`{report.get('ai_ta_shadow_only')}`",
+            f"- AI TA calls total: `{report.get('ai_ta_calls_total')}`",
+            f"- AI TA shadow count: `{report.get('ai_ta_shadow_count')}`",
+            f"- AI TA avg future return 4h: `{report.get('ai_ta_future_return_4h')}`",
+            f"- AI TA invalid JSON count: `{report.get('ai_ta_invalid_json_count')}`",
+            f"- AI TA safety violations: should_trade=`{report.get('ai_ta_should_trade_violation_count')}`, risk_engine=`{report.get('ai_ta_risk_engine_violation_count')}`",
             "",
             "## Download Safety",
             "",
@@ -736,6 +764,141 @@ def _env_bool(name: str, default: bool) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _read_report_json(name: str, fallback: dict | None = None) -> dict:
+    path = REPORT_DIR / name
+    if not path.exists():
+        return fallback or {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return fallback or {}
+
+
+def _bucket_distribution(values: list[Any]) -> dict:
+    out: dict[str, int] = {}
+    for value in values:
+        key = "unknown" if value is None else str(value)
+        out[key] = out.get(key, 0) + 1
+    return out
+
+
+def _score_distribution(values: list[Any]) -> dict:
+    buckets = {"0_49": 0, "50_59": 0, "60_69": 0, "70_79": 0, "80_100": 0}
+    for value in values:
+        try:
+            score = float(value)
+        except Exception:
+            continue
+        if score < 50:
+            buckets["0_49"] += 1
+        elif score < 60:
+            buckets["50_59"] += 1
+        elif score < 70:
+            buckets["60_69"] += 1
+        elif score < 80:
+            buckets["70_79"] += 1
+        else:
+            buckets["80_100"] += 1
+    return buckets
+
+
+def _avg(values: list[Any]) -> float:
+    vals = []
+    for value in values:
+        try:
+            if value is not None:
+                vals.append(float(value))
+        except Exception:
+            pass
+    return round(sum(vals) / len(vals), 4) if vals else 0.0
+
+
+def _win_rate(values: list[Any]) -> float:
+    vals = []
+    for value in values:
+        try:
+            if value is not None:
+                vals.append(float(value))
+        except Exception:
+            pass
+    return round(sum(1 for value in vals if value > 0) / len(vals) * 100, 2) if vals else 0.0
+
+
+def _new_layer_metrics(decisions: list[dict]) -> dict:
+    shadow_buy = _read_report_json("shadow_buy_review.json", {})
+    ta_rows = [d for d in decisions if d.get("shadow_ta_action")]
+    ai_rows = [d for d in decisions if d.get("ai_ta_called") or d.get("shadow_ai_ta_action")]
+    ai_shadow = [d for d in decisions if d.get("shadow_ai_ta_action")]
+    ai_perf = _read_report_json("ai_ta_performance.json", {})
+    ta_backtest = _read_report_json("ta_backtest.json", {})
+    ai_backtest = _read_report_json("ai_ta_backtest.json", {})
+    ta_4h_win = _win_rate([d.get("shadow_ta_future_return_4h") for d in ta_rows])
+    ta_4h_avg = _avg([d.get("shadow_ta_future_return_4h") for d in ta_rows])
+    ai_4h_win = _win_rate([d.get("shadow_ai_ta_future_return_4h") for d in ai_shadow])
+    ai_4h_avg = _avg([d.get("shadow_ai_ta_future_return_4h") for d in ai_shadow])
+    ta_ready = len(ta_rows) >= 50 and ta_4h_win >= 55 and ta_4h_avg > 0 and not _backtest_negative(ta_backtest)
+    invalid = int(ai_perf.get("invalid_json_count") or 0)
+    should_trade_violations = int(ai_perf.get("should_trade_violation_count") or 0)
+    risk_violations = int(ai_perf.get("risk_engine_violation_count") or 0)
+    invalid_rate = invalid / max(1, int(ai_perf.get("ai_ta_total_predictions") or 0)) * 100
+    ai_ready = (
+        len(ai_shadow) >= 50
+        and ai_4h_win >= 55
+        and ai_4h_avg > 0
+        and not _backtest_negative(ai_backtest)
+        and invalid_rate < 5
+        and should_trade_violations == 0
+        and risk_violations == 0
+    )
+    calls_learning = sum(1 for d in ai_rows if (d.get("scan_mode") or d.get("trigger")) == "learning_only")
+    calls_total = sum(1 for d in ai_rows if int(d.get("ai_ta_called") or 0) == 1)
+    estimated_daily = 0.0
+    return {
+        "shadow_buy_review_ready": bool(shadow_buy.get("ready_for_review")),
+        "shadow_buy_review_recommendation": shadow_buy.get("final_shadow_buy_recommendation"),
+        "shadow_buy_review_count": int(shadow_buy.get("shadow_buy_count") or 0),
+        "shadow_buy_review_target": 100,
+        "ta_forecast_enabled": TA_FORECAST_ENABLED,
+        "ta_forecast_shadow_only": TA_FORECAST_SHADOW_ONLY,
+        "ta_shadow_count": len(ta_rows),
+        "ta_score_distribution": _score_distribution([d.get("ta_score") for d in decisions]),
+        "ta_bias_distribution": _bucket_distribution([d.get("ta_bias") for d in decisions if d.get("ta_bias")]),
+        "ta_future_return_15m": _avg([d.get("shadow_ta_future_return_15m") for d in ta_rows]),
+        "ta_future_return_1h": _avg([d.get("shadow_ta_future_return_1h") for d in ta_rows]),
+        "ta_future_return_4h": ta_4h_avg,
+        "ta_future_return_24h": _avg([d.get("shadow_ta_future_return_24h") for d in ta_rows]),
+        "ta_ready_for_bonus": ta_ready,
+        "estimated_days_to_50_ta_shadow": None,
+        "ai_ta_enabled": AI_TA_ENABLED,
+        "ai_ta_shadow_only": AI_TA_SHADOW_ONLY,
+        "ai_ta_calls_total": calls_total,
+        "ai_ta_calls_from_learning_scans": calls_learning,
+        "ai_ta_shadow_count": len(ai_shadow),
+        "ai_ta_score_distribution": _score_distribution([d.get("ai_ta_score") for d in ai_rows]),
+        "ai_ta_bias_distribution": _bucket_distribution([d.get("ai_ta_bias") for d in ai_rows if d.get("ai_ta_bias")]),
+        "ai_ta_confidence_distribution": _score_distribution([d.get("ai_ta_confidence") for d in ai_rows]),
+        "ai_ta_future_return_15m": _avg([d.get("shadow_ai_ta_future_return_15m") for d in ai_shadow]),
+        "ai_ta_future_return_1h": _avg([d.get("shadow_ai_ta_future_return_1h") for d in ai_shadow]),
+        "ai_ta_future_return_4h": ai_4h_avg,
+        "ai_ta_future_return_24h": _avg([d.get("shadow_ai_ta_future_return_24h") for d in ai_shadow]),
+        "ai_ta_ready_for_bonus": ai_ready,
+        "estimated_days_to_50_ai_ta_shadow": None,
+        "ai_ta_estimated_api_cost_daily": estimated_daily,
+        "ai_ta_estimated_api_cost_monthly": round(estimated_daily * 30, 4),
+        "ai_ta_invalid_json_count": invalid,
+        "ai_ta_should_trade_violation_count": should_trade_violations,
+        "ai_ta_risk_engine_violation_count": risk_violations,
+    }
+
+
+def _backtest_negative(report: dict) -> bool:
+    best = report.get("best_threshold") or {}
+    try:
+        return float(best.get("avg_return_4h") or 0) < 0
+    except Exception:
+        return False
+
+
 def run(auto_push: bool | None = None) -> dict:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -752,6 +915,7 @@ def run(auto_push: bool | None = None) -> dict:
     days_estimates = _estimated_days_to_targets(decisions, counts)
     risk = _risk_block_performance()
     smart = _smart_money_performance(decisions)
+    new_layers = _new_layer_metrics(decisions)
     primary, recommendations = _recommendations(system, counts, smart, errors)
 
     report: dict[str, Any] = {
@@ -780,6 +944,7 @@ def run(auto_push: bool | None = None) -> dict:
         **days_estimates,
         "ready_for_risk_block_review": counts["risk_blocked_candidates"] >= BLOCKED_BUY_TARGET,
         "ready_for_smart_money_review": counts["shadow_smart_money_count"] >= SHADOW_SMART_MONEY_TARGET,
+        **new_layers,
         "download_zip_safe": bool(download_safety.get("download_zip_safe")),
         "secrets_excluded": bool(download_safety.get("secrets_excluded")),
         "errors": errors,

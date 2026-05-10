@@ -479,3 +479,28 @@ Daily validation:
   - 30 risk-blocked BUY candidates
   - 100 shadow BUY records
   - 50 Smart Money shadow records
+## Shadow BUY Review
+
+The Shadow BUY review layer requires 100 shadow BUY observations before any recommendation can move beyond data collection. The report measures 1h, 4h, and 24h win rate, average return, median return, max favorable move, max adverse move, best/worst horizon, and positive expectancy.
+
+This report is evidence only. It does not change BUY thresholds, Trade Quality scoring, risk engine behavior, paper balance, or portfolio logic.
+
+## Technical Analysis Forecast Layer
+
+The Technical Analysis layer calculates deterministic indicators from closed BTC candles only: EMA20/50/200, SMA20/50/200, RSI14, MACD, Bollinger Bands, ATR14, volume ratio, volume quality, BB squeeze state, trend state, momentum state, volatility state, and trend strength.
+
+Support and resistance zones are detected from recent swing highs/lows, previous day/week highs/lows, psychological round levels, EMA dynamic levels, and Bollinger Band levels. Chart patterns are detected from closed candles only, including engulfing candles, hammer/shooting star, doji, strong candles, breakouts/breakdowns, double top/bottom, higher low/lower high, and simple RSI/MACD divergence.
+
+The TA forecast combines bullish, bearish, and neutral evidence into a 0-100 score, bias, confidence, horizon predictions, nearest support/resistance, invalidation level, and risk level. It is shadow-only first because forecasts must prove future-return edge before any score bonus is considered. TA shadow candidates are logged only when final action is HOLD and TA score/confidence are high enough; future returns are evaluated at 15m, 1h, 4h, and 24h.
+
+TA cannot execute trades, cannot create BUY by itself, cannot change portfolio, and cannot bypass `risk_engine.py`. A later Trade Quality bonus can only be discussed after enough shadow evidence shows positive 4h edge and acceptable drawdown risk.
+
+## AI Technical Analyst Layer
+
+The AI Technical Analyst layer was added to review structured chart facts like a professional analyst without screenshots. Indicators, support/resistance, chart patterns, Smart Money context, Trade Quality, candidate action, and risk-engine result are calculated deterministically before the AI analyst layer sees them.
+
+The AI TA system prompt requires closed-candle evidence only, skepticism, strict JSON output, `should_trade=false`, and `risk_engine_respected=true`. Invalid JSON is handled safely by falling back to neutral score 0, and any `should_trade=true` or risk-engine override is corrected and logged as a violation.
+
+AI TA is shadow-only first. It logs score, bias, confidence, horizon predictions, best horizon, evidence arrays, main reason, invalidation level, nearest support/resistance, and risk level. AI TA shadow candidates are logged only when final action is HOLD and score/confidence are high enough; future returns are evaluated at 15m, 1h, 4h, and 24h.
+
+AI TA cannot execute trades, cannot change portfolio, cannot bypass `risk_engine.py`, and cannot enable any bonus. A later Trade Quality bonus can only be discussed after at least 50 AI TA shadow candidates show positive 4h edge, invalid JSON rate below 5%, and zero safety violations.

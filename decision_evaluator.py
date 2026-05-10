@@ -39,12 +39,14 @@ LIVE_CANDLES = Path("data/raw/live_btc_15m.csv")
 DAILY_CANDLES = Path("data/raw/btc_15m_raw.csv")
 
 HORIZONS = {
+    "15m": 15 * 60,
     "1h": 3600,
     "4h": 4 * 3600,
     "24h": 24 * 3600,
 }
 
 HORIZON_TOLERANCE = {
+    "15m": 30 * 60,
     "1h": 90 * 60,
     "4h": 6 * 3600,
     "24h": 36 * 3600,
@@ -209,6 +211,39 @@ def _update_blocked_candidate_future_returns(rows: list[dict]) -> None:
                     f"UPDATE decisions SET {ret_col}=?, {out_col}=? WHERE id=?",
                     (ret, _blocked_outcome(ret), row["decision_id"]),
                 )
+        con.commit()
+    finally:
+        con.close()
+
+
+def _update_shadow_layer_future_returns(rows: list[dict], prefix: str) -> None:
+    db = Path(DB_FILE)
+    if not db.exists() or not rows:
+        return
+    action_col = f"shadow_{prefix}_action"
+    future_cols = {
+        "15m": f"shadow_{prefix}_future_return_15m",
+        "1h": f"shadow_{prefix}_future_return_1h",
+        "4h": f"shadow_{prefix}_future_return_4h",
+        "24h": f"shadow_{prefix}_future_return_24h",
+    }
+    con = sqlite3.connect(db)
+    try:
+        for col in future_cols.values():
+            try:
+                con.execute(f"ALTER TABLE decisions ADD COLUMN {col} REAL")
+            except sqlite3.OperationalError:
+                pass
+        for row in rows:
+            if row["status"] != "SCORED" or not row.get(action_col) or row.get("return_pct") == "":
+                continue
+            col = future_cols.get(row["horizon"])
+            if not col:
+                continue
+            ret = float(row["return_pct"])
+            action = str(row.get(action_col) or "").upper()
+            directional_ret = -ret if action.startswith("SELL") else ret
+            con.execute(f"UPDATE decisions SET {col}=? WHERE id=?", (directional_ret, row["decision_id"]))
         con.commit()
     finally:
         con.close()
@@ -442,6 +477,14 @@ def _evaluate_rows(decisions: list[dict], prices: list[PricePoint]) -> list[dict
                     "shadow_smart_money_score": d.get("shadow_smart_money_score"),
                     "shadow_smart_money_bias": d.get("shadow_smart_money_bias"),
                     "shadow_smart_money_reason": d.get("shadow_smart_money_reason"),
+                    "shadow_ta_action": d.get("shadow_ta_action"),
+                    "shadow_ta_score": d.get("shadow_ta_score"),
+                    "shadow_ta_bias": d.get("shadow_ta_bias"),
+                    "shadow_ta_reason": d.get("shadow_ta_reason"),
+                    "shadow_ai_ta_action": d.get("shadow_ai_ta_action"),
+                    "shadow_ai_ta_score": d.get("shadow_ai_ta_score"),
+                    "shadow_ai_ta_bias": d.get("shadow_ai_ta_bias"),
+                    "shadow_ai_ta_reason": d.get("shadow_ai_ta_reason"),
                     "condition_tags": "|".join(_condition_tags(d)),
                     "claude_reason": d.get("claude_reason"),
                 }
@@ -526,7 +569,7 @@ def build_risk_block_performance(rows: list[dict]) -> dict:
         if r.get("status") != "SCORED" or r.get("return_pct") == "":
             continue
         horizon = r.get("horizon")
-        if horizon not in HORIZONS:
+        if horizon not in item["returns"]:
             continue
         ret = float(r["return_pct"])
         item["returns"][horizon].append(ret)
@@ -797,6 +840,8 @@ def run() -> dict:
     _update_shadow_future_returns(rows)
     _update_shadow_smart_money_future_returns(rows)
     _update_blocked_candidate_future_returns(rows)
+    _update_shadow_layer_future_returns(rows, "ta")
+    _update_shadow_layer_future_returns(rows, "ai_ta")
     summary = _build_summary(decisions, prices, rows)
     risk_block_report = build_risk_block_performance(rows)
 

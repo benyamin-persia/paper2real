@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-05-10T02:15:21.163162+00:00",
+  "total_blocked_candidates": 58,
+  "minimum_required": 30,
+  "ready_for_review": true,
+  "blocker_breakdown": {
+    "bb_squeeze": {
+      "count": 36,
+      "avg_return_1h": 0.0019,
+      "avg_return_4h": 0.0581,
+      "avg_return_24h": -0.2596,
+      "blocked_winners_1h": 18,
+      "blocked_winners_4h": 18,
+      "blocked_winners_24h": 17,
+      "saved_losses_1h": 18,
+      "saved_losses_4h": 17,
+      "saved_losses_24h": 13,
+      "neutral_1h": 0,
+      "neutral_4h": 0,
+      "neutral_24h": 0,
+      "average_return_all_scored_horizons": -0.0563
+    },
+    "exchange_alert": {
+      "count": 22,
+      "avg_return_1h": -0.208,
+      "avg_return_4h": -0.0539,
+      "avg_return_24h": -1.7098,
+      "blocked_winners_1h": 7,
+      "blocked_winners_4h": 7,
+      "blocked_winners_24h": 0,
+      "saved_losses_1h": 12,
+      "saved_losses_4h": 11,
+      "saved_losses_24h": 6,
+      "neutral_1h": 0,
+      "neutral_4h": 0,
+      "neutral_24h": 0,
+      "average_return_all_scored_horizons": -0.3531
+    }
+  },
+  "bb_squeeze": {
+    "count": 36,
+    "avg_return_1h": 0.0019,
+    "avg_return_4h": 0.0581,
+    "avg_return_24h": -0.2596,
+    "blocked_winners": 17,
+    "saved_losses": 13
+  },
+  "exchange_alert": {
+    "count": 22,
+    "avg_return_1h": -0.208,
+    "avg_return_4h": -0.0539,
+    "avg_return_24h": -1.7098,
+    "blocked_winners": 0,
+    "saved_losses": 6
+  },
+  "final_risk_recommendation": "KEEP_AS_IS",
+  "guardrails": [
+    "Analysis only; no trading logic changed.",
+    "risk_engine.py was not modified by this report.",
+    "No thresholds changed and no safety rule removed.",
+    "Recommendations were not applied automatically."
+  ]
+}

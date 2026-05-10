@@ -21,9 +21,10 @@ button{border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:70
 .view{display:none}.view.active{display:block}.cols2{grid-template-columns:1fr 1fr}.cols3{grid-template-columns:1fr 1fr 1fr}
 table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--muted);font-size:.68rem;text-transform:uppercase;text-align:left;padding:9px 10px}td{border-top:1px solid var(--line);padding:9px 10px;font-size:.8rem;vertical-align:top}.empty{text-align:center;color:var(--muted);padding:24px}.clip{max-width:520px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:800;text-transform:uppercase}.buy{background:#102f1c;color:var(--green);border:1px solid #1f9d52}.sell{background:#35121a;color:var(--red);border:1px solid #b8354b}.hold{background:#322805;color:var(--yellow);border:1px solid #a9800d}.neutral{background:#182238;color:var(--muted);border:1px solid var(--line)}
+.warn{background:#2b2112;border:1px solid #8d6b18;color:var(--yellow);border-radius:8px;padding:10px;margin-bottom:12px}.taFlags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:.72rem;font-weight:800}.taEvidence{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.taEvidence ul{margin-left:18px;color:#c9d7ee;font-size:.82rem;line-height:1.55}.miniTable{overflow:auto}.taCards{grid-template-columns:repeat(6,minmax(130px,1fr));margin-bottom:14px}
 .tweet{border-bottom:1px solid var(--line);padding:12px 0}.tweet:last-child{border-bottom:0}.tweethead{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}.metrics{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.72rem;margin-top:7px}.media{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.media img{max-width:180px;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}.audit{white-space:pre-wrap;background:#0a0f18;border:1px solid var(--line);border-radius:8px;padding:12px;max-height:360px;overflow:auto;font-size:.78rem;line-height:1.45;color:#c9d7ee}
 .logline{font-family:Consolas,monospace;font-size:.75rem;border-bottom:1px solid #182238;padding:6px 0;color:#cdd8ee}.logline .lvl{display:inline-block;width:58px;font-weight:800}.settings input{width:100%;background:#0a0f18;border:1px solid var(--line);border-radius:7px;color:var(--text);padding:9px;margin-top:5px}.settings label{font-size:.75rem;color:var(--muted)}
-@media(max-width:1200px){.cards{grid-template-columns:repeat(4,1fr)}.charts,.cols2,.cols3{grid-template-columns:1fr}.hdr{grid-template-columns:1fr}.price,.status{text-align:left}}
+@media(max-width:1200px){.cards,.taCards{grid-template-columns:repeat(4,1fr)}.charts,.cols2,.cols3,.taEvidence{grid-template-columns:1fr}.hdr{grid-template-columns:1fr}.price,.status{text-align:left}}
 </style>
 </head>
 <body>
@@ -84,6 +85,8 @@ table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--mute
     <button class="tab" onclick="tab(this,'audit')">AI Brain Audit</button>
     <button class="tab" onclick="tab(this,'reports')">Reports</button>
     <button class="tab" onclick="tab(this,'smartmoney')">Smart Money</button>
+    <button class="tab" onclick="tab(this,'ta')">Technical Analysis Live</button>
+    <button class="tab" onclick="tab(this,'aita')">AI TA</button>
     <button class="tab" onclick="tab(this,'events')">Notifications</button>
     <button class="tab" onclick="tab(this,'logs')">Live Logs</button>
     <button class="tab" onclick="tab(this,'downloads')">Downloads</button>
@@ -138,6 +141,62 @@ table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--mute
       <div><div class="ptitle"><span>Fair Value Gaps</span><span id="fvgState">--</span></div><div class="audit" id="fvgBox"></div></div>
       <div><div class="ptitle"><span>Premium / Discount</span><span id="pdState">--</span></div><div class="audit" id="pdBox"></div></div>
     </div>
+  </section>
+  <section id="ta" class="view panel">
+    <div class="ptitle"><span>Technical Analysis Live</span><span id="taUpdated">Shadow-only · No execution</span></div>
+    <div class="taFlags">
+      <span class="pill yellow">Shadow-only</span>
+      <span class="pill yellow">No execution</span>
+      <span class="pill neutral">Trade Quality unchanged</span>
+      <span class="pill neutral">risk_engine.py remains final authority</span>
+    </div>
+    <div id="taWarnings"></div>
+    <div class="grid taCards">
+      <div class="card"><div class="label">TA Score</div><div class="value" id="taScore">--</div><div class="hint">shadow signal only</div></div>
+      <div class="card"><div class="label">TA Bias</div><div class="value" id="taBias">--</div><div class="hint" id="taConfidence">confidence --</div></div>
+      <div class="card"><div class="label">Predictions</div><div class="value" id="taPredShort">--</div><div class="hint" id="taPredLong">--</div></div>
+      <div class="card"><div class="label">Nearest Support</div><div class="value" id="taSupport">--</div><div class="hint">nearest active zone</div></div>
+      <div class="card"><div class="label">Nearest Resistance</div><div class="value" id="taResistance">--</div><div class="hint">nearest active zone</div></div>
+      <div class="card"><div class="label">Risk / Invalidation</div><div class="value" id="taRisk">--</div><div class="hint" id="taInvalidation">invalidation --</div></div>
+    </div>
+    <div class="grid cols2" style="margin-bottom:14px">
+      <div><div class="ptitle"><span>Explanation</span><span id="taReasonState">--</span></div><div class="audit" id="taReason">No TA forecast loaded</div></div>
+      <div>
+        <div class="ptitle"><span>Evidence</span><span>Bullish / Bearish / Neutral</span></div>
+        <div class="taEvidence">
+          <div><div class="label green">Bullish</div><ul id="taBull"></ul></div>
+          <div><div class="label red">Bearish</div><ul id="taBear"></ul></div>
+          <div><div class="label yellow">Neutral</div><ul id="taNeutral"></ul></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:14px"><div class="ptitle"><span>BTC Close / EMAs / Zones / Bollinger Bands</span><span>15m candles</span></div><div class="chartbox"><canvas id="taPriceChart"></canvas></div></div>
+    <div class="grid cols2" style="margin-bottom:14px">
+      <div><div class="ptitle"><span>RSI14</span></div><div class="chartbox sm"><canvas id="taRsiChart"></canvas></div></div>
+      <div><div class="ptitle"><span>MACD</span></div><div class="chartbox sm"><canvas id="taMacdChart"></canvas></div></div>
+      <div><div class="ptitle"><span>Bollinger Band Width</span></div><div class="chartbox sm"><canvas id="taBbWidthChart"></canvas></div></div>
+      <div><div class="ptitle"><span>ATR14</span></div><div class="chartbox sm"><canvas id="taAtrChart"></canvas></div></div>
+    </div>
+    <div class="grid cols2" style="margin-bottom:14px">
+      <div class="miniTable"><div class="ptitle"><span>Detected Chart Patterns</span><span id="taPatternCount">--</span></div><table><thead><tr><th>Timeframe</th><th>Pattern</th><th>Direction</th><th>Confidence</th><th>Detected</th><th>Invalidated</th><th>Reason</th></tr></thead><tbody id="taPatternRows"></tbody></table></div>
+      <div class="miniTable"><div class="ptitle"><span>Support / Resistance Zones</span><span id="taZoneCount">--</span></div><table><thead><tr><th>Timeframe</th><th>Type</th><th>Low</th><th>High</th><th>Strength</th><th>Touches</th><th>Active</th><th>Status</th></tr></thead><tbody id="taZoneRows"></tbody></table></div>
+    </div>
+    <div class="grid cols2">
+      <div><div class="ptitle"><span>TA Shadow Learning</span><span id="taShadowState">target: 50</span></div><div id="taShadowBox" class="grid cols2"></div></div>
+      <div><div class="ptitle"><span>TA Backtest</span><span id="taBacktestState">--</span></div><div id="taBacktestBox" class="grid cols2"></div></div>
+    </div>
+  </section>
+  <section id="aita" class="view panel">
+    <div class="grid cols3" style="margin-bottom:14px">
+      <div class="card"><div class="label">AI TA Score</div><div class="value" id="aiTaScore">--</div><div class="hint" id="aiTaBias">--</div></div>
+      <div class="card"><div class="label">AI TA Shadow</div><div class="value" id="aiTaShadowOnly">--</div><div class="hint">cannot execute trades</div></div>
+      <div class="card"><div class="label">AI TA Cost</div><div class="value" id="aiTaCost">--</div><div class="hint">estimated from daily validation</div></div>
+    </div>
+    <div class="grid cols2" style="margin-bottom:14px">
+      <div><div class="ptitle"><span>Current AI TA</span></div><div class="audit" id="aiTaCurrentBox"></div></div>
+      <div><div class="ptitle"><span>Performance</span></div><div class="audit" id="aiTaPerformanceBox"></div></div>
+    </div>
+    <div><div class="ptitle"><span>Backtest Summary</span></div><div class="audit" id="aiTaBacktestBox"></div></div>
   </section>
   <section id="events" class="view panel"><div class="ptitle"><span>Immutable event / notification audit</span><span id="eventMeta"></span></div><table><thead><tr><th>Time</th><th>Severity</th><th>Event</th><th>Source</th><th>Status</th><th>Telegram</th><th>Message</th></tr></thead><tbody id="eventRows"></tbody></table></section>
   <section id="logs" class="view panel"><div class="ptitle"><span>Application log</span><span>last 200 lines</span></div><div id="logRows"></div></section>
@@ -304,6 +363,148 @@ async function loadSmartMoney(){
   $("pdBox").textContent=JSON.stringify(pd.premium_discount_zones||[],null,2);
 }
 
+async function safeJ(path){
+  try{return {ok:true,path,data:await j(path)}}catch(e){return {ok:false,path,error:e.message,data:null}}
+}
+
+function shortMoney(n){
+  return n==null?"--":"$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
+}
+
+function listItems(items){
+  const rows=(items||[]).slice(0,8);
+  return rows.length?rows.map(x=>`<li>${String(x)}</li>`).join(""):`<li class="muted">None</li>`;
+}
+
+function miniCard(label,value,hint="",klass=""){
+  return `<div class="card"><div class="label">${label}</div><div class="value ${klass}">${value??"--"}</div><div class="hint">${hint}</div></div>`;
+}
+
+function zoneMid(z){
+  return z?Number((Number(z.price_low||0)+Number(z.price_high||0))/2):null;
+}
+
+function taShadowStats(decisions,daily){
+  const rows=((decisions||{}).decisions||[]).filter(r=>r.shadow_ta_action);
+  const avg=key=>{
+    const vals=rows.map(r=>r[key]).filter(v=>v!=null).map(Number);
+    return vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(4)+"%":"--";
+  };
+  return {
+    count: daily?.ta_shadow_count ?? rows.length,
+    ready: daily?.ta_ready_for_bonus ?? ((daily?.ta_shadow_count ?? rows.length)>=50),
+    r15m: daily?.ta_future_return_15m ?? avg("shadow_ta_future_return_15m"),
+    r1h: daily?.ta_future_return_1h ?? avg("shadow_ta_future_return_1h"),
+    r4h: daily?.ta_future_return_4h ?? avg("shadow_ta_future_return_4h"),
+    r24h: daily?.ta_future_return_24h ?? avg("shadow_ta_future_return_24h")
+  };
+}
+
+async function loadTA(){
+  const results=await Promise.all([
+    safeJ("/technical-analysis"),
+    safeJ("/support-resistance"),
+    safeJ("/chart-patterns"),
+    safeJ("/ta-forecast"),
+    safeJ("/ta-backtest"),
+    safeJ("/daily-validation-report"),
+    safeJ("/decisions")
+  ]);
+  const byPath=Object.fromEntries(results.map(r=>[r.path,r]));
+  const warnings=results.filter(r=>!r.ok && ["/technical-analysis","/support-resistance","/chart-patterns","/ta-forecast","/ta-backtest"].includes(r.path));
+  $("taWarnings").innerHTML=warnings.map(w=>`<div class="warn">Warning: ${w.path} failed (${w.error}). The rest of the TA dashboard is still live.</div>`).join("");
+  const ind=byPath["/technical-analysis"].data||{rows:[],latest:{}};
+  const zones=byPath["/support-resistance"].data||{zones:[]};
+  const patterns=byPath["/chart-patterns"].data||{patterns:[]};
+  const forecast=byPath["/ta-forecast"].data||{};
+  const bt=byPath["/ta-backtest"].data||{};
+  const daily=byPath["/daily-validation-report"].data||{};
+  const decisions=byPath["/decisions"].data||{};
+
+  const bias=String(forecast.ta_bias||"neutral").toLowerCase();
+  $("taScore").textContent=(forecast.ta_score??0)+"/100";
+  $("taScore").className="value "+(bias==="bullish"?"green":bias==="bearish"?"red":"yellow");
+  $("taBias").textContent=bias==="bullish"?"Bullish":bias==="bearish"?"Bearish":"Neutral";
+  $("taBias").className="value "+(bias==="bullish"?"green":bias==="bearish"?"red":"yellow");
+  $("taConfidence").textContent="confidence "+(forecast.ta_confidence??0);
+  $("taPredShort").textContent=`15m ${forecast.prediction_15m||"--"} / 1h ${forecast.prediction_1h||"--"}`;
+  $("taPredLong").textContent=`4h ${forecast.prediction_4h||"--"} / 24h ${forecast.prediction_24h||"--"}`;
+  $("taSupport").textContent=shortMoney(zoneMid(forecast.nearest_support));
+  $("taResistance").textContent=shortMoney(zoneMid(forecast.nearest_resistance));
+  $("taRisk").textContent=forecast.risk_level||"--";
+  $("taInvalidation").textContent="invalidation "+shortMoney(forecast.invalidation_level);
+  $("taReasonState").textContent="Shadow-only · No execution";
+  $("taReason").textContent=(forecast.ta_reason||"No TA reason available")+"\n\nTA is shadow-only. It does not execute trades, does not change Trade Quality yet, and risk_engine.py remains final authority.";
+  $("taBull").innerHTML=listItems(forecast.bullish_evidence);
+  $("taBear").innerHTML=listItems(forecast.bearish_evidence);
+  $("taNeutral").innerHTML=listItems(forecast.neutral_evidence);
+
+  const rows=(ind.rows||[]).filter(r=>r.timeframe==="15m").slice(-180);
+  const labels=rows.map(r=>new Date(r.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
+  const activeZones=(zones.zones||[]).filter(z=>z.active!==false);
+  const supportLines=activeZones.filter(z=>String(z.zone_type||"").includes("support")||String(z.zone_type||"").includes("low")).slice(0,3);
+  const resistanceLines=activeZones.filter(z=>String(z.zone_type||"").includes("resistance")||String(z.zone_type||"").includes("high")).slice(0,3);
+  const zoneDatasets=[...supportLines.map(z=>({label:`Support ${shortMoney(zoneMid(z))}`,data:labels.map(()=>zoneMid(z)),borderColor:"#18c964",pointRadius:0,borderWidth:1,borderDash:[5,5]})),...resistanceLines.map(z=>({label:`Resistance ${shortMoney(zoneMid(z))}`,data:labels.map(()=>zoneMid(z)),borderColor:"#ff4d66",pointRadius:0,borderWidth:1,borderDash:[5,5]}))];
+  makeChart("taPriceChart","line",labels,[
+    {label:"BTC close",data:rows.map(r=>r.close),borderColor:"#f7931a",pointRadius:0,borderWidth:2,tension:.2},
+    {label:"EMA20",data:rows.map(r=>r.ema20),borderColor:"#58a6ff",pointRadius:0,borderWidth:1,tension:.2},
+    {label:"EMA50",data:rows.map(r=>r.ema50),borderColor:"#ffd166",pointRadius:0,borderWidth:1,tension:.2},
+    {label:"EMA200",data:rows.map(r=>r.ema200),borderColor:"#c9d7ee",pointRadius:0,borderWidth:1,tension:.2},
+    {label:"BB upper",data:rows.map(r=>r.bb_upper),borderColor:"rgba(125,143,179,.8)",pointRadius:0,borderWidth:1,tension:.2},
+    {label:"BB lower",data:rows.map(r=>r.bb_lower),borderColor:"rgba(125,143,179,.8)",pointRadius:0,borderWidth:1,tension:.2},
+    ...zoneDatasets
+  ],{legend:true});
+  makeChart("taRsiChart","line",labels,[{label:"RSI14",data:rows.map(r=>r.rsi14),borderColor:"#58a6ff",pointRadius:0,tension:.2},{label:"Neutral 50",data:labels.map(()=>50),borderColor:"#7d8fb3",pointRadius:0,borderDash:[4,4]}],{legend:true});
+  makeChart("taMacdChart","line",labels,[{label:"MACD",data:rows.map(r=>r.macd),borderColor:"#18c964",pointRadius:0,tension:.2},{label:"Signal",data:rows.map(r=>r.macd_signal),borderColor:"#ffd166",pointRadius:0,tension:.2},{label:"Histogram",data:rows.map(r=>r.macd_histogram),type:"bar",backgroundColor:"rgba(88,166,255,.45)"}],{legend:true});
+  makeChart("taBbWidthChart","line",labels,[{label:"BB width",data:rows.map(r=>r.bb_width),borderColor:"#f7931a",pointRadius:0,tension:.2}],{legend:false});
+  makeChart("taAtrChart","line",labels,[{label:"ATR14",data:rows.map(r=>r.atr14),borderColor:"#ff4d66",pointRadius:0,tension:.2}],{legend:false});
+
+  const pats=(patterns.patterns||[]).slice().reverse().slice(0,40);
+  $("taPatternCount").textContent=(patterns.count||pats.length)+" patterns";
+  $("taPatternRows").innerHTML=pats.length?pats.map(p=>`<tr><td>${p.timeframe||"--"}</td><td>${p.pattern_type||"--"}</td><td>${p.direction==="bullish"?'<span class="green">Bullish</span>':p.direction==="bearish"?'<span class="red">Bearish</span>':'<span class="yellow">Neutral</span>'}</td><td>${p.confidence??"--"}</td><td>${ts(p.detected_at)}</td><td>${p.invalidated?"yes":"no"}</td><td class="clip">${p.reason||"--"}</td></tr>`).join(""):`<tr><td class="empty" colspan="7">No chart patterns detected</td></tr>`;
+  const zoneRows=(zones.zones||[]).slice(0,80);
+  $("taZoneCount").textContent=(zones.count||zoneRows.length)+" zones";
+  $("taZoneRows").innerHTML=zoneRows.length?zoneRows.map(z=>`<tr><td>${z.timeframe||"--"}</td><td>${z.zone_type||"--"}</td><td>${shortMoney(z.price_low)}</td><td>${shortMoney(z.price_high)}</td><td>${z.strength_score??"--"}</td><td>${z.touch_count??"--"}</td><td>${z.active===false?"no":"yes"}</td><td>${z.broken?"broken":z.retested?"retested":"open"}</td></tr>`).join(""):`<tr><td class="empty" colspan="8">No support or resistance zones available</td></tr>`;
+
+  const shadow=taShadowStats(decisions,daily);
+  $("taShadowState").textContent=`target: 50 | ready_for_bonus ${shadow.ready?"yes":"no"}`;
+  $("taShadowBox").innerHTML=[
+    miniCard("TA Shadow Count",shadow.count,"target: 50",shadow.ready?"green":"yellow"),
+    miniCard("Ready For Bonus",shadow.ready?"yes":"no","TA_FORECAST_MAX_TQ_BONUS remains 0",shadow.ready?"green":"yellow"),
+    miniCard("15m Future Return",shadow.r15m,"shadow-only measurement"),
+    miniCard("1h Future Return",shadow.r1h,"shadow-only measurement"),
+    miniCard("4h Future Return",shadow.r4h,"shadow-only measurement"),
+    miniCard("24h Future Return",shadow.r24h,"shadow-only measurement")
+  ].join("");
+  const best=bt.best_threshold||{};
+  $("taBacktestState").textContent=best.threshold?`best threshold ${best.threshold} / ${bt.best_horizon||best.best_horizon||"--"}`:"no backtest";
+  $("taBacktestBox").innerHTML=[
+    miniCard("Best Threshold",best.threshold??"--","shadow-only"),
+    miniCard("Best Horizon",bt.best_horizon||best.best_horizon||"--","by average return"),
+    miniCard("Win Rate 15m",(best.win_rate_15m??"--")+"%",""),
+    miniCard("Win Rate 1h",(best.win_rate_1h??"--")+"%",""),
+    miniCard("Win Rate 4h",(best.win_rate_4h??"--")+"%",""),
+    miniCard("Win Rate 24h",(best.win_rate_24h??"--")+"%",""),
+    miniCard("Avg Return 15m",(best.avg_return_15m??"--")+"%",""),
+    miniCard("Avg Return 1h",(best.avg_return_1h??"--")+"%",""),
+    miniCard("Avg Return 4h",(best.avg_return_4h??"--")+"%",""),
+    miniCard("Avg Return 24h",(best.avg_return_24h??"--")+"%",""),
+    miniCard("Profit Factor",best.profit_factor_if_traded??best.profit_factor??"--","if available")
+  ].join("");
+  $("taUpdated").textContent="Updated "+new Date().toLocaleTimeString()+" · Shadow-only · No execution";
+}
+
+async function loadAiTA(){
+  const [cur,perf,bt,daily]=await Promise.all([j("/ai-technical-analyst"),j("/ai-ta-performance"),j("/ai-ta-backtest"),j("/daily-validation-report")]);
+  $("aiTaScore").textContent=(cur.ai_ta_score??0)+"/100";
+  $("aiTaBias").textContent=`${cur.ai_ta_bias||"neutral"} | confidence ${cur.ai_ta_confidence??0}`;
+  $("aiTaShadowOnly").textContent=cur.shadow_only===false?"no":"yes";
+  $("aiTaCost").textContent=`$${Number(daily.ai_ta_estimated_api_cost_daily||0).toFixed(4)}/day`;
+  $("aiTaCurrentBox").textContent=JSON.stringify(cur,null,2);
+  $("aiTaPerformanceBox").textContent=JSON.stringify(perf,null,2);
+  $("aiTaBacktestBox").textContent=JSON.stringify(bt,null,2);
+}
+
 function progressCard(title,current,target,pctValue){
   const pctNum=Math.max(0,Math.min(100,Number(pctValue||0)));
   return `<div class="card"><div class="label">${title}</div><div class="value">${current} / ${target}</div><div class="hint"><div style="height:7px;background:#0a0f18;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:7px"><div style="height:100%;width:${pctNum}%;background:${pctNum>=100?'var(--green)':'var(--orange)'}"></div></div>${pctNum.toFixed(1)}%</div></div>`;
@@ -329,6 +530,9 @@ async function loadDailyValidation(){
     `<div class="card"><div class="label">Estimated Days</div><div class="value">${d.estimated_days_to_30_blocked??"--"} / ${d.estimated_days_to_50_smart_money??"--"}</div><div class="hint">to 30 risk-blocked / 50 Smart Money shadows</div></div>`,
     `<div class="card"><div class="label">Risk Review Ready</div><div class="value ${d.ready_for_risk_block_review?'green':'yellow'}">${d.ready_for_risk_block_review?'yes':'no'}</div><div class="hint">needs 30 blocked BUY candidates</div></div>`,
     `<div class="card"><div class="label">Smart Money Review Ready</div><div class="value ${d.ready_for_smart_money_review?'green':'yellow'}">${d.ready_for_smart_money_review?'yes':'no'}</div><div class="hint">needs 50 shadow Smart Money records</div></div>`,
+    `<div class="card"><div class="label">Shadow BUY Review</div><div class="value ${d.shadow_buy_review_ready?'green':'yellow'}">${d.shadow_buy_review_count||0} / ${d.shadow_buy_review_target||100}</div><div class="hint">${d.shadow_buy_review_recommendation||"--"}</div></div>`,
+    `<div class="card"><div class="label">TA Shadow Progress</div><div class="value ${d.ta_ready_for_bonus?'green':'yellow'}">${d.ta_shadow_count||0} / 50</div><div class="hint">shadow only: ${d.ta_forecast_shadow_only}</div></div>`,
+    `<div class="card"><div class="label">AI TA Shadow Progress</div><div class="value ${d.ai_ta_ready_for_bonus?'green':'yellow'}">${d.ai_ta_shadow_count||0} / 50</div><div class="hint">invalid JSON: ${d.ai_ta_invalid_json_count||0}</div></div>`,
     progressCard("Blocked BUYs",p.blocked_buy_candidates_current||0,p.blocked_buy_candidates_target||30,p.blocked_buy_candidates_pct||0),
     progressCard("Shadow BUYs",p.shadow_buy_current||0,p.shadow_buy_target||100,p.shadow_buy_pct||0),
     progressCard("Smart Money Shadows",p.shadow_smart_money_current||0,p.shadow_smart_money_target||50,p.shadow_smart_money_pct||0)
@@ -390,14 +594,14 @@ async function scanNow(){
 }
 
 async function loadAll(){
-  const jobs=[loadPortfolio(),loadMarket(),loadPrice(),loadDecisions(),loadTrades(),loadTwitter(),loadApi(),loadAudit(),loadReports(),loadSmartMoney(),loadDailyValidation(),loadRiskHealth(),loadEvents(),loadLogs()];
+  const jobs=[loadPortfolio(),loadMarket(),loadPrice(),loadDecisions(),loadTrades(),loadTwitter(),loadApi(),loadAudit(),loadReports(),loadSmartMoney(),loadTA(),loadAiTA(),loadDailyValidation(),loadRiskHealth(),loadEvents(),loadLogs()];
   const res=await Promise.allSettled(jobs); const bad=res.find(x=>x.status==="rejected"); if(bad)console.error(bad.reason);
   $("status").textContent=bad?"Partial data loaded":"Live"; $("updated").textContent="Updated "+new Date().toLocaleTimeString();
 }
 
 loadAll();
 setInterval(()=>{loadPortfolio();loadPrice();loadMarket();loadLogs()},30000);
-setInterval(()=>{loadDecisions();loadTrades();loadTwitter();loadApi();loadAudit();loadReports();loadSmartMoney();loadDailyValidation();loadRiskHealth();loadEvents()},60000);
+setInterval(()=>{loadDecisions();loadTrades();loadTwitter();loadApi();loadAudit();loadReports();loadSmartMoney();loadTA();loadAiTA();loadDailyValidation();loadRiskHealth();loadEvents()},60000);
 </script>
 </body>
 </html>

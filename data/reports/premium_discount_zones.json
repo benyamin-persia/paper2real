@@ -1,0 +1,32 @@
+{
+  "premium_discount_zones": [
+    {
+      "timeframe": "15m",
+      "range_high": 81533.1,
+      "range_low": 79233.8,
+      "equilibrium": 80383.45,
+      "current_zone": "premium",
+      "current_price": 81360.1,
+      "created_at": "2026-05-10T19:00:00"
+    },
+    {
+      "timeframe": "1h",
+      "range_high": 81050.0,
+      "range_low": 79529.9,
+      "equilibrium": 80289.95,
+      "current_zone": "premium",
+      "current_price": 81426.1,
+      "created_at": "2026-05-10T18:00:00"
+    },
+    {
+      "timeframe": "4h",
+      "range_high": 81480.6,
+      "range_low": 79233.8,
+      "equilibrium": 80357.2,
+      "current_zone": "premium",
+      "current_price": 81474.1,
+      "created_at": "2026-05-10T16:00:00"
+    }
+  ],
+  "count": 3
+}

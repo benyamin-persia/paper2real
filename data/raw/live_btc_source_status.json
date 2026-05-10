@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-06T01:55:27.465222+00:00",
+  "generated_at": "2026-05-10T19:28:32.932241+00:00",
   "selected_source": "kraken",
   "buy_block": false,
   "sources": [
@@ -8,8 +8,8 @@
       "ok": true,
       "reason": "ok",
       "rows": 250,
-      "latest_timestamp": "2026-05-06T01:45:00+00:00",
-      "age_minutes": 10.53,
+      "latest_timestamp": "2026-05-10T19:15:00+00:00",
+      "age_minutes": 14.25,
       "zero_volume_ratio": 0.0,
       "recent_zero_volume_ratio": 0.0,
       "volume_quality": "reliable"
