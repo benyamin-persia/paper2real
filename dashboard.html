@@ -6,602 +6,535 @@
 <title>Paper2Real Control Room</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
+:root{
+  --bg:#070a10;--bg2:#0b1018;--panel:#101722;--panel2:#0d131d;--panel3:#141d2b;
+  --line:#243248;--line2:#33435c;--text:#edf4ff;--soft:#b8c6dc;--muted:#8191ad;
+  --orange:#f7931a;--green:#22c55e;--red:#ef4444;--yellow:#eab308;--blue:#38bdf8;
+  --purple:#a78bfa;--shadow:0 18px 70px rgba(0,0,0,.28);--navH:72px;--sideW:264px;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#080c14;--panel:#101620;--panel2:#0c111a;--line:#223047;--muted:#7d8fb3;--text:#e8eefc;--orange:#f7931a;--green:#18c964;--red:#ff4d66;--yellow:#ffd166;--blue:#58a6ff}
-body{background:var(--bg);color:var(--text);font-family:Segoe UI,system-ui,sans-serif}
-.hdr{position:sticky;top:0;z-index:20;background:#0f1520;border-bottom:1px solid var(--line);padding:14px 22px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px}
-.brand{font-weight:800;color:var(--orange);font-size:1.1rem}.sub{font-size:.72rem;color:var(--muted);margin-top:2px}.price{text-align:center}.price .v{font-size:1.65rem;font-weight:800;color:var(--orange)}.status{text-align:right;font-size:.78rem;color:var(--muted)}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px}
-.main{max-width:1680px;margin:0 auto;padding:18px 22px 28px}.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-button{border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:700}.primary{background:var(--orange);color:#000}.secondary{background:#182238;border:1px solid var(--line);color:var(--text)}button:disabled{opacity:.55;cursor:not-allowed}
-.grid{display:grid;gap:12px}.cards{grid-template-columns:repeat(8,minmax(130px,1fr));margin-bottom:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:13px;min-height:82px}.label{font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.value{font-size:1.22rem;font-weight:800;margin-top:6px}.hint{font-size:.72rem;color:var(--muted);margin-top:5px}
-.green{color:var(--green)}.red{color:var(--red)}.orange{color:var(--orange)}.yellow{color:var(--yellow)}.muted{color:var(--muted)}
-.charts{grid-template-columns:1.25fr .75fr;margin-bottom:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:14px}.ptitle{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}.chartbox{height:245px}.chartbox.sm{height:190px}
-.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:8px 0 14px}.tab{background:transparent;color:var(--muted);border-radius:0;padding:10px 14px;border-bottom:2px solid transparent}.tab.active{color:var(--text);border-bottom-color:var(--orange)}
-.view{display:none}.view.active{display:block}.cols2{grid-template-columns:1fr 1fr}.cols3{grid-template-columns:1fr 1fr 1fr}
-table{width:100%;border-collapse:collapse}th{background:#0d1320;color:var(--muted);font-size:.68rem;text-transform:uppercase;text-align:left;padding:9px 10px}td{border-top:1px solid var(--line);padding:9px 10px;font-size:.8rem;vertical-align:top}.empty{text-align:center;color:var(--muted);padding:24px}.clip{max-width:520px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.7rem;font-weight:800;text-transform:uppercase}.buy{background:#102f1c;color:var(--green);border:1px solid #1f9d52}.sell{background:#35121a;color:var(--red);border:1px solid #b8354b}.hold{background:#322805;color:var(--yellow);border:1px solid #a9800d}.neutral{background:#182238;color:var(--muted);border:1px solid var(--line)}
-.warn{background:#2b2112;border:1px solid #8d6b18;color:var(--yellow);border-radius:8px;padding:10px;margin-bottom:12px}.taFlags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:.72rem;font-weight:800}.taEvidence{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.taEvidence ul{margin-left:18px;color:#c9d7ee;font-size:.82rem;line-height:1.55}.miniTable{overflow:auto}.taCards{grid-template-columns:repeat(6,minmax(130px,1fr));margin-bottom:14px}
-.tweet{border-bottom:1px solid var(--line);padding:12px 0}.tweet:last-child{border-bottom:0}.tweethead{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}.metrics{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.72rem;margin-top:7px}.media{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.media img{max-width:180px;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}.audit{white-space:pre-wrap;background:#0a0f18;border:1px solid var(--line);border-radius:8px;padding:12px;max-height:360px;overflow:auto;font-size:.78rem;line-height:1.45;color:#c9d7ee}
-.logline{font-family:Consolas,monospace;font-size:.75rem;border-bottom:1px solid #182238;padding:6px 0;color:#cdd8ee}.logline .lvl{display:inline-block;width:58px;font-weight:800}.settings input{width:100%;background:#0a0f18;border:1px solid var(--line);border-radius:7px;color:var(--text);padding:9px;margin-top:5px}.settings label{font-size:.75rem;color:var(--muted)}
-@media(max-width:1200px){.cards,.taCards{grid-template-columns:repeat(4,1fr)}.charts,.cols2,.cols3,.taEvidence{grid-template-columns:1fr}.hdr{grid-template-columns:1fr}.price,.status{text-align:left}}
+html,body{height:100%}
+body{background:radial-gradient(circle at 20% -10%,rgba(247,147,26,.14),transparent 32%),radial-gradient(circle at 90% 0,rgba(56,189,248,.11),transparent 30%),var(--bg);color:var(--text);font-family:Segoe UI,system-ui,-apple-system,sans-serif;overflow:hidden}
+button,input,select{font:inherit}
+button{border:0;cursor:pointer}
+.app-shell{height:100vh;display:grid;grid-template-columns:var(--sideW) 1fr;grid-template-rows:var(--navH) 1fr;grid-template-areas:"top top" "side main"}
+.top-nav{grid-area:top;display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(9,13,20,.92);backdrop-filter:blur(18px);z-index:30}
+.hamburger{display:none;background:var(--panel3);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.brand{min-width:210px}.brand-title{font-size:1.08rem;font-weight:900;letter-spacing:.02em;color:var(--orange)}.brand-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+.nav-metrics{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;flex:1}.nav-chip{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.015));border:1px solid var(--line);border-radius:13px;padding:8px 10px;min-height:48px}.nav-label{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em}.nav-value{font-size:.9rem;font-weight:800;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-actions{display:flex;gap:8px}.btn{border-radius:10px;padding:10px 13px;font-weight:800;color:var(--text);background:var(--panel3);border:1px solid var(--line)}.btn.primary{background:var(--orange);color:#090909;border-color:var(--orange)}.btn:hover{filter:brightness(1.08)}
+.sidebar{grid-area:side;overflow:auto;border-right:1px solid var(--line);background:linear-gradient(180deg,rgba(16,23,34,.98),rgba(9,13,20,.98));padding:14px 12px;z-index:20}
+.side-section{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin:14px 10px 8px}.nav-item{width:100%;display:flex;align-items:center;gap:10px;justify-content:space-between;background:transparent;color:var(--soft);border-radius:12px;padding:10px 10px;margin:3px 0;text-align:left}.nav-item:hover{background:rgba(255,255,255,.045)}.nav-item.active{background:linear-gradient(90deg,rgba(247,147,26,.18),rgba(56,189,248,.06));color:var(--text);box-shadow:inset 3px 0 0 var(--orange)}.nav-left{display:flex;align-items:center;gap:10px}.ico{width:24px;height:24px;display:grid;place-items:center;border-radius:8px;background:#182238;color:var(--blue);font-size:.78rem;font-weight:900}.nav-item.active .ico{background:var(--orange);color:#080808}.mini-badge{font-size:.58rem;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 7px}
+.main{grid-area:main;overflow:auto;padding:18px 18px 28px}.page{display:none;max-width:1600px;margin:0 auto}.page.active{display:block}.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:16px}.kicker{color:var(--orange);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;font-weight:900}.page h1{font-size:1.65rem;letter-spacing:-.03em;margin-top:4px}.page-desc{color:var(--muted);font-size:.86rem;margin-top:5px;max-width:820px}.refresh-stamp{color:var(--muted);font-size:.76rem}
+.grid{display:grid;gap:12px}.cards{grid-template-columns:repeat(4,minmax(170px,1fr))}.cards.compact{grid-template-columns:repeat(5,minmax(145px,1fr))}.cols2{grid-template-columns:1fr 1fr}.cols3{grid-template-columns:repeat(3,1fr)}.cols4{grid-template-columns:repeat(4,1fr)}
+.card,.panel{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.card{padding:14px;min-height:102px}.panel{padding:16px;margin-bottom:14px}.label{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}.value{font-size:1.38rem;font-weight:900;margin-top:8px;line-height:1.05}.hint{font-size:.76rem;color:var(--muted);margin-top:7px;line-height:1.35}.panel-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:13px;color:var(--soft);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;font-weight:900}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 9px;font-size:.68rem;font-weight:900;text-transform:uppercase;border:1px solid var(--line);white-space:nowrap}.buy,.ok,.bullish,.healthy{color:var(--green);background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35)}.sell,.risk,.error,.bearish{color:var(--red);background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.35)}.hold,.warning,.blocked{color:var(--yellow);background:rgba(234,179,8,.1);border-color:rgba(234,179,8,.35)}.shadow,.info,.neutral{color:var(--blue);background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.35)}.purple{color:var(--purple);background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.35)}
+.green{color:var(--green)}.red{color:var(--red)}.yellow{color:var(--yellow)}.orange{color:var(--orange)}.blue{color:var(--blue)}.muted{color:var(--muted)}
+.progress-wrap{height:9px;border:1px solid var(--line);background:#080d15;border-radius:999px;overflow:hidden;margin-top:10px}.progress-bar{height:100%;background:linear-gradient(90deg,var(--orange),var(--green));border-radius:999px}.action-card{border:1px solid rgba(247,147,26,.38);background:linear-gradient(135deg,rgba(247,147,26,.14),rgba(56,189,248,.06));padding:18px;border-radius:18px;box-shadow:var(--shadow)}
+.table-wrap{max-height:390px;overflow:auto;border:1px solid var(--line);border-radius:13px}.table-wrap.tall{max-height:520px}table{width:100%;border-collapse:separate;border-spacing:0}th{position:sticky;top:0;z-index:2;background:#111a27;color:var(--muted);font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;text-align:left;padding:10px 11px}td{border-top:1px solid var(--line);padding:10px 11px;font-size:.79rem;vertical-align:top;color:#d8e3f5}.clip{max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty{color:var(--muted);text-align:center;padding:26px}
+.chart{height:260px}.chart.sm{height:190px}.chart.lg{height:360px}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.filter{background:#111a27;border:1px solid var(--line);border-radius:999px;color:var(--soft);padding:7px 10px;font-size:.75rem;font-weight:800}.filter.active{background:var(--orange);border-color:var(--orange);color:#080808}
+details{border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02);margin-bottom:10px;overflow:hidden}summary{cursor:pointer;list-style:none;padding:13px 14px;font-weight:900;color:var(--soft);text-transform:uppercase;letter-spacing:.07em;font-size:.76rem}summary::-webkit-details-marker{display:none}.detail-body{padding:0 14px 14px}
+.audit{white-space:pre-wrap;background:#080d15;border:1px solid var(--line);border-radius:13px;padding:13px;max-height:390px;overflow:auto;font-size:.78rem;line-height:1.48;color:#d5e0f3}.warn{border:1px solid rgba(234,179,8,.45);background:rgba(234,179,8,.1);color:var(--yellow);border-radius:13px;padding:12px;margin-bottom:12px}.danger{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.1);color:#fecaca}.safe{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08);color:#bbf7d0}
+.logs{max-height:530px;overflow:auto}.logline{font-family:Consolas,monospace;font-size:.75rem;border-bottom:1px solid var(--line);padding:7px 0;color:#d5e0f3}.logline .lvl{display:inline-block;width:62px;font-weight:900}
+.report-grid{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:10px}.report-item{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:11px;background:#0b111b}.report-name{font-weight:850}.report-meta{font-size:.72rem;color:var(--muted);margin-top:3px}.evidence{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.evidence ul{margin-left:18px;color:#d9e4f6;font-size:.82rem;line-height:1.55}.settings-list{display:grid;gap:10px}.guardrail{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:11px;background:#0b111b}
+.mobile-overlay{display:none}
+@media(max-width:1250px){.nav-metrics{grid-template-columns:repeat(3,1fr)}.cards,.cards.compact{grid-template-columns:repeat(3,1fr)}.cols3,.cols4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:860px){body{overflow:auto}.app-shell{height:auto;min-height:100vh;display:block}.top-nav{position:sticky;top:0}.hamburger{display:block}.brand{min-width:0}.nav-metrics{display:none}.top-actions .btn.primary{display:none}.sidebar{position:fixed;inset:var(--navH) auto 0 0;width:82vw;max-width:310px;transform:translateX(-105%);transition:.2s;box-shadow:var(--shadow)}.sidebar.open{transform:translateX(0)}.mobile-overlay.open{display:block;position:fixed;inset:var(--navH) 0 0;background:rgba(0,0,0,.5);z-index:10}.main{overflow:visible;padding:14px}.cards,.cards.compact,.cols2,.cols3,.cols4,.evidence,.report-grid{grid-template-columns:1fr}.page-head{display:block}.top-actions{margin-left:auto}.chart.lg{height:280px}}
 </style>
 </head>
 <body>
-<div class="hdr">
-  <div><div class="brand">Paper2Real Control Room</div><div class="sub">paper trader, AI audit, Twitter monitor, live risk dashboard</div></div>
-  <div class="price"><div class="v" id="topPrice">Loading...</div><div class="sub" id="topSub">--</div></div>
-  <div class="status"><span class="dot"></span><span id="status">Connecting</span><br><span id="updated">--</span></div>
+<div class="app-shell">
+  <header class="top-nav" id="topNav">
+    <button class="hamburger" id="menuBtn" aria-label="Open navigation">Menu</button>
+    <div class="brand"><div class="brand-title">Paper2Real</div><div class="brand-sub">trading research control room</div></div>
+    <div class="nav-metrics">
+      <div class="nav-chip"><div class="nav-label">System</div><div class="nav-value" id="navHealth">--</div></div>
+      <div class="nav-chip"><div class="nav-label">BTC</div><div class="nav-value orange" id="navPrice">--</div></div>
+      <div class="nav-chip"><div class="nav-label">Final Action</div><div class="nav-value" id="navFinal">--</div></div>
+      <div class="nav-chip"><div class="nav-label">Recommendation</div><div class="nav-value" id="navRecommendation">--</div></div>
+      <div class="nav-chip"><div class="nav-label">Last Scan</div><div class="nav-value" id="navLastScan">--</div></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn" onclick="downloadFile('/download/all.zip')">Download ZIP</button>
+      <button class="btn primary" id="refreshBtn" onclick="refreshCurrentPage()">Refresh</button>
+    </div>
+  </header>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="side-section">Monitor</div>
+    <button class="nav-item active" data-page="overview"><span class="nav-left"><span class="ico">O</span>Overview</span><span class="mini-badge" id="badge-overview">live</span></button>
+    <button class="nav-item" data-page="live-decision"><span class="nav-left"><span class="ico">D</span>Live Decision</span><span class="mini-badge" id="badge-decision">--</span></button>
+    <button class="nav-item" data-page="risk-engine"><span class="nav-left"><span class="ico">R</span>Risk Engine</span><span class="mini-badge" id="badge-risk">safe</span></button>
+    <button class="nav-item" data-page="shadow-learning"><span class="nav-left"><span class="ico">S</span>Shadow Learning</span><span class="mini-badge">shadow</span></button>
+    <div class="side-section">Research</div>
+    <button class="nav-item" data-page="smart-money"><span class="nav-left"><span class="ico">M</span>Smart Money</span><span class="mini-badge">shadow</span></button>
+    <button class="nav-item" data-page="technical-analysis"><span class="nav-left"><span class="ico">T</span>Technical Analysis</span><span class="mini-badge">TA</span></button>
+    <button class="nav-item" data-page="ai-technical-analyst"><span class="nav-left"><span class="ico">AI</span>AI Technical Analyst</span><span class="mini-badge">AI</span></button>
+    <div class="side-section">Operations</div>
+    <button class="nav-item" data-page="reports"><span class="nav-left"><span class="ico">P</span>Reports</span><span class="mini-badge">files</span></button>
+    <button class="nav-item" data-page="system-health"><span class="nav-left"><span class="ico">H</span>System Health</span><span class="mini-badge">ops</span></button>
+    <button class="nav-item" data-page="downloads-logs"><span class="nav-left"><span class="ico">L</span>Downloads / Logs</span><span class="mini-badge">zip</span></button>
+    <button class="nav-item" data-page="guardrails"><span class="nav-left"><span class="ico">G</span>Settings / Guardrails</span><span class="mini-badge">read</span></button>
+  </aside>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+
+  <main class="main">
+    <section class="page active" id="page-overview"></section>
+    <section class="page" id="page-live-decision"></section>
+    <section class="page" id="page-risk-engine"></section>
+    <section class="page" id="page-shadow-learning"></section>
+    <section class="page" id="page-smart-money"></section>
+    <section class="page" id="page-technical-analysis"></section>
+    <section class="page" id="page-ai-technical-analyst"></section>
+    <section class="page" id="page-reports"></section>
+    <section class="page" id="page-system-health"></section>
+    <section class="page" id="page-downloads-logs"></section>
+    <section class="page" id="page-guardrails"></section>
+  </main>
 </div>
 
-<main class="main">
-  <div class="actions">
-    <button class="primary" id="scanBtn" onclick="scanNow()">Scan Market Now</button>
-    <button class="secondary" onclick="loadAll()">Refresh</button>
-    <span class="muted" id="actionMsg"></span>
-  </div>
-
-  <div class="grid cards">
-    <div class="card"><div class="label">Portfolio</div><div class="value" id="portfolio">$--</div><div class="hint">started $10,000</div></div>
-    <div class="card"><div class="label">Cash</div><div class="value" id="cash">$--</div><div class="hint" id="openTrades">-- open</div></div>
-    <div class="card"><div class="label">BTC Held</div><div class="value orange" id="btcHeld">--</div><div class="hint" id="btcValue">$-- value</div></div>
-    <div class="card"><div class="label">Total Return</div><div class="value" id="returnPct">--</div><div class="hint" id="realized">realized --</div></div>
-    <div class="card"><div class="label">Claude Calls</div><div class="value" id="apiCalls">--</div><div class="hint" id="apiTokens">-- tokens</div></div>
-    <div class="card"><div class="label">API Cost</div><div class="value orange" id="apiCost">$--</div><div class="hint" id="apiToday">today --</div></div>
-    <div class="card"><div class="label">Twitter</div><div class="value" id="twCount">--</div><div class="hint" id="twMeta">--</div></div>
-    <div class="card"><div class="label">Last Decision</div><div class="value" id="lastDecision">--</div><div class="hint" id="lastConf">--</div></div>
-  </div>
-
-  <div class="grid charts">
-    <div class="panel"><div class="ptitle"><span>Live BTC 15m Price</span><span id="priceSource"></span></div><div class="chartbox"><canvas id="priceChart"></canvas></div></div>
-    <div class="panel"><div class="ptitle"><span>Decision Quality</span><span id="decisionStats"></span></div><div class="chartbox"><canvas id="decisionChart"></canvas></div></div>
-  </div>
-
-  <div class="grid cols3" style="margin-bottom:14px">
-    <div class="panel"><div class="ptitle"><span>Live Indicators</span></div><div id="indicators" class="grid cols2"></div></div>
-    <div class="panel"><div class="ptitle"><span>Twitter Sentiment</span><span id="twSent"></span></div><div class="chartbox sm"><canvas id="sentChart"></canvas></div></div>
-    <div class="panel"><div class="ptitle"><span>API Spend</span><span id="costMeta"></span></div><div class="chartbox sm"><canvas id="costChart"></canvas></div></div>
-  </div>
-  <div class="grid cols3" style="margin-bottom:14px">
-    <div class="panel"><div class="ptitle"><span>Risk Status</span><span id="riskStatus">--</span></div><div id="riskBox" class="grid cols2"></div></div>
-    <div class="panel"><div class="ptitle"><span>Data Freshness</span><span id="healthStatus">--</span></div><div id="healthBox"></div></div>
-    <div class="panel"><div class="ptitle"><span>Telegram</span><span id="telegramState">--</span></div><div id="telegramBox"></div><button class="secondary" style="margin-top:10px" onclick="telegramTest()">Send Test</button></div>
-  </div>
-  <div class="grid cols3" style="margin-bottom:14px">
-    <div class="panel"><div class="ptitle"><span>Trade Quality Score</span><span id="qualityScore">--</span></div><div id="qualityBox"></div></div>
-    <div class="panel"><div class="ptitle"><span>Why No Trade?</span><span id="whyNoTradeState">--</span></div><div id="whyNoTradeBox"></div></div>
-    <div class="panel"><div class="ptitle"><span>Missed Opportunity</span><span id="missedState">--</span></div><div id="missedBox"></div></div>
-  </div>
-  <div class="panel" style="margin-bottom:14px"><div class="ptitle"><span>Data Source Trust</span><span id="trustState">--</span></div><div id="trustBox" class="grid cols3"></div></div>
-  <div class="panel" style="margin-bottom:14px">
-    <div class="ptitle"><span>Daily Validation</span><span id="dailyValidationState">--</span></div>
-    <div class="grid cols3" id="dailyValidationBox"></div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" onclick="tab(this,'trades')">Trades</button>
-    <button class="tab" onclick="tab(this,'decisions')">Decisions</button>
-    <button class="tab" onclick="tab(this,'twitter')">Twitter Extracted</button>
-    <button class="tab" onclick="tab(this,'audit')">AI Brain Audit</button>
-    <button class="tab" onclick="tab(this,'reports')">Reports</button>
-    <button class="tab" onclick="tab(this,'smartmoney')">Smart Money</button>
-    <button class="tab" onclick="tab(this,'ta')">Technical Analysis Live</button>
-    <button class="tab" onclick="tab(this,'aita')">AI TA</button>
-    <button class="tab" onclick="tab(this,'events')">Notifications</button>
-    <button class="tab" onclick="tab(this,'logs')">Live Logs</button>
-    <button class="tab" onclick="tab(this,'downloads')">Downloads</button>
-    <button class="tab" onclick="tab(this,'settings')">Money Settings</button>
-  </div>
-
-  <section id="trades" class="view active panel"><table><thead><tr><th>Side</th><th>BTC</th><th>Entry</th><th>Exit</th><th>P&L</th><th>Status</th><th>Date</th><th>Reason</th></tr></thead><tbody id="tradeRows"></tbody></table></section>
-  <section id="decisions" class="view panel"><table><thead><tr><th>Time</th><th>BTC</th><th>Claude</th><th>Final</th><th>Quality</th><th>Confidence</th><th>Blocked</th><th>Executed</th><th>Reason</th></tr></thead><tbody id="decisionRows"></tbody></table></section>
-  <section id="twitter" class="view panel">
-    <div class="ptitle"><span>Per-account Twitter/X sentiment and extraction</span><span id="twTiming"></span></div>
-    <div id="accountCharts" class="grid cols3" style="margin-bottom:16px"></div>
-    <div class="ptitle"><span>Latest scraped tweets</span><span id="twAccountMeta"></span></div>
-    <div id="tweetRows"></div>
-  </section>
-  <section id="audit" class="view panel"><div class="grid cols2"><div><div class="ptitle"><span>Claude visible prompt</span></div><div class="audit" id="aiPrompt">No audit yet</div></div><div><div class="ptitle"><span>Claude response + risk result</span></div><div class="audit" id="aiResponse">No audit yet</div></div></div></section>
-  <section id="reports" class="view panel">
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div><div class="ptitle"><span>Backtest equity curve</span><span id="btMeta"></span></div><div class="chartbox"><canvas id="backtestChart"></canvas></div></div>
-      <div><div class="ptitle"><span>AI feedback loop</span></div><div class="audit" id="feedbackReport"></div></div>
-    </div>
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div><div class="ptitle"><span>Trade Quality Sweep</span><span id="sweepBest">--</span></div><div class="chartbox"><canvas id="sweepReturnChart"></canvas></div></div>
-      <div><div class="ptitle"><span>Sweep Risk / Trades</span><span id="sweepMeta">--</span></div><div class="chartbox"><canvas id="sweepRiskChart"></canvas></div></div>
-    </div>
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div><div class="ptitle"><span>Profit Factor by Threshold</span></div><div class="chartbox sm"><canvas id="sweepPfChart"></canvas></div></div>
-      <div><div class="ptitle"><span>Shadow BUY Performance</span><span id="shadowState">--</span></div><div class="audit" id="shadowReport"></div></div>
-    </div>
-    <div style="margin-bottom:14px">
-      <div class="ptitle"><span>Risk Block Performance</span><span id="riskBlockState">--</span></div>
-      <div class="audit" id="riskBlockReport"></div>
-    </div>
-    <div style="margin-bottom:14px"><div class="ptitle"><span>Live learning status</span><span id="learningState"></span></div><div class="audit" id="learningReport"></div></div>
-    <div><div class="ptitle"><span>Backtest summary</span></div><div class="audit" id="backtestReport"></div></div>
-  </section>
-  <section id="smartmoney" class="view panel">
-    <div class="grid cols3" style="margin-bottom:14px">
-      <div class="card"><div class="label">Smart Money Score</div><div class="value" id="smScore">--</div><div class="hint" id="smBias">--</div></div>
-      <div class="card"><div class="label">Timeframe Alignment</div><div class="value" id="smAlignment">--</div><div class="hint">15m / 1h / 4h closed candles only</div></div>
-      <div class="card"><div class="label">Trade Integration</div><div class="value">Shadow</div><div class="hint">Evidence only; risk_engine remains final authority</div></div>
-    </div>
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div><div class="ptitle"><span>Current Structure Reason</span></div><div class="audit" id="smReason">No Smart Money report yet</div></div>
-      <div><div class="ptitle"><span>Backtest Summary</span><span id="smBacktestState">--</span></div><div class="audit" id="smBacktest">--</div></div>
-    </div>
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div><div class="ptitle"><span>Market Structure</span><span id="structureState">--</span></div><div class="audit" id="structureBox"></div></div>
-      <div><div class="ptitle"><span>Liquidity Zones / Sweeps</span><span id="liquidityState">--</span></div><div class="audit" id="liquidityBox"></div></div>
-    </div>
-    <div class="grid cols3">
-      <div><div class="ptitle"><span>Order Blocks</span><span id="obState">--</span></div><div class="audit" id="obBox"></div></div>
-      <div><div class="ptitle"><span>Fair Value Gaps</span><span id="fvgState">--</span></div><div class="audit" id="fvgBox"></div></div>
-      <div><div class="ptitle"><span>Premium / Discount</span><span id="pdState">--</span></div><div class="audit" id="pdBox"></div></div>
-    </div>
-  </section>
-  <section id="ta" class="view panel">
-    <div class="ptitle"><span>Technical Analysis Live</span><span id="taUpdated">Shadow-only · No execution</span></div>
-    <div class="taFlags">
-      <span class="pill yellow">Shadow-only</span>
-      <span class="pill yellow">No execution</span>
-      <span class="pill neutral">Trade Quality unchanged</span>
-      <span class="pill neutral">risk_engine.py remains final authority</span>
-    </div>
-    <div id="taWarnings"></div>
-    <div class="grid taCards">
-      <div class="card"><div class="label">TA Score</div><div class="value" id="taScore">--</div><div class="hint">shadow signal only</div></div>
-      <div class="card"><div class="label">TA Bias</div><div class="value" id="taBias">--</div><div class="hint" id="taConfidence">confidence --</div></div>
-      <div class="card"><div class="label">Predictions</div><div class="value" id="taPredShort">--</div><div class="hint" id="taPredLong">--</div></div>
-      <div class="card"><div class="label">Nearest Support</div><div class="value" id="taSupport">--</div><div class="hint">nearest active zone</div></div>
-      <div class="card"><div class="label">Nearest Resistance</div><div class="value" id="taResistance">--</div><div class="hint">nearest active zone</div></div>
-      <div class="card"><div class="label">Risk / Invalidation</div><div class="value" id="taRisk">--</div><div class="hint" id="taInvalidation">invalidation --</div></div>
-    </div>
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div><div class="ptitle"><span>Explanation</span><span id="taReasonState">--</span></div><div class="audit" id="taReason">No TA forecast loaded</div></div>
-      <div>
-        <div class="ptitle"><span>Evidence</span><span>Bullish / Bearish / Neutral</span></div>
-        <div class="taEvidence">
-          <div><div class="label green">Bullish</div><ul id="taBull"></ul></div>
-          <div><div class="label red">Bearish</div><ul id="taBear"></ul></div>
-          <div><div class="label yellow">Neutral</div><ul id="taNeutral"></ul></div>
-        </div>
-      </div>
-    </div>
-    <div class="panel" style="margin-bottom:14px"><div class="ptitle"><span>BTC Close / EMAs / Zones / Bollinger Bands</span><span>15m candles</span></div><div class="chartbox"><canvas id="taPriceChart"></canvas></div></div>
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div><div class="ptitle"><span>RSI14</span></div><div class="chartbox sm"><canvas id="taRsiChart"></canvas></div></div>
-      <div><div class="ptitle"><span>MACD</span></div><div class="chartbox sm"><canvas id="taMacdChart"></canvas></div></div>
-      <div><div class="ptitle"><span>Bollinger Band Width</span></div><div class="chartbox sm"><canvas id="taBbWidthChart"></canvas></div></div>
-      <div><div class="ptitle"><span>ATR14</span></div><div class="chartbox sm"><canvas id="taAtrChart"></canvas></div></div>
-    </div>
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div class="miniTable"><div class="ptitle"><span>Detected Chart Patterns</span><span id="taPatternCount">--</span></div><table><thead><tr><th>Timeframe</th><th>Pattern</th><th>Direction</th><th>Confidence</th><th>Detected</th><th>Invalidated</th><th>Reason</th></tr></thead><tbody id="taPatternRows"></tbody></table></div>
-      <div class="miniTable"><div class="ptitle"><span>Support / Resistance Zones</span><span id="taZoneCount">--</span></div><table><thead><tr><th>Timeframe</th><th>Type</th><th>Low</th><th>High</th><th>Strength</th><th>Touches</th><th>Active</th><th>Status</th></tr></thead><tbody id="taZoneRows"></tbody></table></div>
-    </div>
-    <div class="grid cols2">
-      <div><div class="ptitle"><span>TA Shadow Learning</span><span id="taShadowState">target: 50</span></div><div id="taShadowBox" class="grid cols2"></div></div>
-      <div><div class="ptitle"><span>TA Backtest</span><span id="taBacktestState">--</span></div><div id="taBacktestBox" class="grid cols2"></div></div>
-    </div>
-  </section>
-  <section id="aita" class="view panel">
-    <div class="grid cols3" style="margin-bottom:14px">
-      <div class="card"><div class="label">AI TA Score</div><div class="value" id="aiTaScore">--</div><div class="hint" id="aiTaBias">--</div></div>
-      <div class="card"><div class="label">AI TA Shadow</div><div class="value" id="aiTaShadowOnly">--</div><div class="hint">cannot execute trades</div></div>
-      <div class="card"><div class="label">AI TA Cost</div><div class="value" id="aiTaCost">--</div><div class="hint">estimated from daily validation</div></div>
-    </div>
-    <div class="grid cols2" style="margin-bottom:14px">
-      <div><div class="ptitle"><span>Current AI TA</span></div><div class="audit" id="aiTaCurrentBox"></div></div>
-      <div><div class="ptitle"><span>Performance</span></div><div class="audit" id="aiTaPerformanceBox"></div></div>
-    </div>
-    <div><div class="ptitle"><span>Backtest Summary</span></div><div class="audit" id="aiTaBacktestBox"></div></div>
-  </section>
-  <section id="events" class="view panel"><div class="ptitle"><span>Immutable event / notification audit</span><span id="eventMeta"></span></div><table><thead><tr><th>Time</th><th>Severity</th><th>Event</th><th>Source</th><th>Status</th><th>Telegram</th><th>Message</th></tr></thead><tbody id="eventRows"></tbody></table></section>
-  <section id="logs" class="view panel"><div class="ptitle"><span>Application log</span><span>last 200 lines</span></div><div id="logRows"></div></section>
-  <section id="downloads" class="view panel">
-    <div class="ptitle"><span>Download audit and learning artifacts</span><span>.env and secrets are excluded</span></div>
-    <div class="grid cols3">
-      <div class="card"><div class="label">Everything useful</div><div class="value">Full ZIP</div><div class="hint">DB, reports, Twitter, live candles, events, logs</div><button class="primary" onclick="dl('/download/all.zip')">Download</button></div>
-      <div class="card"><div class="label">SQLite source of truth</div><div class="value">paper_trader.db</div><div class="hint">decisions, trades, events, token cost</div><button class="secondary" onclick="dl('/download/paper-trader.db')">Download</button></div>
-      <div class="card"><div class="label">Claude decisions</div><div class="value">CSV</div><div class="hint">prompt/output/final action/risk result</div><button class="secondary" onclick="dl('/download/decisions.csv')">Download</button></div>
-      <div class="card"><div class="label">Notifications/events</div><div class="value">CSV</div><div class="hint">Telegram, risk, freshness, scraper events</div><button class="secondary" onclick="dl('/download/events.csv')">Download</button></div>
-      <div class="card"><div class="label">Paper trades</div><div class="value">CSV</div><div class="hint">fills, stops, P&L</div><button class="secondary" onclick="dl('/download/trades.csv')">Download</button></div>
-      <div class="card"><div class="label">Live logs</div><div class="value">JSON</div><div class="hint">runtime log buffer since restart</div><button class="secondary" onclick="dl('/download/logs.json')">Download</button></div>
-    </div>
-  </section>
-  <section id="settings" class="view panel settings">
-    <div class="grid cols3">
-      <div><label>Fallback trade size % of cash<input id="setTrade" type="number" min="1" max="50" step="1"></label></div>
-      <div><label>Risk per trade %<input id="setRisk" type="number" min="0.1" max="5" step="0.1"></label></div>
-      <div><label>Max position % of cash<input id="setMaxPos" type="number" min="1" max="50" step="1"></label></div>
-    </div>
-    <div style="margin-top:14px"><button class="primary" onclick="saveSettings()">Save Settings</button><span class="muted" id="settingsMsg" style="margin-left:10px"></span></div>
-  </section>
-</main>
-
 <script>
-const $=id=>document.getElementById(id);
-const fmt=n=>n==null?"--":"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
-const pct=n=>n==null?"--":(Number(n)>=0?"+":"")+Number(n).toFixed(2)+"%";
-const cls=n=>n==null?"":Number(n)>0?"green":Number(n)<0?"red":"";
-const ts=t=>t?new Date((String(t).length===10?Number(t)*1000:t)).toLocaleString():"--";
-const dl=url=>{ window.location.href=url; };
-let charts={};
+const $ = id => document.getElementById(id);
+const charts = {};
+const cache = {};
+let currentPage = localStorage.getItem("p2rSelectedPage") || "overview";
+let currentDecisionFilter = "all";
+let currentLogFilter = "all";
 
-function tab(btn,id){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));$(id).classList.add("active");btn.classList.add("active")}
-function badge(v){const a=(v||"hold").toLowerCase();return `<span class="badge ${a}">${v||"--"}</span>`}
-function makeChart(id,type,labels,datasets,opts={}){if(charts[id])charts[id].destroy();charts[id]=new Chart($(id),{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:!!opts.legend,labels:{color:"#7d8fb3"}},tooltip:{backgroundColor:"#101620",borderColor:"#223047",borderWidth:1}},scales:{x:{grid:{color:"#182238"},ticks:{color:"#7d8fb3",maxTicksLimit:8}},y:{grid:{color:"#182238"},ticks:{color:"#7d8fb3"}}},...opts}})}
-
-async function j(path,opts){const r=await fetch(path,opts);if(!r.ok)throw new Error(path+" "+r.status);return r.json()}
-
-async function loadPortfolio(){
-  const p=await j("/portfolio");
-  $("topPrice").textContent=fmt(p.btc_price_usd); $("topSub").textContent=pct(p.return_pct)+" total return";
-  $("portfolio").textContent=fmt(p.total_portfolio_usd); $("cash").textContent=fmt(p.cash_balance_usd);
-  $("btcHeld").textContent=Number(p.btc_held||0).toFixed(6); $("btcValue").textContent=fmt(p.btc_value_usd)+" value";
-  $("returnPct").textContent=pct(p.return_pct); $("returnPct").className="value "+cls(p.return_pct);
-  $("realized").textContent="realized "+fmt(p.realized_pnl_usd); $("openTrades").textContent=(p.open_trades||0)+" open trades";
-  const s=p.settings||{}; $("setTrade").value=Number((s.trade_size_pct||0)*100).toFixed(0); $("setRisk").value=s.risk_per_trade_pct||1; $("setMaxPos").value=s.max_position_pct||30;
+function formatNumber(value, digits = 2){
+  if(value === null || value === undefined || value === "" || Number.isNaN(Number(value))) return "--";
+  return Number(value).toLocaleString("en-US",{minimumFractionDigits:digits,maximumFractionDigits:digits});
+}
+function formatMoney(value, digits = 2){return value === null || value === undefined ? "$--" : "$" + formatNumber(value,digits)}
+function formatPct(value, digits = 2){return value === null || value === undefined ? "--" : (Number(value)>=0?"+":"") + Number(value).toFixed(digits) + "%"}
+function formatDateTime(value){
+  if(!value) return "--";
+  const raw = String(value);
+  const date = raw.length === 10 && /^\d+$/.test(raw) ? new Date(Number(raw)*1000) : new Date(value);
+  return Number.isNaN(date.getTime()) ? raw : date.toLocaleString();
+}
+function compactDate(value){
+  if(!value) return "--";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value).slice(0,19) : date.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+}
+function escapeHtml(value){
+  return String(value ?? "--").replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function classForAction(value){
+  const v = String(value || "").toLowerCase();
+  if(v.includes("buy") || v.includes("bull") || v === "ok" || v === "healthy" || v === "yes") return "buy";
+  if(v.includes("sell") || v.includes("bear") || v.includes("risk") || v.includes("error") || v === "no") return "sell";
+  if(v.includes("block") || v.includes("warn") || v.includes("hold") || v.includes("stale")) return "hold";
+  if(v.includes("shadow") || v.includes("analysis") || v.includes("collect")) return "purple";
+  return "neutral";
+}
+function renderBadge(value, extraClass = ""){
+  return `<span class="badge ${extraClass || classForAction(value)}">${escapeHtml(value || "--")}</span>`;
+}
+function renderCard(label,value,hint="",tone=""){
+  return `<div class="card"><div class="label">${escapeHtml(label)}</div><div class="value ${tone}">${value ?? "--"}</div><div class="hint">${hint || ""}</div></div>`;
+}
+function renderProgressBar(current,target){
+  const safeTarget = Number(target || 0);
+  const safeCurrent = Number(current || 0);
+  const pct = safeTarget > 0 ? Math.max(0,Math.min(100,(safeCurrent/safeTarget)*100)) : 0;
+  return `<div class="progress-wrap"><div class="progress-bar" style="width:${pct.toFixed(1)}%"></div></div><div class="hint">${safeCurrent} / ${safeTarget} · ${pct.toFixed(1)}%</div>`;
+}
+function renderTable(columns, rows, emptyText="No data", rowMapper=null){
+  const body = (rows || []).length
+    ? (rows || []).map(row => `<tr>${(rowMapper ? rowMapper(row) : columns.map(col => `<td>${escapeHtml(row[col.key])}</td>`).join(""))}</tr>`).join("")
+    : `<tr><td class="empty" colspan="${columns.length}">${escapeHtml(emptyText)}</td></tr>`;
+  return `<div class="table-wrap"><table><thead><tr>${columns.map(c=>`<th>${escapeHtml(c.label)}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+async function safeFetchJson(path, options){
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 14000);
+  try{
+    const response = await fetch(path, {...(options || {}), signal: controller.signal});
+    if(!response.ok) throw new Error(`${path} ${response.status}`);
+    const data = await response.json();
+    cache[path] = data;
+    return {ok:true,path,data};
+  }catch(error){
+    console.warn("Dashboard endpoint failed", path, error);
+    return {ok:false,path,error:String(error.message || error),data:cache[path]};
+  }finally{
+    clearTimeout(timeout);
+  }
+}
+function getData(result, fallback){return result?.data ?? fallback}
+function chart(id,type,labels,datasets,options={}){
+  const el = $(id);
+  if(!el || !window.Chart) return;
+  if(charts[id]) charts[id].destroy();
+  charts[id] = new Chart(el,{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:options.legend ?? true,labels:{color:"#8191ad"}},tooltip:{backgroundColor:"#101722",borderColor:"#243248",borderWidth:1}},scales:{x:{grid:{color:"#1a2535"},ticks:{color:"#8191ad",maxTicksLimit:9}},y:{grid:{color:"#1a2535"},ticks:{color:"#8191ad"}}},...options}});
+}
+function pageShell(kicker,title,desc,body){
+  return `<div class="page-head"><div><div class="kicker">${kicker}</div><h1>${title}</h1><div class="page-desc">${desc}</div></div><div class="refresh-stamp">Last refreshed: <span class="page-refreshed">${new Date().toLocaleTimeString()}</span></div></div>${body}`;
+}
+function downloadFile(url){window.location.href = url}
+function setPage(page){
+  currentPage = page;
+  localStorage.setItem("p2rSelectedPage", page);
+  document.querySelectorAll(".page").forEach(el => el.classList.toggle("active", el.id === `page-${page}`));
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.page === page));
+  $("sidebar").classList.remove("open"); $("mobileOverlay").classList.remove("open");
+  refreshCurrentPage();
+}
+function updateTopNav({portfolio, decisions, daily, health} = {}){
+  const latest = (decisions?.decisions || [])[0] || {};
+  const dailyHealth = daily?.system_health || {};
+  $("navHealth").innerHTML = renderBadge(health?.status || dailyHealth.system_health_status || daily?.system_health_status || "--");
+  $("navPrice").textContent = portfolio?.btc_price_usd ? formatMoney(portfolio.btc_price_usd,2) : "--";
+  $("navFinal").innerHTML = latest.final_action ? renderBadge(latest.final_action) : "--";
+  const rec = typeof daily?.final_recommendation === "string" ? daily.final_recommendation : (daily?.final_recommendation?.primary || (daily?.recommendations || [])[0]);
+  $("navRecommendation").textContent = rec || "--";
+  $("navLastScan").textContent = latest.timestamp ? compactDate(latest.timestamp) : "--";
+  $("badge-decision").textContent = latest.final_action || "--";
+  $("badge-risk").textContent = latest.blocked_by ? "blocked" : "safe";
+}
+async function loadSharedNav(){
+  const [portfolio,decisions,daily,health] = await Promise.all([safeFetchJson("/portfolio"),safeFetchJson("/decisions"),safeFetchJson("/daily-validation-report"),safeFetchJson("/system-health")]);
+  updateTopNav({portfolio:getData(portfolio,{}),decisions:getData(decisions,{}),daily:getData(daily,{}),health:getData(health,{})});
 }
 
-async function loadMarket(){
-  const c=await j("/market-context");
-  const volTxt=c.volume_quality==="reliable"?(Number(c.volume_ratio||0).toFixed(2)+"x"):"unreliable";
-  const items=[["RSI",c.rsi_14],["MACD",c.macd_bullish?"Bullish":"Bearish"],["EMA Trend",c.ema_bullish?"Bullish":"Bearish"],["Volume",volTxt],["Volume zeros",`${Math.round((c.recent_zero_volume_ratio||0)*100)}% recent`],["Fear & Greed",(c.fear_greed_index||"--")+" "+(c.fear_greed_label||"")],["Funding",c.funding_rate!=null?Number(c.funding_rate).toFixed(4):"--"],["BTC Dom",c.btc_dominance?Number(c.btc_dominance).toFixed(2)+"%":"--"],["VIX",c.vix?Number(c.vix).toFixed(2):"--"],["DXY",c.dxy?Number(c.dxy).toFixed(2):"--"],["Halving",c.halving_cycle_pct?Number(c.halving_cycle_pct).toFixed(1)+"%":"--"]];
-  $("indicators").innerHTML=items.map(x=>`<div class="card"><div class="label">${x[0]}</div><div class="value">${x[1]}</div></div>`).join("");
+async function loadOverview(){
+  const target = $("page-overview");
+  const [portfolio,decisions,daily,api,riskBlock,shadow,sm,ta,aiTa,health] = await Promise.all([
+    safeFetchJson("/portfolio"),safeFetchJson("/decisions"),safeFetchJson("/daily-validation-report"),safeFetchJson("/api-usage"),safeFetchJson("/risk-block-performance"),safeFetchJson("/shadow-performance"),safeFetchJson("/smart-money"),safeFetchJson("/ta-forecast"),safeFetchJson("/ai-technical-analyst"),safeFetchJson("/system-health")
+  ]);
+  const p=getData(portfolio,{}), d=getData(decisions,{summary:{},decisions:[]}), dailyData=getData(daily,{}), apiData=getData(api,{}), risk=getData(riskBlock,{}), shadowData=getData(shadow,{summary:{}}), smData=getData(sm,{}), taData=getData(ta,{}), aiData=getData(aiTa,{}), h=getData(health,{});
+  const progress = dailyData.progress_targets || {};
+  const rec = typeof dailyData.final_recommendation === "string" ? dailyData.final_recommendation : (dailyData.final_recommendation?.primary || (dailyData.recommendations || [])[0] || "KEEP_COLLECTING_DATA");
+  const nextAction = [
+    rec || "Keep collecting data",
+    "Do not change risk_engine.py from dashboard",
+    "Do not enable Smart Money, TA, or AI TA bonuses",
+    `Next checkpoint: shadow_buy_count >= ${dailyData.shadow_buy_review_target || 100}`
+  ];
+  target.innerHTML = pageShell("Overview","Command Center","A compact read-only summary of trading state, shadow learning progress, API cost, and what needs attention next.",`
+    <div class="grid cards compact">
+      ${renderCard("System Health",renderBadge(h.status || dailyData.system_health?.system_health_status || "--"),"live endpoint + validation report")}
+      ${renderCard("Dataset Freshness",renderBadge(dailyData.stale_dataset_warning || dailyData.system_health?.stale_dataset_warning ? "stale" : "fresh"),`last date ${dailyData.master_dataset_last_date || dailyData.system_health?.master_dataset_last_date || "--"}`)}
+      ${renderCard("Trades Executed",d.summary?.trades_executed ?? 0,`${d.summary?.total_scans || 0} scans measured`)}
+      ${renderCard("Final Recommendation",renderBadge(rec), "from daily validation report")}
+      ${renderCard("Shadow BUY Progress",`${dailyData.shadow_buy_review_count || progress.shadow_buy_current || shadowData.summary?.shadow_buys || 0} / ${dailyData.shadow_buy_review_target || progress.shadow_buy_target || 100}`,renderProgressBar(dailyData.shadow_buy_review_count || progress.shadow_buy_current || 0,dailyData.shadow_buy_review_target || progress.shadow_buy_target || 100))}
+      ${renderCard("Smart Money Progress",`${progress.shadow_smart_money_current || dailyData.smart_money_shadow_count || 0} / ${progress.shadow_smart_money_target || 50}`,renderProgressBar(progress.shadow_smart_money_current || dailyData.smart_money_shadow_count || 0,progress.shadow_smart_money_target || 50))}
+      ${renderCard("Risk Block Review",renderBadge(risk.final_risk_recommendation || dailyData.risk_block_review_recommendation || "COLLECT_MORE_DATA"),`${risk.total_blocked_candidates || progress.blocked_buy_candidates_current || 0} / ${risk.minimum_required_before_tuning || 30}`)}
+      ${renderCard("TA Status",renderBadge((dailyData.ta_ready_for_bonus ? "READY" : "SHADOW_ONLY")) ,`${dailyData.ta_shadow_count || 0} / 50 shadows`)}
+      ${renderCard("AI TA Status",renderBadge((dailyData.ai_ta_ready_for_bonus ? "READY" : "SHADOW_ONLY")) ,`invalid JSON ${dailyData.ai_ta_invalid_json_count || 0}`)}
+      ${renderCard("Estimated Monthly API Cost",formatMoney(apiData.month_cost_usd ?? dailyData.estimated_learning_api_cost_monthly ?? 0),`${apiData.total_calls || 0} Claude calls`)}
+    </div>
+    <div class="grid cols2" style="margin-top:14px">
+      <div class="action-card"><div class="label">What should I do now?</div><div class="value">${escapeHtml(nextAction[0])}</div>${nextAction.slice(1).map(x=>`<div class="hint">${escapeHtml(x)}</div>`).join("")}</div>
+      <div class="panel"><div class="panel-title"><span>Current Research Stack</span><span>${renderBadge("read-only","info")}</span></div><div class="grid cols2">
+        ${renderCard("Portfolio",formatMoney(p.total_portfolio_usd),`${p.open_trades || 0} open trades`)}
+        ${renderCard("BTC Price",formatMoney(p.btc_price_usd),formatPct(p.return_pct))}
+        ${renderCard("Smart Money Bias",renderBadge(smData.smart_money_bias || "--"),`${smData.smart_money_score ?? "--"}/100`)}
+        ${renderCard("TA / AI TA",escapeHtml(`${taData.ta_bias || "--"} / ${aiData.ai_ta_bias || "--"}`),"both shadow-only")}
+      </div></div>
+    </div>`);
+  updateTopNav({portfolio:p,decisions:d,daily:dailyData,health:h});
 }
 
-async function loadPrice(){
-  const d=await j("/price-history?limit=180"); $("priceSource").textContent=d.source||"";
-  const rows=d.rows||[]; const labels=rows.map(r=>new Date(r.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
-  makeChart("priceChart","line",labels,[{label:"BTC",data:rows.map(r=>r.close),borderColor:"#f7931a",backgroundColor:"rgba(247,147,26,.08)",fill:true,tension:.25,pointRadius:0,borderWidth:2}],{legend:false});
+async function loadLiveDecision(){
+  const target=$("page-live-decision");
+  const [portfolio,decisions]=await Promise.all([safeFetchJson("/portfolio"),safeFetchJson("/decisions")]);
+  const p=getData(portfolio,{}), d=getData(decisions,{decisions:[],summary:{}});
+  const latest=(d.decisions || [])[0] || {};
+  let q={}; try{q=JSON.parse(latest.trade_quality_json || "{}")}catch(e){}
+  const filters=["all","buy-candidates","risk-blocked","shadow-buy","smart-money","ta","ai-ta"];
+  const rows=(d.decisions || []).filter(row=>{
+    if(currentDecisionFilter==="buy-candidates") return String(row.candidate_action || row.claude_action || "").toUpperCase()==="BUY";
+    if(currentDecisionFilter==="risk-blocked") return !!row.blocked_by;
+    if(currentDecisionFilter==="shadow-buy") return !!row.shadow_buy || String(row.final_action || "").toUpperCase()==="HOLD" && String(row.candidate_action || row.claude_action || "").toUpperCase()==="BUY";
+    if(currentDecisionFilter==="smart-money") return !!row.smart_money_bias || !!row.smart_money_json;
+    if(currentDecisionFilter==="ta") return !!row.shadow_ta_action || !!row.ta_bias;
+    if(currentDecisionFilter==="ai-ta") return !!row.ai_ta_bias || !!row.ai_ta_json;
+    return true;
+  });
+  target.innerHTML=pageShell("Live Decision","Latest Trading Decision","The latest Claude opinion, candidate setup, final risk-engine action, and shadow research signals in one place.",`
+    <div class="grid cards compact">
+      ${renderCard("BTC Price",formatMoney(p.btc_price_usd),`portfolio ${formatMoney(p.total_portfolio_usd)}`)}
+      ${renderCard("Claude Action",renderBadge(latest.claude_action),`${latest.claude_conf || 0}% confidence`)}
+      ${renderCard("Candidate Action",renderBadge(latest.candidate_action || latest.claude_action || "--"),"pre-risk candidate")}
+      ${renderCard("Final Action",renderBadge(latest.final_action),latest.trade_executed ? "trade executed" : "no execution")}
+      ${renderCard("Trade Quality",q.score != null ? `${q.score}/100` : "--",escapeHtml(q.primary_reason || "latest score"))}
+      ${renderCard("Risk Blocker",renderBadge(latest.blocked_by || "none", latest.blocked_by ? "blocked" : "ok"),escapeHtml(latest.block_reason || "--"))}
+      ${renderCard("Smart Money Bias",renderBadge(latest.smart_money_bias || q.smart_money_bias || "--","purple"),"shadow evidence")}
+      ${renderCard("TA / AI TA Bias",escapeHtml(`${latest.ta_bias || q.ta_bias || "--"} / ${latest.ai_ta_bias || q.ai_ta_bias || "--"}`),"analyst-only")}
+    </div>
+    <div class="panel" style="margin-top:14px"><div class="panel-title"><span>Recent Decisions</span><span>${rows.length} rows</span></div>
+      <div class="filters">${filters.map(f=>`<button class="filter ${currentDecisionFilter===f?"active":""}" onclick="setDecisionFilter('${f}')">${f.replaceAll("-"," ")}</button>`).join("")}</div>
+      ${renderTable([{label:"Time"},{label:"BTC"},{label:"Claude"},{label:"Candidate"},{label:"Final"},{label:"Quality"},{label:"Risk blocker"},{label:"Smart Money"},{label:"TA"},{label:"AI TA"}],rows,"No decisions match this filter",r=>{let quality={};try{quality=JSON.parse(r.trade_quality_json||"{}")}catch(e){};return `<td>${formatDateTime(r.timestamp)}</td><td>${formatMoney(r.btc_price)}</td><td>${renderBadge(r.claude_action)}</td><td>${renderBadge(r.candidate_action || r.claude_action)}</td><td>${renderBadge(r.final_action)}</td><td>${quality.score ?? "--"}</td><td>${renderBadge(r.blocked_by || "none", r.blocked_by ? "blocked":"ok")}</td><td>${renderBadge(r.smart_money_bias || quality.smart_money_bias || "--","purple")}</td><td>${escapeHtml(r.ta_bias || quality.ta_bias || "--")}</td><td>${escapeHtml(r.ai_ta_bias || quality.ai_ta_bias || "--")}</td>`})}
+    </div>`);
+  updateTopNav({portfolio:p,decisions:d});
+}
+function setDecisionFilter(filter){currentDecisionFilter=filter;loadLiveDecision()}
+
+async function loadRiskEngine(){
+  const target=$("page-risk-engine");
+  const [risk,status]=await Promise.all([safeFetchJson("/risk-block-performance"),safeFetchJson("/risk-status")]);
+  const r=getData(risk,{}), s=getData(status,{});
+  const blockers=Object.entries(r.blockers || {}).map(([name,b])=>({name,...b}));
+  target.innerHTML=pageShell("Risk Engine","Risk Engine Review","Risk status and blocker performance. This page is display-only and cannot modify risk_engine.py.",`
+    <div class="warn">UI only. Do not change <strong>risk_engine.py</strong> from dashboard. Risk engine remains final authority.</div>
+    <div class="grid cards compact">
+      ${renderCard("Risk Recommendation",renderBadge(r.final_risk_recommendation || "KEEP_AS_IS"),r.final_risk_recommendation==="KEEP_AS_IS"?"Risk engine should stay unchanged.":"collect more data before tuning")}
+      ${renderCard("Blocked Candidates",r.total_blocked_candidates || 0,`minimum ${r.minimum_required_before_tuning || 30}`)}
+      ${renderCard("Ready For Review",renderBadge(r.ready_to_tune ? "yes" : "no"),"requires enough blocked BUY candidates")}
+      ${renderCard("BB Squeeze",renderBadge(r.blockers?.bb_squeeze?.verdict || "unchanged"),`${r.blockers?.bb_squeeze?.count || 0} blocks`)}
+      ${renderCard("Exchange Alert",renderBadge(r.blockers?.exchange_alert?.verdict || "unchanged"),`${r.blockers?.exchange_alert?.count || 0} blocks`)}
+      ${renderCard("Daily P&L",formatMoney(s.daily_pnl),`${formatPct(s.daily_loss_pct)} daily loss`)}
+    </div>
+    <div class="grid cols2" style="margin-top:14px">
+      <div class="panel"><div class="panel-title"><span>Blocker Breakdown</span><span>${blockers.length} blockers</span></div>
+        ${renderTable([{label:"Blocker"},{label:"Count"},{label:"Avg 1h"},{label:"Avg 4h"},{label:"Avg 24h"},{label:"Blocked winners"},{label:"Saved losses"},{label:"Verdict"}],blockers,"No blocker data yet",b=>`<td>${escapeHtml(b.name)}</td><td>${b.count || 0}</td><td>${b.avg_return_1h ?? "--"}</td><td>${b.avg_return_4h ?? "--"}</td><td>${b.avg_return_24h ?? "--"}</td><td>${b.blocked_winners_4h ?? "--"}</td><td>${b.saved_losses_4h ?? "--"}</td><td>${renderBadge(b.verdict || "--")}</td>`)}
+      </div>
+      <div class="panel"><div class="panel-title"><span>Blocker Performance</span><span>saved losses vs winners</span></div><div class="chart"><canvas id="riskBlockChart"></canvas></div></div>
+    </div>
+    <div class="panel"><div class="panel-title"><span>Recommendation Panel</span></div><div class="audit">${escapeHtml(JSON.stringify({final_risk_recommendation:r.final_risk_recommendation || "KEEP_AS_IS", interpretation:r.final_risk_recommendation==="KEEP_AS_IS"?"Risk engine should stay unchanged.":"Review only after enough samples.", safety:"UI only. No risk logic changed."},null,2))}</div></div>`);
+  setTimeout(()=>chart("riskBlockChart","bar",blockers.map(b=>b.name),[{label:"Count",data:blockers.map(b=>b.count||0),backgroundColor:"#38bdf8"},{label:"Saved losses 4h",data:blockers.map(b=>b.saved_losses_4h||0),backgroundColor:"#22c55e"},{label:"Blocked winners 4h",data:blockers.map(b=>b.blocked_winners_4h||0),backgroundColor:"#eab308"}],{legend:true}),0);
 }
 
-async function loadDecisions(){
-  const d=await j("/decisions"); const rows=d.decisions||[]; const s=d.summary||{};
-  $("lastDecision").innerHTML=rows[0]?badge(rows[0].final_action):"--"; $("lastConf").textContent=rows[0]?(rows[0].claude_conf||0)+"% confidence":"--";
-  $("decisionStats").textContent=`${s.total_scans||0} scans | ${s.trades_executed||0} trades | ${s.blocked_by_risk_engine||0} blocked`;
-  let latestQ={};
-  if(rows[0]){try{latestQ=JSON.parse(rows[0].trade_quality_json||"{}")}catch(e){}}
-  $("qualityScore").textContent=latestQ.score!=null?`${latestQ.score}/100`:"--";
-  $("qualityScore").className=(latestQ.score||0)>=65?"green":(latestQ.score||0)<45?"red":"yellow";
-  $("qualityBox").innerHTML=latestQ.components?Object.entries(latestQ.components).map(([k,v])=>`<div class="hint">${k}: ${v}</div>`).join(""):`<div class="muted">No quality score yet. Next scan will populate it.</div>`;
-  $("whyNoTradeState").textContent=rows[0]?.final_action||"--";
-  $("whyNoTradeBox").innerHTML=rows[0]?`<div>${latestQ.primary_reason||rows[0].blocked_by||rows[0].claude_reason||"--"}</div><div class="hint">${(latestQ.blockers||[]).join(", ")||"No deterministic blocker"}</div><div class="hint">${rows[0].claude_reason||""}</div>`:`<div class="muted">No decisions yet</div>`;
-  $("decisionRows").innerHTML=rows.length?rows.map(r=>{let q={};try{q=JSON.parse(r.trade_quality_json||"{}")}catch(e){};return `<tr><td>${ts(r.timestamp)}</td><td>${fmt(r.btc_price)}</td><td>${badge(r.claude_action)}</td><td>${badge(r.final_action)}</td><td class="${(q.score||0)>=65?'green':(q.score||0)<45?'red':'yellow'}">${q.score!=null?q.score+"/100":"--"}</td><td>${r.claude_conf||0}%</td><td class="${r.blocked_by?'red':'muted'}">${r.blocked_by||"--"}</td><td>${r.trade_executed?"Yes":"No"}</td><td class="clip">${q.primary_reason||r.claude_reason||r.block_reason||"--"}</td></tr>`}).join(""):`<tr><td class="empty" colspan="9">No decisions yet</td></tr>`;
-  const counts=[s.claude_buy||0,s.claude_sell||0,s.claude_hold||0,s.blocked_by_risk_engine||0,s.trades_executed||0];
-  makeChart("decisionChart","bar",["Claude BUY","Claude SELL","Claude HOLD","Blocked","Executed"],[{data:counts,backgroundColor:["#18c964","#ff4d66","#ffd166","#58a6ff","#f7931a"]}],{legend:false});
-}
-
-async function loadTrades(){
-  const rows=await j("/trades");
-  $("tradeRows").innerHTML=rows.length?rows.map(t=>`<tr><td>${badge(t.side)}</td><td>${Number(t.btc_amount||0).toFixed(6)}</td><td>${fmt(t.price)}</td><td>${t.close_price?fmt(t.close_price):"--"}</td><td class="${cls(t.pnl)}">${t.pnl!=null?fmt(t.pnl):"Open"}</td><td>${t.closed?"Closed":"Open"}</td><td>${ts(t.timestamp)}</td><td class="clip">${t.reason||"--"}</td></tr>`).join(""):`<tr><td class="empty" colspan="8">No trades yet</td></tr>`;
-}
-
-async function loadTwitter(){
-  const [d,acct]=await Promise.all([j("/twitter-data?limit=120"),j("/twitter-accounts")]); const m=d.meta||{}, rows=d.tweets||[], accounts=acct.accounts||[];
-  $("twCount").textContent=m.tweets_total||rows.length||0; $("twMeta").textContent=`${m.accounts_with_tweets||0}/${m.accounts_total||0} accounts`;
-  $("twTiming").textContent=`workers ${m.workers||"--"} | total ${m.total_s||"--"}s | errors ${m.errors||0}`;
-  $("twAccountMeta").textContent=`paid Twitter API: $0 | paid AI per account: $0`;
-  $("twSent").textContent=`sent ${m.avg_sentiment||0} | impact ${m.avg_impact_score||0}`;
-  $("accountCharts").innerHTML=accounts.slice(0,24).map((a,i)=>`<div class="card"><div class="label">@${a.handle} · ${a.tier}</div><div class="value ${a.avg_sentiment>0?'green':a.avg_sentiment<0?'red':''}">${a.avg_sentiment}</div><div class="hint">${a.tweets} tweets | likes ${a.total_likes} | views ${a.total_views}</div><div class="hint">${a.why_selected}</div><div class="chartbox sm" style="height:92px;margin-top:8px"><canvas id="acctChart${i}"></canvas></div></div>`).join("");
-  setTimeout(()=>accounts.slice(0,24).forEach((a,i)=>makeChart(`acctChart${i}`,"line",(a.sentiment_series||[]).map(x=>ts(x.timestamp)),[{label:"sentiment",data:(a.sentiment_series||[]).map(x=>x.sentiment_score),borderColor:a.avg_sentiment<0?"#ff4d66":"#58a6ff",pointRadius:2,tension:.2}],{legend:false,scales:{x:{display:false},y:{min:-100,max:100,grid:{color:"#182238"},ticks:{color:"#7d8fb3",maxTicksLimit:3}}}})),0);
-  $("tweetRows").innerHTML=rows.length?rows.slice().reverse().map(t=>{
-    const media=(t.media_urls||[]).slice(0,4).map(u=>`<a href="${u}" target="_blank"><img src="${u}" loading="lazy"></a>`).join("");
-    return `<div class="tweet"><div class="tweethead"><strong>@${t.handle}</strong><span class="${t.sentiment_score>0?'green':t.sentiment_score<0?'red':'muted'}">${t.sentiment_label} ${t.sentiment_score} | impact ${Number(t.impact_score||0).toFixed(1)}</span></div><div>${(t.text||"").slice(0,1600)}</div>${media?`<div class="media">${media}</div>`:""}<div class="metrics"><span>${ts(t.timestamp)}</span><span>likes ${t.likes||0}</span><span>retweets ${t.retweets||t.reposts||0}</span><span>comments ${t.comments||t.replies||0}</span><span>views ${t.views||0}</span><span>bookmarks ${t.bookmarks||0}</span><span>eng/rate ${t.engagement_rate_per_1k_views||0}/1k</span><span>${t.has_show_more?"full text hydrated":""}</span><span>${(t.alert_keywords||[]).join(", ")}</span></div></div>`;
-  }).join(""):`<div class="empty">No Twitter scrape found yet</div>`;
-  makeChart("sentChart","doughnut",["Bullish","Bearish","Neutral"],[{data:[m.bullish_count||0,m.bearish_count||0,m.neutral_count||0],backgroundColor:["#18c964","#ff4d66","#7d8fb3"]}],{legend:true});
-}
-
-async function loadApi(){
-  const u=await j("/api-usage");
-  $("apiCalls").textContent=u.total_calls||0; $("apiTokens").textContent=((u.total_input_tokens||0)+(u.total_output_tokens||0)).toLocaleString()+" tokens";
-  $("apiCost").textContent=fmt(u.total_cost_usd||0); $("apiToday").textContent=`today ${u.today_calls||0} calls / ${fmt(u.today_cost_usd||0)}`;
-  $("costMeta").textContent=`month ${fmt(u.month_cost_usd||0)}`;
-  const recent=(u.recent||[]).slice().reverse();
-  let sum=0; makeChart("costChart","line",recent.map(r=>ts(r.timestamp)),[{label:"Cumulative cost",data:recent.map(r=>{sum+=Number(r.api_cost_usd||0);return Number(sum.toFixed(6))}),borderColor:"#58a6ff",pointRadius:0,tension:.25}],{legend:false});
-}
-
-async function loadAudit(){
-  const d=await j("/ai-audit?limit=1"); const a=(d.audits||[])[0];
-  if(!a){$("aiPrompt").textContent="No AI audit yet";$("aiResponse").textContent="No AI audit yet";return}
-  $("aiPrompt").textContent=a.ai_prompt||"No prompt stored for older decision";
-  $("aiResponse").textContent=`MODEL: ${a.ai_model||"--"}\nTOKENS: input ${a.input_tokens||0}, output ${a.output_tokens||0}, cost ${fmt(a.api_cost_usd||0)}\n\nVISIBLE MODEL RESPONSE:\n${a.ai_response||"--"}\n\nFINAL ACTION: ${a.final_action}\nBLOCKED BY: ${a.blocked_by||"--"}\nREASON:\n${a.block_reason||a.claude_reason||"--"}\n\nRISK SUMMARY:\n${a.risk_summary||"--"}\n\nINVALID IF:\n${JSON.stringify(a.invalid_if||[],null,2)}\n\nNOTE:\n${a.note}`;
-}
-
-async function loadReports(){
-  const [r,eq,learn,missed,sweep,shadow,riskBlock]=await Promise.all([j("/reports"),j("/backtest-equity?limit=800"),j("/learning-status"),j("/missed-opportunities"),j("/trade-quality-sweep"),j("/shadow-performance"),j("/risk-block-performance")]);
-  $("backtestReport").textContent=JSON.stringify(r.backtest||{status:"No backtest report found"},null,2);
-  $("feedbackReport").textContent=JSON.stringify(r.ai_feedback||{status:"No AI feedback report found"},null,2);
-  $("learningState").textContent=learn.status||"--";
-  $("learningState").className=learn.status==="learning_active"?"green":learn.status==="feedback_stale"?"yellow":"muted";
-  $("learningReport").textContent=JSON.stringify(learn,null,2);
-  const ms=missed.summary||{};
-  $("missedState").textContent=`${ms.missed_upside_holds||0} missed`;
-  $("missedState").className=(ms.missed_upside_holds||0)>0?"yellow":"green";
-  $("missedBox").innerHTML=`<div class="hint">Scored HOLDs: ${ms.scored_holds||0}</div><div class="hint">Missed upside: ${ms.missed_upside_holds||0}</div><div class="hint">Avoided downside: ${ms.avoided_downside_holds||0}</div><div class="hint">Avg HOLD return: ${ms.avg_hold_return_pct??"--"}%</div>`;
-  const rows=eq.rows||[]; $("btMeta").textContent=rows.length?`${rows.length} points`:"";
-  const dateKey=rows[0]&&("date" in rows[0]?"date":"timestamp");
-  const equityKey=rows[0]&&("equity" in rows[0]?"equity":"portfolio_value");
-  makeChart("backtestChart","line",rows.map(r=>String(r[dateKey]||"").slice(0,10)),[{label:"Backtest equity",data:rows.map(r=>Number(r[equityKey]||0)),borderColor:"#18c964",backgroundColor:"rgba(24,201,100,.08)",fill:true,pointRadius:0,tension:.2}],{legend:false});
-  const sw=sweep.results||[], best=sweep.best_threshold||{};
-  $("sweepBest").textContent=best.threshold?`best ${best.threshold} | ${best.total_return_pct}%`:"--";
-  $("sweepMeta").textContent=sw.length?`${sw.length} thresholds`:"--";
-  makeChart("sweepReturnChart","line",sw.map(x=>x.threshold),[{label:"Return %",data:sw.map(x=>x.total_return_pct),borderColor:"#18c964",pointRadius:3,tension:.2},{label:"Max DD %",data:sw.map(x=>x.max_drawdown_pct),borderColor:"#ff4d66",pointRadius:3,tension:.2}],{legend:true});
-  makeChart("sweepRiskChart","bar",sw.map(x=>x.threshold),[{label:"Trades",data:sw.map(x=>x.number_of_trades),backgroundColor:"#58a6ff"},{label:"Missed upside HOLDs",data:sw.map(x=>x.missed_upside_holds),backgroundColor:"#ffd166"}],{legend:true});
-  makeChart("sweepPfChart","bar",sw.map(x=>x.threshold),[{label:"Profit factor",data:sw.map(x=>x.profit_factor),backgroundColor:"#f7931a"}],{legend:false});
-  $("shadowState").textContent=`${(shadow.summary||{}).shadow_buys||0} shadow BUYs`;
-  $("shadowReport").textContent=JSON.stringify(shadow.summary||{},null,2);
-  $("riskBlockState").textContent=`${riskBlock.total_blocked_candidates||0} blocked | tune: ${riskBlock.ready_to_tune?"yes":"no"}`;
-  const blockers=Object.entries(riskBlock.blockers||{}).map(([name,b])=>`<tr><td>${name}</td><td>${b.count}</td><td>${b.avg_return_1h??"--"}</td><td>${b.avg_return_4h??"--"}</td><td>${b.avg_return_24h??"--"}</td><td>${b.blocked_winners_4h}</td><td>${b.saved_losses_4h}</td><td>${b.neutral_4h}</td><td>${b.verdict}</td></tr>`).join("");
-  $("riskBlockReport").innerHTML=`<div class="hint">Total blocked BUY candidates: ${riskBlock.total_blocked_candidates||0}</div><div class="hint">Minimum required before tuning: ${riskBlock.minimum_required_before_tuning||30}</div><div class="hint">Ready to tune: ${riskBlock.ready_to_tune?"yes":"no"}</div><table style="margin-top:10px"><thead><tr><th>Blocker</th><th>Count</th><th>Avg 1h</th><th>Avg 4h</th><th>Avg 24h</th><th>Blocked winners 4h</th><th>Saved losses 4h</th><th>Neutral 4h</th><th>Verdict</th></tr></thead><tbody>${blockers||'<tr><td class="empty" colspan="9">No blocked BUY candidates measured yet</td></tr>'}</tbody></table>`;
+async function loadShadowLearning(){
+  const target=$("page-shadow-learning");
+  const [shadow,review,decisions,daily]=await Promise.all([safeFetchJson("/shadow-performance"),safeFetchJson("/shadow-buy-review"),safeFetchJson("/decisions"),safeFetchJson("/daily-validation-report")]);
+  const s=getData(shadow,{summary:{}}), reviewData=getData(review,{}), d=getData(decisions,{decisions:[]}), dailyData=getData(daily,{});
+  const summary=s.summary || reviewData.summary || {};
+  const count=dailyData.shadow_buy_review_count || summary.shadow_buys || summary.shadow_buy_count || 0;
+  const rows=(d.decisions || []).filter(r=>r.shadow_buy || String(r.candidate_action || r.claude_action || "").toUpperCase()==="BUY").slice(0,80);
+  target.innerHTML=pageShell("Shadow Learning","Shadow BUY Review","Learning-only BUY candidates are tracked without allowing strategy changes until sample targets are met.",`
+    <div class="grid cards compact">
+      ${renderCard("Shadow BUY Count",`${count} / ${dailyData.shadow_buy_review_target || 100}`,renderProgressBar(count,dailyData.shadow_buy_review_target || 100))}
+      ${renderCard("Ready For Review",renderBadge(dailyData.shadow_buy_review_ready ? "yes" : "no"),dailyData.shadow_buy_review_recommendation || "COLLECT_MORE_DATA")}
+      ${renderCard("Final Recommendation",renderBadge(summary.final_shadow_buy_recommendation || dailyData.shadow_buy_review_recommendation || "COLLECT_MORE_DATA"),"from report data")}
+      ${renderCard("Win Rate 1h",`${summary.win_rate_1h ?? "--"}%`,"shadow outcomes")}
+      ${renderCard("Win Rate 4h",`${summary.win_rate_4h ?? "--"}%`,"shadow outcomes")}
+      ${renderCard("Win Rate 24h",`${summary.win_rate_24h ?? "--"}%`,"shadow outcomes")}
+      ${renderCard("Avg Return 1h",`${summary.avg_return_1h ?? "--"}%`,"future return")}
+      ${renderCard("Avg Return 4h",`${summary.avg_return_4h ?? "--"}%`,"future return")}
+      ${renderCard("Avg Return 24h",`${summary.avg_return_24h ?? "--"}%`,"future return")}
+    </div>
+    <div class="grid cols2" style="margin-top:14px"><div class="panel"><div class="panel-title"><span>Win Rate By Horizon</span></div><div class="chart sm"><canvas id="shadowWinChart"></canvas></div></div><div class="panel"><div class="panel-title"><span>Average Return By Horizon</span></div><div class="chart sm"><canvas id="shadowReturnChart"></canvas></div></div></div>
+    <div class="panel"><div class="panel-title"><span>Recent Shadow BUYs</span><span>${rows.length} candidates</span></div>
+      ${renderTable([{label:"Time"},{label:"Entry"},{label:"15m"},{label:"1h"},{label:"4h"},{label:"24h"},{label:"Outcome"}],rows,"No shadow BUY candidates yet",r=>`<td>${formatDateTime(r.timestamp)}</td><td>${formatMoney(r.btc_price)}</td><td>${formatPct(r.shadow_future_return_15m ?? r.future_return_15m)}</td><td>${formatPct(r.shadow_future_return_1h ?? r.future_return_1h)}</td><td>${formatPct(r.shadow_future_return_4h ?? r.future_return_4h)}</td><td>${formatPct(r.shadow_future_return_24h ?? r.future_return_24h)}</td><td>${renderBadge(r.shadow_outcome || r.outcome || "pending")}</td>`)}
+    </div>`);
+  setTimeout(()=>{chart("shadowWinChart","bar",["1h","4h","24h"],[{label:"Win rate",data:[summary.win_rate_1h||0,summary.win_rate_4h||0,summary.win_rate_24h||0],backgroundColor:"#38bdf8"}],{legend:false});chart("shadowReturnChart","bar",["1h","4h","24h"],[{label:"Avg return",data:[summary.avg_return_1h||0,summary.avg_return_4h||0,summary.avg_return_24h||0],backgroundColor:"#f7931a"}],{legend:false});},0);
 }
 
 async function loadSmartMoney(){
-  const [sm,structure,liq,obs,fvgs,pd,bt]=await Promise.all([
-    j("/smart-money"),j("/market-structure"),j("/liquidity-zones"),j("/order-blocks"),j("/fair-value-gaps"),j("/premium-discount"),j("/smart-money-backtest")
-  ]);
-  $("smScore").textContent=(sm.smart_money_score??0)+"/100";
-  $("smScore").className=(sm.smart_money_bias==="bullish"?"value green":sm.smart_money_bias==="bearish"?"value red":"value yellow");
-  $("smBias").textContent=`${sm.smart_money_bias||"neutral"} | ${sm.timeframe_alignment||"mixed"}`;
-  $("smAlignment").textContent=sm.timeframe_alignment||"--";
-  $("smReason").textContent=JSON.stringify({reason:sm.smart_money_reason, structure_state:sm.structure_state, liquidity_state:sm.liquidity_state, order_block_state:sm.order_block_state, fvg_state:sm.fvg_state, premium_discount_state:sm.premium_discount_state},null,2);
-  const best=bt.best_threshold||{};
-  $("smBacktestState").textContent=best.threshold?`best ${best.threshold}`:`${bt.total_setups||0} setups`;
-  $("smBacktest").textContent=JSON.stringify({total_setups:bt.total_setups, thresholds:bt.thresholds, best_threshold:bt.best_threshold, rules:bt.rules},null,2);
-  $("structureState").textContent=(structure.count||0)+" events";
-  $("structureBox").textContent=JSON.stringify((structure.events||[]).slice(-20),null,2);
-  $("liquidityState").textContent=(liq.count||0)+" zones";
-  $("liquidityBox").textContent=JSON.stringify((liq.zones||[]).filter(x=>x.swept).slice(-20),null,2);
-  $("obState").textContent=(obs.count||0)+" blocks";
-  $("obBox").textContent=JSON.stringify((obs.order_blocks||[]).slice(-20),null,2);
-  $("fvgState").textContent=(fvgs.count||0)+" gaps";
-  $("fvgBox").textContent=JSON.stringify((fvgs.fair_value_gaps||[]).slice(-20),null,2);
-  $("pdState").textContent=(pd.count||0)+" zones";
-  $("pdBox").textContent=JSON.stringify(pd.premium_discount_zones||[],null,2);
+  const target=$("page-smart-money");
+  const [sm,structure,liq,obs,fvgs,pd,bt,daily]=await Promise.all([safeFetchJson("/smart-money"),safeFetchJson("/market-structure"),safeFetchJson("/liquidity-zones"),safeFetchJson("/order-blocks"),safeFetchJson("/fair-value-gaps"),safeFetchJson("/premium-discount"),safeFetchJson("/smart-money-backtest"),safeFetchJson("/daily-validation-report")]);
+  const smart=getData(sm,{}), st=getData(structure,{events:[]}), l=getData(liq,{zones:[]}), ob=getData(obs,{order_blocks:[]}), f=getData(fvgs,{fair_value_gaps:[]}), p=getData(pd,{premium_discount_zones:[]}), back=getData(bt,{}), dailyData=getData(daily,{});
+  const shadowCount=dailyData.smart_money_shadow_count || dailyData.progress_targets?.shadow_smart_money_current || back.total_setups || 0;
+  target.innerHTML=pageShell("Smart Money","Smart Money Structure","Structure, liquidity, order blocks, FVG, premium/discount and timeframe alignment, all kept shadow-only.",`
+    <div class="grid cards compact">
+      ${renderCard("Smart Money Score",`${smart.smart_money_score ?? 0}/100`,"shadow-only")}
+      ${renderCard("Smart Money Bias",renderBadge(smart.smart_money_bias || "neutral","purple"),escapeHtml(smart.smart_money_reason || "--"))}
+      ${renderCard("Review Recommendation",renderBadge(dailyData.smart_money_review_recommendation || "SMART_MONEY_STAYS_SHADOW"),"no bonus enabled")}
+      ${renderCard("Shadow Count",`${shadowCount} / 50`,renderProgressBar(shadowCount,50))}
+      ${renderCard("Ready For Bonus",renderBadge(dailyData.smart_money_ready_for_bonus ? "yes" : "no"),"SMART_MONEY_MAX_TQ_BONUS remains 0")}
+      ${renderCard("1h / 4h / 24h Win",`${back.win_rate_1h ?? "--"} / ${back.win_rate_4h ?? "--"} / ${back.win_rate_24h ?? "--"}`,"if available")}
+    </div>
+    <div class="grid cols2" style="margin-top:14px">
+      <div class="panel"><div class="panel-title"><span>Current Smart Money State</span></div><div class="grid cols2">
+        ${renderCard("Structure",smart.structure_state || "--","market structure")}
+        ${renderCard("Liquidity",smart.liquidity_state || "--","sweeps / equal highs-lows")}
+        ${renderCard("Order Blocks",smart.order_block_state || "--","active blocks")}
+        ${renderCard("Fair Value Gaps",smart.fvg_state || "--","active gaps")}
+        ${renderCard("Premium / Discount",smart.premium_discount_state || "--","range location")}
+        ${renderCard("Timeframe Alignment",smart.timeframe_alignment || "--","15m / 1h / 4h")}
+      </div></div>
+      <div class="panel"><div class="panel-title"><span>Performance</span></div><div class="audit">${escapeHtml(JSON.stringify(back.best_threshold || back.thresholds || back,null,2))}</div></div>
+    </div>
+    <details open><summary>Timeframe Alignment</summary><div class="detail-body">${renderTable([{label:"Timeframe"},{label:"State"},{label:"Event"},{label:"Time"},{label:"Confidence"}],(st.events||[]).slice(-30).reverse(),"No structure events",e=>`<td>${e.timeframe||"--"}</td><td>${renderBadge(e.trend || e.event_type || "--")}</td><td>${e.event_type || "--"}</td><td>${formatDateTime(e.timestamp || e.event_time)}</td><td>${e.confidence ?? "--"}</td>`)}</div></details>
+    <details><summary>Liquidity</summary><div class="detail-body">${renderTable([{label:"Timeframe"},{label:"Type"},{label:"Low"},{label:"High"},{label:"Swept"},{label:"Time"}],(l.zones||[]).slice(0,80),"No liquidity zones",z=>`<td>${z.timeframe||"--"}</td><td>${z.zone_type||z.type||"--"}</td><td>${formatMoney(z.price_low)}</td><td>${formatMoney(z.price_high)}</td><td>${z.swept ? "yes":"no"}</td><td>${formatDateTime(z.timestamp || z.swept_at)}</td>`)}</div></details>
+    <details><summary>Order Blocks</summary><div class="detail-body">${renderTable([{label:"Timeframe"},{label:"Bias"},{label:"Low"},{label:"High"},{label:"Active"},{label:"Strength"}],(ob.order_blocks||[]).slice(0,80),"No order blocks",z=>`<td>${z.timeframe||"--"}</td><td>${renderBadge(z.bias || z.direction || "--")}</td><td>${formatMoney(z.price_low)}</td><td>${formatMoney(z.price_high)}</td><td>${z.active===false?"no":"yes"}</td><td>${z.strength_score ?? "--"}</td>`)}</div></details>
+    <details><summary>Fair Value Gaps</summary><div class="detail-body">${renderTable([{label:"Timeframe"},{label:"Bias"},{label:"Low"},{label:"High"},{label:"Filled"},{label:"Active"}],(f.fair_value_gaps||[]).slice(0,80),"No FVGs",z=>`<td>${z.timeframe||"--"}</td><td>${renderBadge(z.bias || z.direction || "--")}</td><td>${formatMoney(z.price_low)}</td><td>${formatMoney(z.price_high)}</td><td>${z.filled?"yes":"no"}</td><td>${z.active===false?"no":"yes"}</td>`)}</div></details>
+    <details><summary>Premium / Discount</summary><div class="detail-body"><div class="audit">${escapeHtml(JSON.stringify(p.premium_discount_zones || [],null,2))}</div></div></details>`);
 }
 
-async function safeJ(path){
-  try{return {ok:true,path,data:await j(path)}}catch(e){return {ok:false,path,error:e.message,data:null}}
+async function loadTechnicalAnalysis(){
+  const target=$("page-technical-analysis");
+  const [ind,zones,patterns,forecast,bt,daily] = await Promise.all([safeFetchJson("/technical-analysis"),safeFetchJson("/support-resistance"),safeFetchJson("/chart-patterns"),safeFetchJson("/ta-forecast"),safeFetchJson("/ta-backtest"),safeFetchJson("/daily-validation-report")]);
+  const i=getData(ind,{rows:[],latest:{}}), z=getData(zones,{zones:[]}), pat=getData(patterns,{patterns:[]}), fc=getData(forecast,{}), back=getData(bt,{}), dailyData=getData(daily,{});
+  const rows=(i.rows||[]).filter(r=>r.timeframe==="15m").slice(-180);
+  const labels=rows.map(r=>compactDate(r.timestamp));
+  const activeZones=(z.zones||[]).filter(zone=>zone.active!==false);
+  const mid=zone=>(Number(zone.price_low||0)+Number(zone.price_high||0))/2;
+  const zoneLines=activeZones.slice(0,6).map(zone=>({label:`${zone.zone_type || "zone"} ${formatMoney(mid(zone),0)}`,data:labels.map(()=>mid(zone)),borderColor:String(zone.zone_type||"").includes("resistance")?"#ef4444":"#22c55e",pointRadius:0,borderDash:[6,6],borderWidth:1}));
+  target.innerHTML=pageShell("Technical Analysis","Technical Analysis Live","Visual technical context with price, EMAs, Bollinger Bands, support/resistance, patterns and shadow-only status.",`
+    <div class="warn">TA is shadow-only. It does not execute trades, does not modify Trade Quality, and cannot bypass risk_engine.</div>
+    <div class="grid cards compact">
+      ${renderCard("TA Score",`${fc.ta_score ?? 0}/100`,"shadow signal")}
+      ${renderCard("TA Bias",renderBadge(fc.ta_bias || "neutral"),`confidence ${fc.ta_confidence ?? 0}`)}
+      ${renderCard("Ready For Bonus",renderBadge(dailyData.ta_ready_for_bonus ? "yes":"no"),"TA bonus remains 0")}
+      ${renderCard("TA Shadow Count",`${dailyData.ta_shadow_count || 0} / 50`,renderProgressBar(dailyData.ta_shadow_count || 0,50))}
+      ${renderCard("Prediction 15m",fc.prediction_15m || "--","forecast")}
+      ${renderCard("Prediction 1h",fc.prediction_1h || "--","forecast")}
+      ${renderCard("Prediction 4h",fc.prediction_4h || "--","forecast")}
+      ${renderCard("Prediction 24h",fc.prediction_24h || "--","forecast")}
+    </div>
+    <div class="panel" style="margin-top:14px"><div class="panel-title"><span>BTC Price / EMAs / Bollinger Bands / Zones</span><span>15m candles</span></div><div class="chart lg"><canvas id="taPriceChart"></canvas></div></div>
+    <div class="grid cols2"><div class="panel"><div class="panel-title"><span>RSI</span></div><div class="chart sm"><canvas id="taRsiChart"></canvas></div></div><div class="panel"><div class="panel-title"><span>MACD</span></div><div class="chart sm"><canvas id="taMacdChart"></canvas></div></div><div class="panel"><div class="panel-title"><span>Bollinger Width</span></div><div class="chart sm"><canvas id="taBbChart"></canvas></div></div><div class="panel"><div class="panel-title"><span>ATR</span></div><div class="chart sm"><canvas id="taAtrChart"></canvas></div></div></div>
+    <div class="grid cols2"><div class="panel"><div class="panel-title"><span>Evidence</span><span>${renderBadge(fc.risk_level || "--")}</span></div><div class="evidence"><div><div class="label green">Bullish</div><ul>${(fc.bullish_evidence||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")||"<li>None</li>"}</ul></div><div><div class="label red">Bearish</div><ul>${(fc.bearish_evidence||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")||"<li>None</li>"}</ul></div><div><div class="label yellow">Neutral</div><ul>${(fc.neutral_evidence||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")||"<li>None</li>"}</ul></div></div><div class="hint">Reason: ${escapeHtml(fc.ta_reason || "--")}</div><div class="hint">Invalidation: ${formatMoney(fc.invalidation_level)} · Support: ${formatMoney(fc.nearest_support?.price_low)} · Resistance: ${formatMoney(fc.nearest_resistance?.price_high)}</div></div><div class="panel"><div class="panel-title"><span>Backtest</span><span>${back.best_horizon || "--"}</span></div><div class="audit">${escapeHtml(JSON.stringify(back.best_threshold || back,null,2))}</div></div></div>
+    <details open><summary>Chart Patterns</summary><div class="detail-body">${renderTable([{label:"Timeframe"},{label:"Pattern"},{label:"Direction"},{label:"Confidence"},{label:"Detected"},{label:"Invalidated"},{label:"Reason"}],(pat.patterns||[]).slice(0,80),"No chart patterns",p=>`<td>${p.timeframe||"--"}</td><td>${p.pattern_type||p.pattern||"--"}</td><td>${renderBadge(p.direction||"--")}</td><td>${p.confidence??"--"}</td><td>${formatDateTime(p.detected_at)}</td><td>${p.invalidated?"yes":"no"}</td><td class="clip">${escapeHtml(p.reason||"--")}</td>`)}</div></details>
+    <details><summary>Support / Resistance</summary><div class="detail-body">${renderTable([{label:"Timeframe"},{label:"Zone type"},{label:"Low"},{label:"High"},{label:"Strength"},{label:"Touches"},{label:"Active"},{label:"Status"}],(z.zones||[]).slice(0,100),"No zones",zone=>`<td>${zone.timeframe||"--"}</td><td>${zone.zone_type||"--"}</td><td>${formatMoney(zone.price_low)}</td><td>${formatMoney(zone.price_high)}</td><td>${zone.strength_score??"--"}</td><td>${zone.touch_count??"--"}</td><td>${zone.active===false?"no":"yes"}</td><td>${zone.broken?"broken":zone.retested?"retested":"open"}</td>`)}</div></details>`);
+  setTimeout(()=>{
+    chart("taPriceChart","line",labels,[{label:"Close",data:rows.map(r=>r.close),borderColor:"#f7931a",pointRadius:0,borderWidth:2},{label:"EMA20",data:rows.map(r=>r.ema20),borderColor:"#38bdf8",pointRadius:0,borderWidth:1},{label:"EMA50",data:rows.map(r=>r.ema50),borderColor:"#eab308",pointRadius:0,borderWidth:1},{label:"EMA200",data:rows.map(r=>r.ema200),borderColor:"#b8c6dc",pointRadius:0,borderWidth:1},{label:"BB upper",data:rows.map(r=>r.bb_upper),borderColor:"rgba(129,145,173,.65)",pointRadius:0,borderWidth:1},{label:"BB lower",data:rows.map(r=>r.bb_lower),borderColor:"rgba(129,145,173,.65)",pointRadius:0,borderWidth:1},...zoneLines],{legend:true});
+    chart("taRsiChart","line",labels,[{label:"RSI",data:rows.map(r=>r.rsi14),borderColor:"#38bdf8",pointRadius:0},{label:"50",data:labels.map(()=>50),borderColor:"#8191ad",pointRadius:0,borderDash:[4,4]}],{legend:true});
+    chart("taMacdChart","line",labels,[{label:"MACD",data:rows.map(r=>r.macd),borderColor:"#22c55e",pointRadius:0},{label:"Signal",data:rows.map(r=>r.macd_signal),borderColor:"#eab308",pointRadius:0},{label:"Hist",type:"bar",data:rows.map(r=>r.macd_histogram),backgroundColor:"rgba(56,189,248,.45)"}],{legend:true});
+    chart("taBbChart","line",labels,[{label:"BB width",data:rows.map(r=>r.bb_width),borderColor:"#f7931a",pointRadius:0}],{legend:false});
+    chart("taAtrChart","line",labels,[{label:"ATR",data:rows.map(r=>r.atr14),borderColor:"#ef4444",pointRadius:0}],{legend:false});
+  },0);
 }
 
-function shortMoney(n){
-  return n==null?"--":"$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
+async function loadAiTechnicalAnalyst(){
+  const target=$("page-ai-technical-analyst");
+  const [cur,perf,bt,daily]=await Promise.all([safeFetchJson("/ai-technical-analyst"),safeFetchJson("/ai-ta-performance"),safeFetchJson("/ai-ta-backtest"),safeFetchJson("/daily-validation-report")]);
+  const c=getData(cur,{}), p=getData(perf,{}), b=getData(bt,{}), d=getData(daily,{});
+  target.innerHTML=pageShell("AI Technical Analyst","AI Technical Analyst","AI TA is an analyst-only shadow layer. It cannot execute trades and cannot bypass risk_engine.",`
+    <div class="warn">AI TA is analyst only. It cannot execute trades and cannot bypass risk_engine.</div>
+    <div class="grid cards compact">
+      ${renderCard("AI TA Enabled",renderBadge(c.enabled===false?"no":"yes"),"display only")}
+      ${renderCard("AI TA Shadow-only",renderBadge(c.shadow_only===false?"no":"yes","purple"),"no execution")}
+      ${renderCard("AI TA Score",`${c.ai_ta_score ?? 0}/100`,escapeHtml(c.ai_ta_bias || "--"))}
+      ${renderCard("AI TA Bias",renderBadge(c.ai_ta_bias || "neutral"),`confidence ${c.ai_ta_confidence ?? 0}`)}
+      ${renderCard("Shadow Count",`${d.ai_ta_shadow_count || 0} / 50`,renderProgressBar(d.ai_ta_shadow_count || 0,50))}
+      ${renderCard("Ready For Bonus",renderBadge(d.ai_ta_ready_for_bonus ? "yes":"no"),"AI TA bonus remains 0")}
+      ${renderCard("Estimated Cost",`$${Number(d.ai_ta_estimated_api_cost_monthly || d.estimated_learning_api_cost_monthly || 0).toFixed(2)}/mo`,"from validation report")}
+      ${renderCard("Invalid JSON",d.ai_ta_invalid_json_count || c.invalid_json_count || 0,"should be 0")}
+      ${renderCard("Safety Violations",d.ai_ta_safety_violation_count || c.safety_violation_count || 0,"should be 0")}
+    </div>
+    <div class="grid cols2" style="margin-top:14px">
+      <div class="panel"><div class="panel-title"><span>Forecast</span><span>${c.best_horizon || "--"}</span></div><div class="grid cols2">
+        ${renderCard("15m",c.prediction_15m || "--","prediction")}
+        ${renderCard("1h",c.prediction_1h || "--","prediction")}
+        ${renderCard("4h",c.prediction_4h || "--","prediction")}
+        ${renderCard("24h",c.prediction_24h || "--","prediction")}
+        ${renderCard("Invalidation",formatMoney(c.invalidation_level),"level")}
+        ${renderCard("Risk Level",renderBadge(c.risk_level || "--"),"AI note")}
+      </div><div class="hint">Main reason: ${escapeHtml(c.main_reason || c.ai_ta_reason || "--")}</div></div>
+      <div class="panel"><div class="panel-title"><span>Evidence</span></div><div class="evidence"><div><div class="label green">Bullish</div><ul>${(c.bullish_evidence||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")||"<li>None</li>"}</ul></div><div><div class="label red">Bearish</div><ul>${(c.bearish_evidence||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")||"<li>None</li>"}</ul></div><div><div class="label yellow">Neutral</div><ul>${(c.neutral_evidence||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join("")||"<li>None</li>"}</ul></div></div><div class="hint">${escapeHtml(c.notes || "")}</div></div>
+    </div>
+    <div class="grid cols2"><div class="panel"><div class="panel-title"><span>Performance</span></div><div class="audit">${escapeHtml(JSON.stringify(p,null,2))}</div></div><div class="panel"><div class="panel-title"><span>Backtest / Safety</span></div><div class="audit">${escapeHtml(JSON.stringify({backtest:b, safety:{should_trade_violations:d.ai_ta_should_trade_violations||0,risk_engine_violations:d.ai_ta_risk_engine_violations||0,invalid_json_count:d.ai_ta_invalid_json_count||0}},null,2))}</div></div></div>`);
 }
 
-function listItems(items){
-  const rows=(items||[]).slice(0,8);
-  return rows.length?rows.map(x=>`<li>${String(x)}</li>`).join(""):`<li class="muted">None</li>`;
-}
-
-function miniCard(label,value,hint="",klass=""){
-  return `<div class="card"><div class="label">${label}</div><div class="value ${klass}">${value??"--"}</div><div class="hint">${hint}</div></div>`;
-}
-
-function zoneMid(z){
-  return z?Number((Number(z.price_low||0)+Number(z.price_high||0))/2):null;
-}
-
-function taShadowStats(decisions,daily){
-  const rows=((decisions||{}).decisions||[]).filter(r=>r.shadow_ta_action);
-  const avg=key=>{
-    const vals=rows.map(r=>r[key]).filter(v=>v!=null).map(Number);
-    return vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(4)+"%":"--";
-  };
-  return {
-    count: daily?.ta_shadow_count ?? rows.length,
-    ready: daily?.ta_ready_for_bonus ?? ((daily?.ta_shadow_count ?? rows.length)>=50),
-    r15m: daily?.ta_future_return_15m ?? avg("shadow_ta_future_return_15m"),
-    r1h: daily?.ta_future_return_1h ?? avg("shadow_ta_future_return_1h"),
-    r4h: daily?.ta_future_return_4h ?? avg("shadow_ta_future_return_4h"),
-    r24h: daily?.ta_future_return_24h ?? avg("shadow_ta_future_return_24h")
-  };
-}
-
-async function loadTA(){
-  const results=await Promise.all([
-    safeJ("/technical-analysis"),
-    safeJ("/support-resistance"),
-    safeJ("/chart-patterns"),
-    safeJ("/ta-forecast"),
-    safeJ("/ta-backtest"),
-    safeJ("/daily-validation-report"),
-    safeJ("/decisions")
-  ]);
-  const byPath=Object.fromEntries(results.map(r=>[r.path,r]));
-  const warnings=results.filter(r=>!r.ok && ["/technical-analysis","/support-resistance","/chart-patterns","/ta-forecast","/ta-backtest"].includes(r.path));
-  $("taWarnings").innerHTML=warnings.map(w=>`<div class="warn">Warning: ${w.path} failed (${w.error}). The rest of the TA dashboard is still live.</div>`).join("");
-  const ind=byPath["/technical-analysis"].data||{rows:[],latest:{}};
-  const zones=byPath["/support-resistance"].data||{zones:[]};
-  const patterns=byPath["/chart-patterns"].data||{patterns:[]};
-  const forecast=byPath["/ta-forecast"].data||{};
-  const bt=byPath["/ta-backtest"].data||{};
-  const daily=byPath["/daily-validation-report"].data||{};
-  const decisions=byPath["/decisions"].data||{};
-
-  const bias=String(forecast.ta_bias||"neutral").toLowerCase();
-  $("taScore").textContent=(forecast.ta_score??0)+"/100";
-  $("taScore").className="value "+(bias==="bullish"?"green":bias==="bearish"?"red":"yellow");
-  $("taBias").textContent=bias==="bullish"?"Bullish":bias==="bearish"?"Bearish":"Neutral";
-  $("taBias").className="value "+(bias==="bullish"?"green":bias==="bearish"?"red":"yellow");
-  $("taConfidence").textContent="confidence "+(forecast.ta_confidence??0);
-  $("taPredShort").textContent=`15m ${forecast.prediction_15m||"--"} / 1h ${forecast.prediction_1h||"--"}`;
-  $("taPredLong").textContent=`4h ${forecast.prediction_4h||"--"} / 24h ${forecast.prediction_24h||"--"}`;
-  $("taSupport").textContent=shortMoney(zoneMid(forecast.nearest_support));
-  $("taResistance").textContent=shortMoney(zoneMid(forecast.nearest_resistance));
-  $("taRisk").textContent=forecast.risk_level||"--";
-  $("taInvalidation").textContent="invalidation "+shortMoney(forecast.invalidation_level);
-  $("taReasonState").textContent="Shadow-only · No execution";
-  $("taReason").textContent=(forecast.ta_reason||"No TA reason available")+"\n\nTA is shadow-only. It does not execute trades, does not change Trade Quality yet, and risk_engine.py remains final authority.";
-  $("taBull").innerHTML=listItems(forecast.bullish_evidence);
-  $("taBear").innerHTML=listItems(forecast.bearish_evidence);
-  $("taNeutral").innerHTML=listItems(forecast.neutral_evidence);
-
-  const rows=(ind.rows||[]).filter(r=>r.timeframe==="15m").slice(-180);
-  const labels=rows.map(r=>new Date(r.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
-  const activeZones=(zones.zones||[]).filter(z=>z.active!==false);
-  const supportLines=activeZones.filter(z=>String(z.zone_type||"").includes("support")||String(z.zone_type||"").includes("low")).slice(0,3);
-  const resistanceLines=activeZones.filter(z=>String(z.zone_type||"").includes("resistance")||String(z.zone_type||"").includes("high")).slice(0,3);
-  const zoneDatasets=[...supportLines.map(z=>({label:`Support ${shortMoney(zoneMid(z))}`,data:labels.map(()=>zoneMid(z)),borderColor:"#18c964",pointRadius:0,borderWidth:1,borderDash:[5,5]})),...resistanceLines.map(z=>({label:`Resistance ${shortMoney(zoneMid(z))}`,data:labels.map(()=>zoneMid(z)),borderColor:"#ff4d66",pointRadius:0,borderWidth:1,borderDash:[5,5]}))];
-  makeChart("taPriceChart","line",labels,[
-    {label:"BTC close",data:rows.map(r=>r.close),borderColor:"#f7931a",pointRadius:0,borderWidth:2,tension:.2},
-    {label:"EMA20",data:rows.map(r=>r.ema20),borderColor:"#58a6ff",pointRadius:0,borderWidth:1,tension:.2},
-    {label:"EMA50",data:rows.map(r=>r.ema50),borderColor:"#ffd166",pointRadius:0,borderWidth:1,tension:.2},
-    {label:"EMA200",data:rows.map(r=>r.ema200),borderColor:"#c9d7ee",pointRadius:0,borderWidth:1,tension:.2},
-    {label:"BB upper",data:rows.map(r=>r.bb_upper),borderColor:"rgba(125,143,179,.8)",pointRadius:0,borderWidth:1,tension:.2},
-    {label:"BB lower",data:rows.map(r=>r.bb_lower),borderColor:"rgba(125,143,179,.8)",pointRadius:0,borderWidth:1,tension:.2},
-    ...zoneDatasets
-  ],{legend:true});
-  makeChart("taRsiChart","line",labels,[{label:"RSI14",data:rows.map(r=>r.rsi14),borderColor:"#58a6ff",pointRadius:0,tension:.2},{label:"Neutral 50",data:labels.map(()=>50),borderColor:"#7d8fb3",pointRadius:0,borderDash:[4,4]}],{legend:true});
-  makeChart("taMacdChart","line",labels,[{label:"MACD",data:rows.map(r=>r.macd),borderColor:"#18c964",pointRadius:0,tension:.2},{label:"Signal",data:rows.map(r=>r.macd_signal),borderColor:"#ffd166",pointRadius:0,tension:.2},{label:"Histogram",data:rows.map(r=>r.macd_histogram),type:"bar",backgroundColor:"rgba(88,166,255,.45)"}],{legend:true});
-  makeChart("taBbWidthChart","line",labels,[{label:"BB width",data:rows.map(r=>r.bb_width),borderColor:"#f7931a",pointRadius:0,tension:.2}],{legend:false});
-  makeChart("taAtrChart","line",labels,[{label:"ATR14",data:rows.map(r=>r.atr14),borderColor:"#ff4d66",pointRadius:0,tension:.2}],{legend:false});
-
-  const pats=(patterns.patterns||[]).slice().reverse().slice(0,40);
-  $("taPatternCount").textContent=(patterns.count||pats.length)+" patterns";
-  $("taPatternRows").innerHTML=pats.length?pats.map(p=>`<tr><td>${p.timeframe||"--"}</td><td>${p.pattern_type||"--"}</td><td>${p.direction==="bullish"?'<span class="green">Bullish</span>':p.direction==="bearish"?'<span class="red">Bearish</span>':'<span class="yellow">Neutral</span>'}</td><td>${p.confidence??"--"}</td><td>${ts(p.detected_at)}</td><td>${p.invalidated?"yes":"no"}</td><td class="clip">${p.reason||"--"}</td></tr>`).join(""):`<tr><td class="empty" colspan="7">No chart patterns detected</td></tr>`;
-  const zoneRows=(zones.zones||[]).slice(0,80);
-  $("taZoneCount").textContent=(zones.count||zoneRows.length)+" zones";
-  $("taZoneRows").innerHTML=zoneRows.length?zoneRows.map(z=>`<tr><td>${z.timeframe||"--"}</td><td>${z.zone_type||"--"}</td><td>${shortMoney(z.price_low)}</td><td>${shortMoney(z.price_high)}</td><td>${z.strength_score??"--"}</td><td>${z.touch_count??"--"}</td><td>${z.active===false?"no":"yes"}</td><td>${z.broken?"broken":z.retested?"retested":"open"}</td></tr>`).join(""):`<tr><td class="empty" colspan="8">No support or resistance zones available</td></tr>`;
-
-  const shadow=taShadowStats(decisions,daily);
-  $("taShadowState").textContent=`target: 50 | ready_for_bonus ${shadow.ready?"yes":"no"}`;
-  $("taShadowBox").innerHTML=[
-    miniCard("TA Shadow Count",shadow.count,"target: 50",shadow.ready?"green":"yellow"),
-    miniCard("Ready For Bonus",shadow.ready?"yes":"no","TA_FORECAST_MAX_TQ_BONUS remains 0",shadow.ready?"green":"yellow"),
-    miniCard("15m Future Return",shadow.r15m,"shadow-only measurement"),
-    miniCard("1h Future Return",shadow.r1h,"shadow-only measurement"),
-    miniCard("4h Future Return",shadow.r4h,"shadow-only measurement"),
-    miniCard("24h Future Return",shadow.r24h,"shadow-only measurement")
-  ].join("");
-  const best=bt.best_threshold||{};
-  $("taBacktestState").textContent=best.threshold?`best threshold ${best.threshold} / ${bt.best_horizon||best.best_horizon||"--"}`:"no backtest";
-  $("taBacktestBox").innerHTML=[
-    miniCard("Best Threshold",best.threshold??"--","shadow-only"),
-    miniCard("Best Horizon",bt.best_horizon||best.best_horizon||"--","by average return"),
-    miniCard("Win Rate 15m",(best.win_rate_15m??"--")+"%",""),
-    miniCard("Win Rate 1h",(best.win_rate_1h??"--")+"%",""),
-    miniCard("Win Rate 4h",(best.win_rate_4h??"--")+"%",""),
-    miniCard("Win Rate 24h",(best.win_rate_24h??"--")+"%",""),
-    miniCard("Avg Return 15m",(best.avg_return_15m??"--")+"%",""),
-    miniCard("Avg Return 1h",(best.avg_return_1h??"--")+"%",""),
-    miniCard("Avg Return 4h",(best.avg_return_4h??"--")+"%",""),
-    miniCard("Avg Return 24h",(best.avg_return_24h??"--")+"%",""),
-    miniCard("Profit Factor",best.profit_factor_if_traded??best.profit_factor??"--","if available")
-  ].join("");
-  $("taUpdated").textContent="Updated "+new Date().toLocaleTimeString()+" · Shadow-only · No execution";
-}
-
-async function loadAiTA(){
-  const [cur,perf,bt,daily]=await Promise.all([j("/ai-technical-analyst"),j("/ai-ta-performance"),j("/ai-ta-backtest"),j("/daily-validation-report")]);
-  $("aiTaScore").textContent=(cur.ai_ta_score??0)+"/100";
-  $("aiTaBias").textContent=`${cur.ai_ta_bias||"neutral"} | confidence ${cur.ai_ta_confidence??0}`;
-  $("aiTaShadowOnly").textContent=cur.shadow_only===false?"no":"yes";
-  $("aiTaCost").textContent=`$${Number(daily.ai_ta_estimated_api_cost_daily||0).toFixed(4)}/day`;
-  $("aiTaCurrentBox").textContent=JSON.stringify(cur,null,2);
-  $("aiTaPerformanceBox").textContent=JSON.stringify(perf,null,2);
-  $("aiTaBacktestBox").textContent=JSON.stringify(bt,null,2);
-}
-
-function progressCard(title,current,target,pctValue){
-  const pctNum=Math.max(0,Math.min(100,Number(pctValue||0)));
-  return `<div class="card"><div class="label">${title}</div><div class="value">${current} / ${target}</div><div class="hint"><div style="height:7px;background:#0a0f18;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:7px"><div style="height:100%;width:${pctNum}%;background:${pctNum>=100?'var(--green)':'var(--orange)'}"></div></div>${pctNum.toFixed(1)}%</div></div>`;
-}
-
-async function loadDailyValidation(){
-  const d=await j("/daily-validation-report");
-  const recText=typeof d.final_recommendation==="string"?d.final_recommendation:(d.final_recommendation||{}).primary;
-  const recs=d.recommendations||((d.final_recommendation||{}).recommendations)||[recText||"--"];
-  const health=d.system_health||{}, p=d.progress_targets||{};
-  const stale=d.stale_dataset_warning||health.stale_dataset_warning;
-  $("dailyValidationState").textContent=recs.join(" | ");
-  $("dailyValidationState").className=(health.system_health_status==="ok"?"green":"yellow");
-  $("dailyValidationBox").innerHTML=[
-    `<div class="card"><div class="label">Generated</div><div class="value">${d.generated_at?new Date(d.generated_at).toLocaleString():"--"}</div><div class="hint">latest report timestamp</div></div>`,
-    `<div class="card"><div class="label">Recommendation</div><div class="value ${recText==='KEEP_RUNNING'?'green':recText==='INVESTIGATE_ERROR'?'red':'yellow'}">${recText||"--"}</div><div class="hint">${recs.join(", ")}</div></div>`,
-    `<div class="card"><div class="label">System Health</div><div class="value ${health.system_health_status==='ok'?'green':'yellow'}">${health.system_health_status||d.system_health_status||"--"}</div><div class="hint">master ${d.master_dataset_rows||health.master_dataset_rows||0} rows / ${d.master_dataset_columns||health.master_dataset_columns||0} cols / ${d.master_dataset_last_date||health.master_dataset_last_date||"--"}</div></div>`,
-    `<div class="card"><div class="label">Stale Dataset</div><div class="value ${stale?'yellow':'green'}">${stale?'yes':'no'}</div><div class="hint">max allowed age: 36h</div></div>`,
-    `<div class="card"><div class="label">Learning-Only Scans</div><div class="value ${d.learning_only_scan_enabled?'green':'yellow'}">${d.learning_only_scan_enabled?'enabled':'disabled'}</div><div class="hint">interval ${d.learning_only_interval_minutes||60} min / no trade execution</div></div>`,
-    `<div class="card"><div class="label">Last Learning Scan</div><div class="value">${d.last_learning_only_scan_time?new Date(d.last_learning_only_scan_time).toLocaleString():"--"}</div><div class="hint">${d.learning_only_scans_total||0} learning scans / ${d.live_paper_scans_total||0} live paper scans</div></div>`,
-    `<div class="card"><div class="label">Learning Cost</div><div class="value">$${Number(d.estimated_learning_api_cost_daily||0).toFixed(4)}/day</div><div class="hint">$${Number(d.estimated_learning_api_cost_monthly||0).toFixed(2)}/month / Claude calls ${d.claude_calls_from_learning_scans||0}</div></div>`,
-    `<div class="card"><div class="label">Duplicates Suppressed</div><div class="value">${d.duplicate_learning_scans_suppressed||0}</div><div class="hint">duplicate learning rows are logged as events only</div></div>`,
-    `<div class="card"><div class="label">Estimated Days</div><div class="value">${d.estimated_days_to_30_blocked??"--"} / ${d.estimated_days_to_50_smart_money??"--"}</div><div class="hint">to 30 risk-blocked / 50 Smart Money shadows</div></div>`,
-    `<div class="card"><div class="label">Risk Review Ready</div><div class="value ${d.ready_for_risk_block_review?'green':'yellow'}">${d.ready_for_risk_block_review?'yes':'no'}</div><div class="hint">needs 30 blocked BUY candidates</div></div>`,
-    `<div class="card"><div class="label">Smart Money Review Ready</div><div class="value ${d.ready_for_smart_money_review?'green':'yellow'}">${d.ready_for_smart_money_review?'yes':'no'}</div><div class="hint">needs 50 shadow Smart Money records</div></div>`,
-    `<div class="card"><div class="label">Shadow BUY Review</div><div class="value ${d.shadow_buy_review_ready?'green':'yellow'}">${d.shadow_buy_review_count||0} / ${d.shadow_buy_review_target||100}</div><div class="hint">${d.shadow_buy_review_recommendation||"--"}</div></div>`,
-    `<div class="card"><div class="label">TA Shadow Progress</div><div class="value ${d.ta_ready_for_bonus?'green':'yellow'}">${d.ta_shadow_count||0} / 50</div><div class="hint">shadow only: ${d.ta_forecast_shadow_only}</div></div>`,
-    `<div class="card"><div class="label">AI TA Shadow Progress</div><div class="value ${d.ai_ta_ready_for_bonus?'green':'yellow'}">${d.ai_ta_shadow_count||0} / 50</div><div class="hint">invalid JSON: ${d.ai_ta_invalid_json_count||0}</div></div>`,
-    progressCard("Blocked BUYs",p.blocked_buy_candidates_current||0,p.blocked_buy_candidates_target||30,p.blocked_buy_candidates_pct||0),
-    progressCard("Shadow BUYs",p.shadow_buy_current||0,p.shadow_buy_target||100,p.shadow_buy_pct||0),
-    progressCard("Smart Money Shadows",p.shadow_smart_money_current||0,p.shadow_smart_money_target||50,p.shadow_smart_money_pct||0)
-  ].join("");
-}
-
-async function loadRiskHealth(){
-  const [risk,health,tg,mc]=await Promise.all([j("/risk-status"),j("/system-health"),j("/telegram/status"),j("/market-context")]);
-  $("riskStatus").textContent=(risk.consecutive_losses||0)+" loss streak";
-  $("riskBox").innerHTML=[
-    ["Daily P&L",fmt(risk.daily_pnl)],
-    ["Daily loss",Number(risk.daily_loss_pct||0).toFixed(2)+"%"],
-    ["Open trades",(risk.open_trades||[]).length],
-    ["Recent blocks",Object.keys(risk.recent_risk_blocks||{}).length]
-  ].map(x=>`<div class="card"><div class="label">${x[0]}</div><div class="value">${x[1]}</div></div>`).join("");
-  $("healthStatus").textContent=health.status;
-  $("healthStatus").className=health.status==="critical"?"red":health.status==="warning"?"yellow":"green";
-  $("healthBox").innerHTML=(health.issues||[]).length?(health.issues||[]).map(x=>`<div class="logline"><span class="lvl ${x.startsWith("CRITICAL")?"red":"yellow"}">${x.split(":")[0]}</span>${x}</div>`).join(""):`<div class="green">All critical data checks pass</div>`;
-  $("telegramState").textContent=tg.configured?"configured":"not configured";
-  $("telegramState").className=tg.configured?"green":"yellow";
-  $("telegramBox").innerHTML=`<div class="hint">enabled: ${tg.enabled}</div><div class="hint">min severity: ${tg.min_severity}</div><div class="hint">token configured: ${tg.bot_token_configured}</div><div class="hint">chat configured: ${tg.chat_id_configured}</div>`;
-  const trust=[
-    ["BTC price", mc.price>0?`trusted (${mc.live_candle_source||"unknown"})`:"bad"],
-    ["Volume", mc.volume_quality||"unknown"],
-    ["Events", mc.events_unavailable?"stale":"trusted"],
-    ["Twitter", mc.twitter_unavailable?"stale":"trusted"],
-    ["Fear & Greed", mc.fear_greed_index==null?"missing":"trusted"],
-    ["Master data", health.files?.["data/processed/master_dataset.csv"]?.age_minutes!=null?`${Math.round(health.files["data/processed/master_dataset.csv"].age_minutes/60)}h old`:"missing"]
+async function loadReports(){
+  const target=$("page-reports");
+  const reports=[
+    ["Review reports",[["Risk Block Review","risk_block_review.md","/download/all.zip"],["Smart Money Review","smart_money_review.md","/download/all.zip"],["Shadow BUY Review","shadow_buy_review.md","/download/all.zip"]]],
+    ["Learning reports",[["Daily Validation","daily_validation_report.md","/download/all.zip"],["Decision Evaluations","decision_evaluations.csv","/download/decisions.csv"],["Shadow Performance","shadow-performance","/download/all.zip"]]],
+    ["Smart Money reports",[["Market Structure","market_structure_events","/download/all.zip"],["Liquidity Zones","liquidity_zones","/download/all.zip"],["Order Blocks","order_blocks","/download/all.zip"],["Fair Value Gaps","fair_value_gaps","/download/all.zip"],["Premium/Discount","premium_discount_zones","/download/all.zip"],["Smart Money Backtest","smart_money_backtest","/download/all.zip"],["Smart Money Summary","smart_money_summary","/download/all.zip"]]],
+    ["Technical Analysis reports",[["Technical Indicators","technical_indicators","/download/all.zip"],["Support/Resistance","support_resistance_zones","/download/all.zip"],["Chart Patterns","chart_patterns","/download/all.zip"],["TA Forecast","ta_forecast","/download/all.zip"],["TA Backtest","ta_backtest","/download/all.zip"],["TA Summary","ta_summary","/download/all.zip"]]],
+    ["AI TA reports",[["AI TA Performance","ai_ta_performance","/download/all.zip"],["AI TA Backtest","ai_ta_backtest","/download/all.zip"],["AI TA Summary","ai_ta_summary","/download/all.zip"]]]
   ];
-  $("trustState").textContent=trust.some(x=>["bad","stale","missing","unreliable"].includes(x[1]))?"warning":"ok";
-  $("trustBox").innerHTML=trust.map(x=>`<div class="card"><div class="label">${x[0]}</div><div class="value ${["bad","stale","missing","unreliable"].includes(x[1])?"yellow":"green"}">${x[1]}</div></div>`).join("");
+  const reportData=await safeFetchJson("/reports");
+  target.innerHTML=pageShell("Reports","Report Center","Reports grouped by review, learning, Smart Money, TA and AI TA. Open buttons use existing dashboard endpoints and downloads use safe ZIP routes.",`
+    ${(reports.map((group,i)=>`<details ${i<2?"open":""}><summary>${group[0]}</summary><div class="detail-body"><div class="report-grid">${group[1].map(item=>`<div class="report-item"><div><div class="report-name">${item[0]}</div><div class="report-meta">${item[1]} · latest if generated</div></div><div><button class="btn" onclick="downloadFile('${item[2]}')">Download</button></div></div>`).join("")}</div></div></details>`).join(""))}
+    <div class="panel"><div class="panel-title"><span>Report API Snapshot</span></div><div class="audit">${escapeHtml(JSON.stringify(getData(reportData,{}),null,2))}</div></div>`);
 }
 
-async function loadEvents(){
-  const d=await j("/events?limit=200"); const rows=d.events||[];
-  $("eventMeta").textContent=rows.length+" events";
-  $("eventRows").innerHTML=rows.length?rows.map(e=>`<tr><td>${ts(e.timestamp)}</td><td class="${e.severity==='CRITICAL'?'red':e.severity==='WARNING'?'yellow':'muted'}">${e.severity}</td><td>${e.event_type}</td><td>${e.source||"--"}</td><td>${e.status||"--"}</td><td>${e.telegram_sent?"sent":e.telegram_error||"--"}</td><td class="clip">${e.message}</td></tr>`).join(""):`<tr><td class="empty" colspan="7">No events yet</td></tr>`;
+async function loadSystemHealth(){
+  const target=$("page-system-health");
+  const [health,daily]=await Promise.all([safeFetchJson("/system-health"),safeFetchJson("/daily-validation-report")]);
+  const h=getData(health,{}), d=getData(daily,{});
+  const endpoints=Object.entries(h.endpoints || d.endpoint_status || {}).map(([endpoint,v])=>({endpoint,...(typeof v==="object"?v:{ok:!!v})}));
+  const slow=endpoints.some(e=>Number(e.elapsed_seconds || e.elapsed || 0)>10);
+  target.innerHTML=pageShell("System Health","System Health","Freshness, endpoint status, ZIP safety, learning scan cadence and operating errors.",`
+    ${slow?'<div class="warn">Endpoint is healthy but slow.</div>':""}
+    <div class="grid cards compact">
+      ${renderCard("Health Status",renderBadge(h.status || d.system_health?.system_health_status || "--"),"overall")}
+      ${renderCard("Dataset Last Date",d.master_dataset_last_date || d.system_health?.master_dataset_last_date || "--",`${d.master_dataset_age_hours ?? d.system_health?.master_dataset_age_hours ?? "--"}h old`)}
+      ${renderCard("Stale Dataset",renderBadge(d.stale_dataset_warning || d.system_health?.stale_dataset_warning ? "yes":"no"),"warning if older than target")}
+      ${renderCard("Download ZIP Safe",renderBadge(h.download_zip_safe===false?"no":"yes"),"secrets excluded")}
+      ${renderCard("Secrets Excluded",renderBadge("yes","ok"),".env, tokens, cookies, passwords blocked")}
+      ${renderCard("Last Learning Scan",formatDateTime(d.last_learning_only_scan_time),`interval ${d.learning_only_interval_minutes || "--"} min`)}
+      ${renderCard("Estimated API Cost",formatMoney(d.estimated_learning_api_cost_monthly || 0),"/ month")}
+    </div>
+    <div class="panel" style="margin-top:14px"><div class="panel-title"><span>Endpoint Status</span><span>${endpoints.length} endpoints</span></div>${renderTable([{label:"Endpoint"},{label:"OK"},{label:"HTTP"},{label:"Elapsed sec"},{label:"Error"}],endpoints,"No endpoint status list in report",e=>`<td>${escapeHtml(e.endpoint)}</td><td>${renderBadge(e.ok===false?"no":"yes",e.ok===false?"error":"ok")}</td><td>${e.status || e.http_status || "--"}</td><td class="${Number(e.elapsed_seconds || e.elapsed || 0)>10?"yellow":""}">${e.elapsed_seconds || e.elapsed || "--"}</td><td class="clip">${escapeHtml(e.error || "--")}</td>`)}</div>
+    <div class="panel"><div class="panel-title"><span>Issues / Errors</span></div><div class="audit">${escapeHtml(JSON.stringify({issues:h.issues || [], errors:h.errors || d.errors || []},null,2))}</div></div>`);
 }
 
-async function telegramTest(){
-  $("actionMsg").textContent="Sending Telegram test...";
-  try{const r=await j("/telegram/test",{method:"POST"});$("actionMsg").textContent=r.telegram_sent?"Telegram test sent":"Telegram test logged locally: "+(r.reason||r.error||"not sent");await loadEvents();await loadRiskHealth()}catch(e){$("actionMsg").textContent="Telegram test failed: "+e.message}
+async function loadDownloads(){
+  const target=$("page-downloads-logs");
+  const [logs,events,health]=await Promise.all([safeFetchJson("/logs?limit=200"),safeFetchJson("/events?limit=200"),safeFetchJson("/system-health")]);
+  const logRows=(getData(logs,{logs:[]}).logs || []).slice().reverse().filter(l=>currentLogFilter==="all" || String(l.level || "").toLowerCase()===currentLogFilter);
+  const h=getData(health,{});
+  target.innerHTML=pageShell("Downloads / Logs","Downloads And Logs","Safe downloads and a compact live log viewer. Logs auto-refresh every 60 seconds while this page is open.",`
+    <div class="grid cards compact">
+      ${renderCard("Download All ZIP","Full ZIP","DB, reports, live candles, events, logs", "orange")}
+      ${renderCard("ZIP Safety",renderBadge(h.download_zip_safe===false?"warning":"safe"),"unsafe filenames and secret hits blocked")}
+      ${renderCard("Included Files",h.download_included_files_count ?? "--","if reported")}
+      ${renderCard("Unsafe Hits",h.unsafe_filename_hits ?? 0,"should be 0")}
+      ${renderCard("Secret Hits",h.secret_hits ?? 0,"should be 0")}
+    </div>
+    <div class="panel" style="margin-top:14px"><div class="panel-title"><span>Safe Downloads</span><span>.env and secrets excluded</span></div><div class="grid cols3">
+      <button class="btn primary" onclick="downloadFile('/download/all.zip')">Download all ZIP</button>
+      <button class="btn" onclick="downloadFile('/download/paper-trader.db')">Download DB</button>
+      <button class="btn" onclick="downloadFile('/download/decisions.csv')">Download decisions CSV</button>
+      <button class="btn" onclick="downloadFile('/download/events.csv')">Download events CSV</button>
+      <button class="btn" onclick="downloadFile('/download/trades.csv')">Download trades CSV</button>
+      <button class="btn" onclick="downloadFile('/download/logs.json')">Download logs JSON</button>
+    </div></div>
+    <div class="panel"><div class="panel-title"><span>Live Logs</span><span>${logRows.length} rows</span></div><div class="filters">${["all","error","warning","info"].map(f=>`<button class="filter ${currentLogFilter===f?"active":""}" onclick="setLogFilter('${f}')">${f}</button>`).join("")}</div><div class="logs">${logRows.map(l=>`<div class="logline"><span class="lvl ${String(l.level).toLowerCase()==="error"?"red":String(l.level).toLowerCase()==="warning"?"yellow":"muted"}">${escapeHtml(l.level)}</span>${escapeHtml(l.time)} ${escapeHtml(l.message)}</div>`).join("") || '<div class="empty">No logs</div>'}</div></div>
+    <details><summary>Recent Notifications / Events</summary><div class="detail-body">${renderTable([{label:"Time"},{label:"Severity"},{label:"Event"},{label:"Source"},{label:"Status"},{label:"Message"}],(getData(events,{events:[]}).events||[]).slice(0,120),"No events",e=>`<td>${formatDateTime(e.timestamp)}</td><td>${renderBadge(e.severity)}</td><td>${escapeHtml(e.event_type)}</td><td>${escapeHtml(e.source)}</td><td>${escapeHtml(e.status)}</td><td class="clip">${escapeHtml(e.message)}</td>`)}</div></details>`);
+}
+function setLogFilter(filter){currentLogFilter=filter;loadDownloads()}
+
+async function loadGuardrails(){
+  const target=$("page-guardrails");
+  const [portfolio,daily]=await Promise.all([safeFetchJson("/portfolio"),safeFetchJson("/daily-validation-report")]);
+  const p=getData(portfolio,{}), d=getData(daily,{});
+  const rows=[
+    ["risk_engine.py final authority","enabled","No UI control can bypass it"],
+    ["Smart Money shadow-only",String(d.smart_money_shadow_only ?? true),"Smart Money bonus remains 0"],
+    ["TA shadow-only",String(d.ta_forecast_shadow_only ?? true),"TA bonus remains 0"],
+    ["AI TA shadow-only",String(d.ai_ta_shadow_only ?? true),"AI TA bonus remains 0"],
+    ["Portfolio behavior","unchanged",`${p.total_trades || 0} total trades`],
+    ["Execution behavior","unchanged","Dashboard does not execute trades except existing manual Scan button is absent here"],
+    ["Paper/live mode",p.live_mode ? "live" : "paper","display only"]
+  ];
+  target.innerHTML=pageShell("Settings / Guardrails","Safety Guardrails","Read-only safety posture and strategy boundaries. Strategy is not configurable from this redesign.",`
+    <div class="warn danger"><strong>Do not change strategy from UI.</strong> This dashboard is read-only for safety.</div>
+    <div class="settings-list">${rows.map(r=>`<div class="guardrail"><div><strong>${escapeHtml(r[0])}</strong><div class="hint">${escapeHtml(r[2])}</div></div>${renderBadge(r[1],String(r[1]).includes("0") || String(r[1]).includes("true") || String(r[1]).includes("enabled") || String(r[1]).includes("unchanged") || String(r[1]).includes("paper") ? "ok":"warning")}</div>`).join("")}</div>`);
 }
 
-async function loadLogs(){
-  const d=await j("/logs?limit=200");
-  $("logRows").innerHTML=(d.logs||[]).slice().reverse().map(l=>`<div class="logline"><span class="lvl ${l.level==='ERROR'?'red':l.level==='WARNING'?'yellow':'muted'}">${l.level}</span>${l.time} ${l.message}</div>`).join("")||`<div class="empty">No logs captured since restart</div>`;
+async function refreshCurrentPage(){
+  $("refreshBtn").disabled=true;
+  const loaders={
+    "overview":loadOverview,
+    "live-decision":loadLiveDecision,
+    "risk-engine":loadRiskEngine,
+    "shadow-learning":loadShadowLearning,
+    "smart-money":loadSmartMoney,
+    "technical-analysis":loadTechnicalAnalysis,
+    "ai-technical-analyst":loadAiTechnicalAnalyst,
+    "reports":loadReports,
+    "system-health":loadSystemHealth,
+    "downloads-logs":loadDownloads,
+    "guardrails":loadGuardrails
+  };
+  const pageLoader = loaders[currentPage] || loadOverview;
+  const pagePromise = pageLoader().catch(error => {
+    $(`page-${currentPage}`).innerHTML = `<div class="warn danger">Failed to load this page: ${escapeHtml(error.message || error)}</div>`;
+  });
+  await Promise.allSettled([loadSharedNav(), pagePromise]);
+  $("refreshBtn").disabled=false;
 }
-
-async function saveSettings(){
-  const payload={trade_size_pct:Number($("setTrade").value)/100,risk_per_trade_pct:Number($("setRisk").value),max_position_pct:Number($("setMaxPos").value)};
-  await j("/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-  $("settingsMsg").textContent="Saved"; setTimeout(()=>$("settingsMsg").textContent="",2000); await loadPortfolio();
+function initDashboard(){
+  document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>setPage(btn.dataset.page)));
+  $("menuBtn").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
+  $("mobileOverlay").addEventListener("click",()=>{$("sidebar").classList.remove("open");$("mobileOverlay").classList.remove("open")});
+  if(!$(`page-${currentPage}`)) currentPage="overview";
+  document.querySelectorAll(".nav-item").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===currentPage));
+  document.querySelectorAll(".page").forEach(el=>el.classList.toggle("active",el.id===`page-${currentPage}`));
+  refreshCurrentPage();
+  setInterval(()=>refreshCurrentPage(),60000);
 }
-
-async function scanNow(){
-  const b=$("scanBtn"); b.disabled=true; b.textContent="Scanning..."; $("actionMsg").textContent="Claude is being called; this spends API tokens.";
-  try{await j("/scan",{method:"POST"}); $("actionMsg").textContent="Scan complete"; await loadAll()}catch(e){$("actionMsg").textContent="Scan failed: "+e.message}finally{b.disabled=false;b.textContent="Scan Market Now"}
-}
-
-async function loadAll(){
-  const jobs=[loadPortfolio(),loadMarket(),loadPrice(),loadDecisions(),loadTrades(),loadTwitter(),loadApi(),loadAudit(),loadReports(),loadSmartMoney(),loadTA(),loadAiTA(),loadDailyValidation(),loadRiskHealth(),loadEvents(),loadLogs()];
-  const res=await Promise.allSettled(jobs); const bad=res.find(x=>x.status==="rejected"); if(bad)console.error(bad.reason);
-  $("status").textContent=bad?"Partial data loaded":"Live"; $("updated").textContent="Updated "+new Date().toLocaleTimeString();
-}
-
-loadAll();
-setInterval(()=>{loadPortfolio();loadPrice();loadMarket();loadLogs()},30000);
-setInterval(()=>{loadDecisions();loadTrades();loadTwitter();loadApi();loadAudit();loadReports();loadSmartMoney();loadTA();loadAiTA();loadDailyValidation();loadRiskHealth();loadEvents()},60000);
+initDashboard();
 </script>
 </body>
 </html>
