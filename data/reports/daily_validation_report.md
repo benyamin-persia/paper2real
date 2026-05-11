@@ -1,6 +1,6 @@
 # Daily Validation Report
 
-Generated: 2026-05-10T22:01:05.209405+00:00
+Generated: 2026-05-11T04:01:04.399452+00:00
 Primary recommendation: **INVESTIGATE_ERROR**
 All recommendations: `INVESTIGATE_ERROR, COLLECT_MORE_DATA, READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_SMART_MONEY_REVIEW`
 
@@ -15,18 +15,18 @@ All recommendations: `INVESTIGATE_ERROR, COLLECT_MORE_DATA, READY_FOR_RISK_BLOCK
 
 ## Endpoint Statuses
 
-- /system-health: `ok=False` `http=None` `elapsed=60.12s`
-- /learning-status: `ok=True` `http=200` `elapsed=0.175s`
-- /risk-block-performance: `ok=True` `http=200` `elapsed=0.002s`
-- /shadow-performance: `ok=True` `http=200` `elapsed=0.225s`
-- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.006s`
+- /system-health: `ok=False` `http=None` `elapsed=60.081s`
+- /learning-status: `ok=True` `http=200` `elapsed=0.149s`
+- /risk-block-performance: `ok=True` `http=200` `elapsed=0.003s`
+- /shadow-performance: `ok=True` `http=200` `elapsed=0.226s`
+- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.007s`
 - /shadow-buy-review: `ok=True` `http=200` `elapsed=0.002s`
-- /technical-analysis: `ok=True` `http=200` `elapsed=0.033s`
+- /technical-analysis: `ok=True` `http=200` `elapsed=0.037s`
 - /support-resistance: `ok=True` `http=200` `elapsed=0.005s`
 - /chart-patterns: `ok=True` `http=200` `elapsed=0.002s`
 - /ta-forecast: `ok=True` `http=200` `elapsed=0.002s`
 - /ta-backtest: `ok=True` `http=200` `elapsed=0.002s`
-- /ai-technical-analyst: `ok=True` `http=200` `elapsed=0.005s`
+- /ai-technical-analyst: `ok=True` `http=200` `elapsed=0.006s`
 - /ai-ta-performance: `ok=True` `http=200` `elapsed=0.002s`
 - /ai-ta-backtest: `ok=True` `http=200` `elapsed=0.002s`
 - /reports: `ok=True` `http=200` `elapsed=0.016s`
