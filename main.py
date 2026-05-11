@@ -8,7 +8,7 @@ import re
 import zipfile
 from collections import deque
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
@@ -32,6 +32,8 @@ import chart_patterns
 import ta_forecast
 import ta_backtest
 import shadow_buy_review
+import risk_block_review
+import smart_money_review
 import ai_technical_analyst
 import ai_ta_evaluator
 import ai_ta_backtest
@@ -60,6 +62,9 @@ LIVE_CANDLES_FILE = Path("data/raw/live_btc_15m.csv")
 LIVE_BTC_STATUS_FILE = Path("data/raw/live_btc_source_status.json")
 EVALUATOR_REFRESH_MINUTES = 60  # refresh AI feedback from completed decisions
 SCHEDULED_SCAN_COOLDOWN_MINUTES = 30
+
+# Always next to main.py — never rely on process cwd (TrueNAS/systemd often set cwd wrong and then "/" had no Twitter UI).
+DASHBOARD_HTML = Path(__file__).resolve().parent / "dashboard.html"
 
 TWITTER_REFRESH_MINUTES = 30   # how often to re-scrape Tier 1 Twitter accounts
 TWITTER_MAX_AGE_MINUTES = 60   # older than this → mark unavailable
@@ -2047,9 +2052,94 @@ async def download_logs_json():
     )
 
 
+def _count_decisions_where(where: str) -> int:
+    db = Path(trader.DB_FILE)
+    if not db.exists():
+        return 0
+    con = trader.sqlite3.connect(db)
+    try:
+        return int(con.execute(f"SELECT COUNT(*) FROM decisions WHERE {where}").fetchone()[0])
+    except trader.sqlite3.OperationalError:
+        return 0
+    finally:
+        con.close()
+
+
+def _db_review_counts() -> dict[str, int]:
+    return {
+        "shadow_buy_count": _count_decisions_where("UPPER(COALESCE(shadow_action, ''))='BUY'"),
+        "risk_blocked_candidates": _count_decisions_where("COALESCE(risk_blocked_candidate, 0)=1"),
+        "smart_money_shadow_count": _count_decisions_where(
+            "COALESCE(shadow_smart_money_action, '') != ''"
+        ),
+    }
+
+
+def _assert_fresh_review_reports(expected: dict[str, int]) -> dict:
+    shadow = _read_json_file("data/reports/shadow_buy_review.json", {}) or {}
+    risk = _read_json_file("data/reports/risk_block_review.json", {}) or {}
+    smart = _read_json_file("data/reports/smart_money_review.json", {}) or {}
+    daily = _read_json_file("data/reports/daily_validation_report.json", {}) or {}
+    actual = {
+        "shadow_buy_review_count": int(shadow.get("shadow_buy_count") or 0),
+        "risk_block_review_count": int(risk.get("total_blocked_candidates") or 0),
+        "smart_money_review_count": int(smart.get("smart_money_shadow_count") or 0),
+        "daily_shadow_buy_count": int(daily.get("shadow_buy_count") or 0),
+        "daily_shadow_buy_review_count": int(daily.get("shadow_buy_review_count") or 0),
+        "daily_risk_blocked_candidates": int(daily.get("risk_blocked_candidates") or 0),
+        "daily_shadow_smart_money_count": int(daily.get("shadow_smart_money_count") or 0),
+    }
+    mismatches = []
+    checks = [
+        ("shadow_buy_review_count", expected["shadow_buy_count"], actual["shadow_buy_review_count"]),
+        ("risk_block_review_count", expected["risk_blocked_candidates"], actual["risk_block_review_count"]),
+        ("smart_money_review_count", expected["smart_money_shadow_count"], actual["smart_money_review_count"]),
+        ("daily_shadow_buy_count", expected["shadow_buy_count"], actual["daily_shadow_buy_count"]),
+        ("daily_shadow_buy_review_count", actual["shadow_buy_review_count"], actual["daily_shadow_buy_review_count"]),
+        ("daily_risk_blocked_candidates", expected["risk_blocked_candidates"], actual["daily_risk_blocked_candidates"]),
+        ("daily_shadow_smart_money_count", expected["smart_money_shadow_count"], actual["daily_shadow_smart_money_count"]),
+    ]
+    for name, want, got in checks:
+        if want != got:
+            mismatches.append({"field": name, "expected": want, "actual": got})
+    if mismatches:
+        raise RuntimeError(f"stale_review_reports_blocked_zip: {mismatches}")
+    return {
+        "db_counts": expected,
+        "report_counts": actual,
+        "timestamps": {
+            "shadow_buy_review": shadow.get("generated_at"),
+            "risk_block_review": risk.get("generated_at"),
+            "smart_money_review": smart.get("generated_at"),
+            "daily_validation_report": daily.get("generated_at"),
+        },
+        "recommendations": {
+            "shadow_buy": shadow.get("final_shadow_buy_recommendation"),
+            "risk": risk.get("final_risk_recommendation"),
+            "smart_money": smart.get("final_smart_money_recommendation"),
+        },
+        "shadow_buy_review_ready": bool(shadow.get("ready_for_review")),
+    }
+
+
+def _refresh_audit_reports_before_zip() -> dict:
+    """Regenerate review JSON/MD from current DB so ZIP cannot bundle stale reports (no trading logic)."""
+    expected = _db_review_counts()
+    decision_evaluator.run()  # score horizons + write risk_block_performance.json consumed by risk_block_review
+    shadow_buy_review.run()  # shadow BUY stats + shadow_buy_review.json from decisions.shadow_action=BUY
+    smart_money_review.run()  # Smart Money shadow stats from DB (directional returns)
+    risk_block_review.run()  # review file counts DB risk_blocked_candidate rows directly
+    daily_validation_report.run(False, skip_network_probes=True)  # skip localhost HTTP probes to avoid /download deadlock
+    return _assert_fresh_review_reports(expected)
+
+
 @app.get("/download/all.zip")
 async def download_all_artifacts():
     """Download safe audit/learning artifacts. Secrets and .env are intentionally excluded."""
+    try:
+        refresh_result = await asyncio.to_thread(_refresh_audit_reports_before_zip)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     files = [
         "paper_trader.db",
         "data/reports/ai_feedback_summary.json",
@@ -2117,9 +2207,10 @@ async def download_all_artifacts():
             "generated_at": datetime.utcnow().isoformat() + "Z",
             "excluded": [".env", "tokens", "API keys", "cookies", "private secrets"],
             "included_files": [],
+            "report_refresh": refresh_result,
         }
         for rel in files:
-            path = Path(rel)
+            path = Path(trader.DB_FILE) if rel == "paper_trader.db" else Path(rel)
             if path.exists() and path.is_file():
                 zf.write(path, rel)
                 manifest["included_files"].append(rel)
@@ -2202,6 +2293,11 @@ async def system_health():
         "issues": issues,
         "files": files,
         "telegram": notifier.status(),
+        "dashboard": {  # proves which HTML file the UI route uses (cwd-independent path)
+            "html_path": str(DASHBOARD_HTML),
+            "html_exists": DASHBOARD_HTML.is_file(),
+            "meta_endpoint": "/dashboard-meta",
+        },
     }
 
 
@@ -2229,18 +2325,13 @@ async def reports():
 
 @app.get("/daily-validation-report")
 async def daily_validation_report_endpoint():
-    path = Path("data/reports/daily_validation_report.json")
-    if path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))
-    return await asyncio.to_thread(daily_validation_report.run, False)
+    await asyncio.to_thread(_refresh_audit_reports_before_zip)
+    return _read_json_file("data/reports/daily_validation_report.json", {})
 
 
 @app.get("/shadow-buy-review")
 async def shadow_buy_review_endpoint():
-    path = Path("data/reports/shadow_buy_review.json")
-    if not path.exists():
-        return await asyncio.to_thread(shadow_buy_review.run)
-    return _read_json_file(path, {"shadow_buy_count": 0, "minimum_required": 100, "ready_for_review": False})
+    return await asyncio.to_thread(shadow_buy_review.run)  # always recompute from DB so API cannot serve stale JSON
 
 
 @app.get("/technical-analysis")
@@ -2676,7 +2767,41 @@ async def performance():
     }
 
 
+@app.get("/dashboard-meta")
+async def dashboard_meta():
+    """Prove which dashboard.html file the server loads (path, mtime, embedded rev). Open in browser after deploy."""
+    out: dict = {"dashboard_path": str(DASHBOARD_HTML), "exists": DASHBOARD_HTML.is_file()}
+    if DASHBOARD_HTML.is_file():
+        st = DASHBOARD_HTML.stat()
+        out["size_bytes"] = st.st_size
+        out["mtime_utc"] = datetime.fromtimestamp(st.st_mtime, tz=timezone.utc).isoformat()
+        try:
+            head = DASHBOARD_HTML.read_text(encoding="utf-8")[:12000]
+            m = re.search(r'data-dashboard-rev="([^"]+)"', head)
+            out["data_dashboard_rev"] = m.group(1) if m else None
+        except OSError:
+            out["data_dashboard_rev"] = None
+    return out
+
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
-    with open("dashboard.html") as f:
-        return f.read()
+    if not DASHBOARD_HTML.is_file():
+        return HTMLResponse(
+            content=(
+                "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Missing dashboard</title></head><body>"
+                f"<h1>dashboard.html not found</h1><p>Expected file:</p><pre>{DASHBOARD_HTML}</pre>"
+                "<p>Fix: copy dashboard.html next to main.py or rebuild the container so COPY includes it.</p>"
+                "<p>Check <a href='/dashboard-meta'>/dashboard-meta</a> once the file exists.</p>"
+                "</body></html>"
+            ),
+            status_code=500,
+        )
+    html = DASHBOARD_HTML.read_text(encoding="utf-8")
+    return HTMLResponse(
+        content=html,
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+        },
+    )

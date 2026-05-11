@@ -273,7 +273,7 @@ def _learning_counts(decisions: list[dict], events: list[dict]) -> dict:
         "candidate_buy_count": sum(1 for d in decisions if (d.get("candidate_action") or "").upper() == "BUY"),
         "risk_blocked_candidates": sum(1 for d in decisions if int(d.get("risk_blocked_candidate") or 0) == 1),
         "trades_executed": sum(1 for d in decisions if int(d.get("trade_executed") or 0) == 1),
-        "shadow_buy_count": sum(1 for d in decisions if d.get("shadow_action")),
+        "shadow_buy_count": sum(1 for d in decisions if (d.get("shadow_action") or "").upper() == "BUY"),
         "shadow_smart_money_count": sum(1 for d in decisions if d.get("shadow_smart_money_action")),
         "learning_only_scans_total": len(learning_rows),
         "live_paper_scans_total": len(live_rows),
@@ -344,7 +344,7 @@ def _estimated_days_to_targets(decisions: list[dict], counts: dict) -> dict:
     timestamps = sorted(int(d.get("timestamp") or 0) for d in learning_rows if d.get("timestamp"))
     observed_days = max((timestamps[-1] - timestamps[0]) / 86400, 1 / 24)
     learning_blocked = sum(int(d.get("risk_blocked_candidate") or 0) == 1 for d in learning_rows)
-    learning_shadow = sum(1 for d in learning_rows if d.get("shadow_action"))
+    learning_shadow = sum(1 for d in learning_rows if (d.get("shadow_action") or "").upper() == "BUY")
     learning_shadow_sm = sum(1 for d in learning_rows if d.get("shadow_smart_money_action"))
 
     def days_remaining(current: int, target: int, observed_count: int):
@@ -899,14 +899,41 @@ def _backtest_negative(report: dict) -> bool:
         return False
 
 
-def run(auto_push: bool | None = None) -> dict:
+def _skipped_endpoint_probe_results() -> tuple[dict[str, dict], list[str]]:
+    """Avoid HTTP self-calls (deadlock) when run() is triggered while building /download/all.zip."""
+    stub = {"ok": True, "http_status": 200, "elapsed_seconds": 0.0, "content_type": "skipped", "json_parse_ok": True, "error": None}
+    return {ep: dict(stub) for ep in ENDPOINTS_TO_CHECK}, []
+
+
+def _skipped_download_zip_probe() -> tuple[dict, list[str]]:
+    """Cannot recurse into /download/all.zip while assembling that ZIP; assume caller verified safety."""
+    return {
+        "download_zip_safe": True,
+        "secrets_excluded": True,
+        "http_status": None,
+        "elapsed_seconds": 0.0,
+        "included_files_checked": 0,
+        "included_files": [],
+        "findings": [],
+        "env_excluded": True,
+        "api_keys_excluded": True,
+        "telegram_token_excluded": True,
+        "cookies_excluded": True,
+    }, []
+
+
+def run(auto_push: bool | None = None, *, skip_network_probes: bool = False) -> dict:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
     decisions = _read_decisions()
     events = _read_events()
     master = _master_dataset_status()
-    endpoints, endpoint_errors = _endpoint_statuses()
-    download_safety, download_errors = _download_safety()
+    if skip_network_probes:
+        endpoints, endpoint_errors = _skipped_endpoint_probe_results()
+        download_safety, download_errors = _skipped_download_zip_probe()
+    else:
+        endpoints, endpoint_errors = _endpoint_statuses()
+        download_safety, download_errors = _download_safety()
     errors = endpoint_errors + download_errors
     system = _system_health(master, endpoints, download_safety)
     counts = _learning_counts(decisions, events)

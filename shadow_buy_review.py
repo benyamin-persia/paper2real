@@ -48,10 +48,13 @@ def run(save: bool = True) -> dict:
     win = {h: _win_rate(v) for h, v in returns.items()}
     med = {h: _median(v) for h, v in returns.items()}
     all_vals = [float(v) for vals in returns.values() for v in vals if v is not None]
-    positive = avg["4h"] > 0 and win["4h"] >= 55
+    strongly_negative_24h = avg["24h"] < -0.15  # block READY when 24h avg is materially negative
+    tail_too_bad = bool(all_vals) and min(all_vals) < -3  # reject READY if any scored horizon hit worse than -3%
+    positive_expectancy = avg["4h"] > 0 and win["4h"] >= 55  # core 4h edge only (display field)
+    meets_ready_gate = positive_expectancy and not strongly_negative_24h and not tail_too_bad
     if count < MINIMUM_REQUIRED:
         rec = "COLLECT_MORE_DATA"
-    elif not positive or min(all_vals or [0]) < -3:
+    elif not meets_ready_gate:
         rec = "SHADOW_BUY_STAYS_SHADOW"
     else:
         rec = "SHADOW_BUY_READY_FOR_SMALL_TEST"
@@ -73,7 +76,7 @@ def run(save: bool = True) -> dict:
         "max_adverse_move": round(min(all_vals), 4) if all_vals else 0,
         "best_horizon": max(avg, key=avg.get),
         "worst_horizon": min(avg, key=avg.get),
-        "positive_expectancy": positive,
+        "positive_expectancy": positive_expectancy,
         "final_shadow_buy_recommendation": rec,
     }
     if save:

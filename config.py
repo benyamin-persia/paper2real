@@ -16,7 +16,7 @@ MAX_CONSECUTIVE_LOSS  = int(os.getenv("MAX_CONSECUTIVE_LOSS", "4"))   # stop aft
 DAILY_LOSS_LIMIT_PCT  = float(os.getenv("DAILY_LOSS_LIMIT_PCT", "5")) # stop if down 5% in one day
 MONTHLY_LOSS_LIMIT_PCT = float(os.getenv("MONTHLY_LOSS_LIMIT_PCT", "15")) # stop if down 15% in one month
 
-DB_FILE = "paper_trader.db"
+DB_FILE = os.getenv("DB_FILE", "paper_trader.db")
 
 AI_INPUT_USD_PER_MILLION_TOKENS = float(os.getenv("AI_INPUT_USD_PER_MILLION_TOKENS", "3.00"))
 AI_OUTPUT_USD_PER_MILLION_TOKENS = float(os.getenv("AI_OUTPUT_USD_PER_MILLION_TOKENS", "15.00"))
