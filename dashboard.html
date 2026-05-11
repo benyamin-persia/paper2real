@@ -202,8 +202,13 @@ async function loadSharedNav(){
 
 async function loadOverview(){
   const target = $("page-overview");
-  const [portfolio,decisions,daily,api,riskBlock,shadow,sm,ta,aiTa,health] = await Promise.all([
-    safeFetchJson("/portfolio"),safeFetchJson("/decisions"),safeFetchJson("/daily-validation-report"),safeFetchJson("/api-usage"),safeFetchJson("/risk-block-performance"),safeFetchJson("/shadow-performance"),safeFetchJson("/smart-money"),safeFetchJson("/ta-forecast"),safeFetchJson("/ai-technical-analyst"),safeFetchJson("/system-health")
+  // Two waves: cuts peak concurrent load on single uvicorn + disk (TrueNAS had high iowait). Same data, less burst.
+  const [portfolio,decisions,daily,api,health] = await Promise.all([
+    safeFetchJson("/portfolio"),safeFetchJson("/decisions"),safeFetchJson("/daily-validation-report"),safeFetchJson("/api-usage"),safeFetchJson("/system-health")
+  ]);
+  await new Promise(r => setTimeout(r, 400));
+  const [riskBlock,shadow,sm,ta,aiTa] = await Promise.all([
+    safeFetchJson("/risk-block-performance"),safeFetchJson("/shadow-performance"),safeFetchJson("/smart-money"),safeFetchJson("/ta-forecast"),safeFetchJson("/ai-technical-analyst")
   ]);
   const p=getData(portfolio,{}), d=getData(decisions,{summary:{},decisions:[]}), dailyData=getData(daily,{}), apiData=getData(api,{}), risk=getData(riskBlock,{}), shadowData=getData(shadow,{summary:{}}), smData=getData(sm,{}), taData=getData(ta,{}), aiData=getData(aiTa,{}), h=getData(health,{});
   const progress = dailyData.progress_targets || {};
@@ -522,7 +527,12 @@ async function refreshCurrentPage(){
   const pagePromise = pageLoader().catch(error => {
     $(`page-${currentPage}`).innerHTML = `<div class="warn danger">Failed to load this page: ${escapeHtml(error.message || error)}</div>`;
   });
-  await Promise.allSettled([loadSharedNav(), pagePromise]);
+  // Overview already fetches portfolio/decisions/daily/health; skip duplicate loadSharedNav to halve NAS traffic on the default page.
+  if(currentPage === "overview"){
+    await pagePromise;
+  } else {
+    await Promise.allSettled([loadSharedNav(), pagePromise]);
+  }
   $("refreshBtn").disabled=false;
 }
 function initDashboard(){
@@ -533,7 +543,7 @@ function initDashboard(){
   document.querySelectorAll(".nav-item").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===currentPage));
   document.querySelectorAll(".page").forEach(el=>el.classList.toggle("active",el.id===`page-${currentPage}`));
   refreshCurrentPage();
-  setInterval(()=>refreshCurrentPage(),60000);
+  setInterval(()=>refreshCurrentPage(),120000); // 2 min auto-refresh — less load on I/O-bound NAS than 60s
 }
 initDashboard();
 </script>

@@ -31,7 +31,7 @@ MAX_AGE_MINUTES = 20
 _LIVE_CACHE_LOCK = asyncio.Lock()
 _cached_live_df: pd.DataFrame | None = None
 _cached_live_mono: float = 0.0
-LIVE_CANDLE_CACHE_TTL_SEC = 45.0
+LIVE_CANDLE_CACHE_TTL_SEC = 180.0  # fewer Playwright runs on slow ZFS hosts (was 45s; NAS was I/O-bound)
 
 
 def _clean(df: pd.DataFrame, source: str) -> pd.DataFrame:
