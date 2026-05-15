@@ -290,7 +290,8 @@ def _learning_counts(decisions: list[dict], events: list[dict]) -> dict:
 
 
 def _trade_state() -> dict:
-    if not DB_FILE.exists():
+    db_path = Path(DB_FILE)
+    if not db_path.exists():
         return {
             "open_trades": 0,
             "closed_trades": 0,
@@ -298,7 +299,7 @@ def _trade_state() -> dict:
             "real_trades_executed": 0,
         }
     try:
-        with sqlite3.connect(DB_FILE) as conn:
+        with sqlite3.connect(db_path) as conn:
             conn.row_factory = sqlite3.Row
             columns = {row["name"] for row in conn.execute("PRAGMA table_info(trades)").fetchall()}
             if not columns:

@@ -1,17 +1,17 @@
 # Daily Validation Report
 
-Generated: 2026-05-15T06:35:09.925701+00:00
+Generated: 2026-05-15T21:50:49.153474+00:00
 Probe mode: skipped
-Primary recommendation: **READY_FOR_RISK_BLOCK_REVIEW**
-All recommendations: `READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_SMART_MONEY_REVIEW`
+Primary recommendation: **INVESTIGATE_ERROR**
+All recommendations: `INVESTIGATE_ERROR, READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_SMART_MONEY_REVIEW`
 
 ## System Health
 
-- Status: `ok`
+- Status: `warning`
 - Master dataset last date: `2026-05-13`
 - Rows: `532`
 - Columns: `55`
-- Stale dataset warning: `False`
+- Stale dataset warning: `True`
 - Errors: `[]`
 
 ## Endpoint Statuses
@@ -39,36 +39,49 @@ All recommendations: `READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_SMART_MONEY_REVIEW`
 
 ## Learning Counts
 
-- decisions_total: `255`
+- decisions_total: `275`
 - claude_buy_count: `2`
-- candidate_buy_count: `193`
-- risk_blocked_candidates: `187`
-- trades_executed: `0`
-- shadow_buy_count: `209`
-- shadow_smart_money_count: `175`
+- candidate_buy_count: `209`
+- risk_blocked_candidates: `198`
+- trades_executed: `1`
+- real_trades_executed: `0`
+- paper_trades: `1`
+- open_trades: `1`
+- shadow_buy_count: `224`
+- shadow_smart_money_count: `188`
+
+## Execution Incident / Freeze
+
+- Execution frozen: `True`
+- Latest incident report: `data/reports/trade_execution_incident_20260515.json`
+- Latest incident time: `2026-05-15T14:35:14+00:00`
+- Latest incident trade type: `normal_paper_trade`
+- Latest incident recommendation: `BUG_FIX_REQUIRED_BEFORE_RESUME`
+- Stale dataset hard block status: `not_a_hard_block_at_incident_time`
+- Critical alert hard block status: `twitter_alert_not_mapped_to_events_json_hard_block_at_incident_time`
 
 ## Progress Targets
 
-- Blocked BUY candidates: `187 / 30`
-- Shadow BUYs: `209 / 100`
-- Shadow Smart Money: `175 / 50`
+- Blocked BUY candidates: `198 / 30`
+- Shadow BUYs: `224 / 100`
+- Shadow Smart Money: `188 / 50`
 - Ready for risk block review: `True`
 - Ready for Smart Money review: `True`
-- Shadow BUY review: `209 / 100` `SHADOW_BUY_STAYS_SHADOW`
-- TA shadow progress: `72 / 50` ready_for_bonus=`False`
-- AI TA shadow progress: `72 / 50` ready_for_bonus=`False`
+- Shadow BUY review: `224 / 100` `SHADOW_BUY_STAYS_SHADOW`
+- TA shadow progress: `80 / 50` ready_for_bonus=`False`
+- AI TA shadow progress: `80 / 50` ready_for_bonus=`False`
 
 ## Learning-Only Scans
 
 - Enabled: `True`
 - Interval minutes: `60`
-- Learning-only scans total: `189`
-- Live paper scans total: `66`
-- Last learning-only scan: `2026-05-15T06:00:12+00:00`
+- Learning-only scans total: `204`
+- Live paper scans total: `71`
+- Last learning-only scan: `2026-05-15T21:00:23+00:00`
 - Duplicate scans suppressed: `4`
-- Claude calls from learning scans: `189`
-- Estimated learning API cost daily: `$0.175459`
-- Estimated learning API cost monthly: `$5.26377`
+- Claude calls from learning scans: `204`
+- Estimated learning API cost daily: `$0.175442`
+- Estimated learning API cost monthly: `$5.26326`
 - Estimated days to 30 blocked BUY candidates: `0.0`
 - Estimated days to 100 shadow BUYs: `0.0`
 - Estimated days to 50 Smart Money shadows: `0.0`
@@ -76,25 +89,25 @@ All recommendations: `READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_SMART_MONEY_REVIEW`
 
 ## Risk Block Performance
 
-- Total blocked candidates: `187`
-- BB squeeze: `{'count': 101, 'avg_return_1h': 0.0252, 'avg_return_4h': 0.1359, 'avg_return_24h': 0.1132, 'blocked_winners_1h': 1, 'blocked_winners_4h': 4, 'blocked_winners_24h': 14, 'saved_losses_1h': 0, 'saved_losses_4h': 6, 'saved_losses_24h': 20, 'verdict': 'helping'}`
+- Total blocked candidates: `198`
+- BB squeeze: `{'count': 112, 'avg_return_1h': 0.002, 'avg_return_4h': 0.0227, 'avg_return_24h': 0.1244, 'blocked_winners_1h': 1, 'blocked_winners_4h': 4, 'blocked_winners_24h': 15, 'saved_losses_1h': 1, 'saved_losses_4h': 11, 'saved_losses_24h': 22, 'verdict': 'helping'}`
 
 ## Smart Money Performance
 
-- Shadow count: `175`
+- Shadow count: `188`
 - Ready for bonus: `True`
-- Score distribution: `{'0-39': 3, '40-59': 38, '60-79': 152, '80-100': 29}`
-- Bias distribution: `{'bullish': 129, 'bearish': 89, 'neutral': 4}`
+- Score distribution: `{'0-39': 3, '40-59': 38, '60-79': 171, '80-100': 30}`
+- Bias distribution: `{'bullish': 132, 'bearish': 104, 'neutral': 6}`
 
 ## TA / AI TA Shadow Layers
 
 - TA enabled: `True` shadow_only=`True`
-- TA shadow count: `72`
-- TA avg future return 4h: `-0.0076`
+- TA shadow count: `80`
+- TA avg future return 4h: `0.0365`
 - AI TA enabled: `True` shadow_only=`True`
-- AI TA calls total: `145`
-- AI TA shadow count: `72`
-- AI TA avg future return 4h: `-0.0076`
+- AI TA calls total: `165`
+- AI TA shadow count: `80`
+- AI TA avg future return 4h: `0.0365`
 - AI TA invalid JSON count: `0`
 - AI TA safety violations: should_trade=`0`, risk_engine=`0`
 
