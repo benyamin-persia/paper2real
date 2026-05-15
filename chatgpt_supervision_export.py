@@ -96,6 +96,14 @@ REQUIRED_REPORTS: dict[str, dict[str, str]] = {
         "path": "data/reports/shadow_paper_resume_plan.md",
         "metric_scope": "human-readable staged resume plan",
     },
+    "trade_execution_incident_20260515.json": {
+        "path": "data/reports/trade_execution_incident_20260515.json",
+        "metric_scope": "2026-05-15 execution-freeze incident audit; reporting only",
+    },
+    "trade_execution_incident_20260515.md": {
+        "path": "data/reports/trade_execution_incident_20260515.md",
+        "metric_scope": "human-readable 2026-05-15 execution-freeze incident audit",
+    },
     "ta_forecast.json": {
         "path": "data/reports/ta_forecast.json",
         "metric_scope": "latest deterministic TA forecast, not historical backtest evidence",
@@ -390,6 +398,7 @@ def build_summary(
     smart = reports.get("smart_money_review.json", {})
     shadow = reports.get("shadow_buy_review.json", {})
     strict = reports.get("strict_resume_shadow_simulation.json", {})
+    incident = reports.get("trade_execution_incident_20260515.json", {})
     consistency = count_consistency(reports)
     smart_min_sample = bool(_value(_value(daily, "smart_money_performance", {}), "smart_money_ready_for_bonus", False))
     smart_bonus_approved = _value(smart, "final_smart_money_recommendation") == "SMART_MONEY_READY_FOR_BONUS"
@@ -409,6 +418,13 @@ def build_summary(
         "download_zip_safe": _value(daily, "download_zip_safe"),
         "secrets_excluded": _value(daily, "secrets_excluded"),
         "trades_executed": _value(daily, "trades_executed"),
+        "real_trades_executed": _value(daily, "real_trades_executed"),
+        "open_trades": _value(daily, "open_trades"),
+        "execution_frozen": _value(daily, "execution_frozen"),
+        "latest_incident_report": _value(daily, "latest_incident_report"),
+        "latest_incident_recommended_action": _value(incident, "recommended_action"),
+        "latest_incident_trade_type": _value(incident, "trade_type"),
+        "latest_incident_real_order_sent": _value(incident, "real_order_sent"),
         "paper_test_entries_enabled": _value(paper, "paper_test_entries_enabled"),
         "paper_test_status": _value(paper, "current_status"),
         "paper_open_trades": _value(paper, "open_test_trades"),
@@ -507,6 +523,12 @@ def render_markdown(summary: dict, reports: dict[str, dict]) -> str:
         _line_value("System health", summary["system_health_status"]),
         _line_value("Stale dataset warning", summary["stale_dataset_warning"]),
         _line_value("Real trades executed", summary["trades_executed"]),
+        _line_value("Real exchange orders sent", summary["real_trades_executed"]),
+        _line_value("Open normal paper trades", summary["open_trades"]),
+        _line_value("Execution frozen", summary["execution_frozen"]),
+        _line_value("Latest incident report", summary["latest_incident_report"]),
+        _line_value("Latest incident trade type", summary["latest_incident_trade_type"]),
+        _line_value("Latest incident recommendation", summary["latest_incident_recommended_action"]),
         _line_value("Paper test status", summary["paper_test_status"]),
         _line_value("Paper entries enabled", summary["paper_test_entries_enabled"]),
         _line_value("Final risk recommendation", summary["final_risk_recommendation"]),

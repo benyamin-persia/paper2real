@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-05-15T20:54:16Z",
+  "incident_time_utc": "2026-05-15T14:35:14Z",
+  "trade_id": 1,
+  "decision_id": 265,
+  "trade_type": "normal_paper_trade",
+  "real_order_sent": false,
+  "paper_order": true,
+  "entry_price": 79039.0,
+  "position_usd": 3000.0,
+  "risk_blocker": "none",
+  "risk_block": "none",
+  "stale_dataset_age_hours": 44.0,
+  "critical_alerts_active": true,
+  "exchange_risk_active": true,
+  "structured_exchange_risk_seen_by_risk_engine": false,
+  "supervision_verdict_at_last_report": "DO_NOT_RESUME_TRADING_OR_PAPER_TEST",
+  "paper_test_entries_enabled_at_last_report": false,
+  "why_execution_was_allowed": [
+    "Trade Quality produced candidate_action=BUY and final_action=BUY at the scheduled scan.",
+    "The stale master dataset condition was recorded as a freshness warning, not a hard risk-engine blocker.",
+    "The THORChain/BTC_DIRECT evidence was present in Twitter/playwright alert context and DB events, but events.json did not expose exchange_hack_alert/stablecoin_depeg/has_critical to risk_engine.py at execution time.",
+    "The latest supervision verdict was reporting/audit evidence only and was not wired as a runtime execution gate.",
+    "At execution time MAX_OPEN_TRADES allowed entries; runtime freeze was applied after discovery by setting MAX_OPEN_TRADES=0 and disabling Trade Quality BUY proposals/shadow paper entries."
+  ],
+  "safety_failure_points": [
+    "stale_dataset_warning_not_hard_blocking",
+    "twitter_critical_alert_not_mapped_to_risk_engine_exchange_blocker",
+    "supervision_verdict_not_runtime_execution_gate",
+    "paper_execution_allowed_while_expected_paused"
+  ],
+  "current_position_status": {
+    "open_trades": 1,
+    "open_trade_ids": [1],
+    "cash_balance_usd": 7000.0,
+    "btc_held": 0.03795595,
+    "current_price": 79017.9,
+    "unrealized_pnl_usd": -0.8
+  },
+  "recommended_action": "BUG_FIX_REQUIRED_BEFORE_RESUME",
+  "recommended_actions": [
+    "EXECUTION_FREEZE_CONFIRMED",
+    "PAPER_POSITION_ONLY_MONITOR",
+    "BUG_FIX_REQUIRED_BEFORE_RESUME",
+    "DO_NOT_RESUME_TRADING"
+  ],
+  "execution_frozen": true,
+  "freeze_controls": {
+    "MAX_OPEN_TRADES": "0",
+    "TRADE_QUALITY_CAN_PROPOSE_BUY": "false",
+    "SHADOW_BUY_PAPER_TEST_ENABLED": "false",
+    "LEARNING_ONLY_SCAN_EXECUTES_TRADES": "false",
+    "EXECUTION_FREEZE": "true"
+  },
+  "stale_dataset_hard_block_status": "not_a_hard_block_at_incident_time",
+  "critical_alert_hard_block_status": "twitter_alert_not_mapped_to_events_json_hard_block_at_incident_time",
+  "endpoint_probe": {
+    "system_health": "warning",
+    "stale_dataset_warning": true,
+    "paper_test_entries_enabled": false,
+    "shadow_paper_open_test_trades": 0
+  }
+}
