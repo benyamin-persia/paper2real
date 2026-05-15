@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-05-15T16:00:22.036400+00:00",
+  "current_status": "Paper Test Paused",
+  "why_paused": "Shadow Paper Test disabled by staged config",
+  "diagnosis_summary": {
+    "source_report": "data/reports/shadow_buy_failure_diagnosis.json",
+    "recommended_next_action": [
+      "KEEP_PAPER_TEST_PAUSED",
+      "CHANGE_STOP_TAKE_PROFIT_REVIEW_ONLY",
+      "COLLECT_MORE_SHADOW_ONLY",
+      "DO_NOT_RESUME"
+    ],
+    "paper_trade_count": 4,
+    "closed_paper_trades": 4,
+    "paper_test_win_rate": 25.0,
+    "paper_test_total_pnl_usd": -0.4921,
+    "bb_squeeze_override_trades": 4,
+    "entries_against_ta": 3,
+    "entries_against_ai_ta": 2,
+    "failure_reasons": {
+      "stop_loss_too_tight": true,
+      "take_profit_too_far": true,
+      "entries_were_against_ta_or_ai_ta": true,
+      "bb_squeeze_overrides_are_weak": true,
+      "four_hour_horizon_mismatches_stop_loss": true,
+      "exchange_or_news_regime_changed": true,
+      "sample_became_worse_after_more_data": false,
+      "any_bearish_alignment_loses": false
+    },
+    "best_condition": {
+      "section": "combined_alignment",
+      "filter": "all_bearish_alignment",
+      "avg_return_4h": 0.1711,
+      "win_rate_4h": 72.0,
+      "count": 26
+    },
+    "worst_condition": {
+      "section": "smart_money_bias",
+      "filter": "neutral",
+      "avg_return_4h": -0.2471,
+      "win_rate_4h": 20.0,
+      "count": 15
+    }
+  },
+  "proposed_filters": {
+    "smart_money_not_bearish": true,
+    "ta_not_bearish": true,
+    "ai_ta_not_bearish": true,
+    "at_least_one_bullish_confirmation": true,
+    "bb_squeeze_override_disabled": true,
+    "bearish_sweep_confirmation_optional": true,
+    "bearish_sweep_confirmation_active": false
+  },
+  "expected_effect": [
+    "Reject staged resume candidates when Smart Money, TA, or AI TA are bearish.",
+    "Require at least one bullish confirmation so high Trade Quality alone is not enough.",
+    "Keep bb_squeeze overrides disabled because the first four paper trades all came from that path and total PnL is negative.",
+    "Track bearish_sweep confirmation as optional evidence only until more shadow-only samples exist."
+  ],
+  "risks": [
+    "Sample size is still small, especially for bearish_sweep and high Trade Quality buckets.",
+    "Making filters too strict could remove future valid recovery setups.",
+    "Stop/take-profit behavior still needs review because paper losses hit before the 4h horizon could mature.",
+    "This plan does not resume paper entries or change execution behavior automatically."
+  ],
+  "recommendation": [
+    "KEEP_PAUSED_AND_COLLECT_SHADOW",
+    "DO_NOT_RESUME_YET"
+  ]
+}

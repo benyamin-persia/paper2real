@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-15T06:35:09.047176+00:00",
+  "generated_at": "2026-05-15T16:00:22.023503+00:00",
   "enabled": false,
   "paper_test_entries_enabled": false,
   "config_enabled": false,
@@ -9,7 +9,7 @@
   "review_pause_reason": "Shadow BUY review downgraded to SHADOW_BUY_STAYS_SHADOW",
   "shadow_buy_review_recommendation": "SHADOW_BUY_STAYS_SHADOW",
   "shadow_buy_positive_expectancy": false,
-  "shadow_buy_review_count": 209,
+  "shadow_buy_review_count": 217,
   "strict_rules_staged": true,
   "strict_resume_conditions": {
     "smart_money_not_bearish": true,

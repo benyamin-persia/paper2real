@@ -2,21 +2,21 @@
 
 Paper test is paused. This is simulation only. No trades can open.
 
-- Generated at: `2026-05-15T06:35:09.791131+00:00`
-- Total Shadow BUY records: `209`
+- Generated at: `2026-05-15T16:00:22.310709+00:00`
+- Total Shadow BUY records: `217`
 - Strict candidates: `62`
-- Rejected: `147`
+- Rejected: `155`
 - Failed paper trades filtered out: `4`
 - Strict 4h win rate: `50.0%`
-- Strict avg 4h return: `-0.0916%`
+- Strict avg 4h return: `-0.0906%`
 - Recommendation: `DO_NOT_RESUME_YET`
 
 ## Rejected By Reason
 
 - no_bullish_confirmation: `9`
-- smart_money_bearish: `76`
-- bb_squeeze_override_disabled: `38`
-- ta_bearish: `24`
+- smart_money_bearish: `79`
+- bb_squeeze_override_disabled: `40`
+- ta_bearish: `27`
 
 ## Best Condition
 
@@ -77,7 +77,7 @@ Paper test is paused. This is simulation only. No trades can open.
   "max_return_4h": 0.7873,
   "scored_24h": 29,
   "win_rate_24h": 48.28,
-  "avg_return_24h": -0.6301,
+  "avg_return_24h": -0.6726,
   "median_return_24h": -0.1891,
   "min_return_24h": -2.6983,
   "max_return_24h": 0.8769
