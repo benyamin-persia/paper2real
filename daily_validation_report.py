@@ -40,6 +40,7 @@ from config import (
 REPORT_DIR = Path("data/reports")
 JSON_REPORT = REPORT_DIR / "daily_validation_report.json"
 MD_REPORT = REPORT_DIR / "daily_validation_report.md"
+INCIDENT_REPORT_JSON = REPORT_DIR / "trade_execution_incident_20260515.json"
 
 MASTER_DATASET = Path("data/processed/master_dataset.csv")
 RISK_BLOCK_REPORT = REPORT_DIR / "risk_block_performance.json"
@@ -66,6 +67,11 @@ ENDPOINTS_TO_CHECK = [
     "/ai-technical-analyst",
     "/ai-ta-performance",
     "/ai-ta-backtest",
+    "/shadow-paper-test",
+    "/shadow-paper-trades",
+    "/shadow-buy-failure-diagnosis",
+    "/strict-resume-shadow-simulation",
+    "/report-file?path=data/reports/chatgpt_supervision_report.json",
     "/reports",
 ]
 DOWNLOAD_ZIP_ENDPOINT = "/download/all.zip"
@@ -280,6 +286,63 @@ def _learning_counts(decisions: list[dict], events: list[dict]) -> dict:
         "last_learning_only_scan_time": datetime.fromtimestamp(last_learning, timezone.utc).isoformat() if last_learning else None,
         "duplicate_learning_scans_suppressed": len(duplicate_events),
         "claude_calls_from_learning_scans": sum(int(d.get("claude_called") or 0) for d in learning_rows),
+    }
+
+
+def _trade_state() -> dict:
+    if not DB_FILE.exists():
+        return {
+            "open_trades": 0,
+            "closed_trades": 0,
+            "paper_trades": 0,
+            "real_trades_executed": 0,
+        }
+    try:
+        with sqlite3.connect(DB_FILE) as conn:
+            conn.row_factory = sqlite3.Row
+            columns = {row["name"] for row in conn.execute("PRAGMA table_info(trades)").fetchall()}
+            if not columns:
+                return {
+                    "open_trades": 0,
+                    "closed_trades": 0,
+                    "paper_trades": 0,
+                    "real_trades_executed": 0,
+                }
+            open_trades = int(conn.execute("SELECT COUNT(*) FROM trades WHERE COALESCE(closed, 0)=0").fetchone()[0] or 0)
+            closed_trades = int(conn.execute("SELECT COUNT(*) FROM trades WHERE COALESCE(closed, 0)=1").fetchone()[0] or 0)
+            total_trades = open_trades + closed_trades
+            if "real_order_sent" in columns:
+                real_trades = int(conn.execute("SELECT COUNT(*) FROM trades WHERE COALESCE(real_order_sent, 0)=1").fetchone()[0] or 0)
+            else:
+                real_trades = 0
+            return {
+                "open_trades": open_trades,
+                "closed_trades": closed_trades,
+                "paper_trades": max(total_trades - real_trades, 0),
+                "real_trades_executed": real_trades,
+            }
+    except Exception as exc:
+        return {
+            "open_trades": None,
+            "closed_trades": None,
+            "paper_trades": None,
+            "real_trades_executed": None,
+            "error": str(exc),
+        }
+
+
+def _incident_status() -> dict:
+    incident = _read_json(INCIDENT_REPORT_JSON, {}) or {}
+    freeze_flag = os.getenv("EXECUTION_FREEZE", "").strip().lower() in {"1", "true", "yes", "on"}
+    return {
+        "execution_frozen": bool(freeze_flag or incident.get("execution_frozen")),
+        "latest_incident_report": str(INCIDENT_REPORT_JSON) if incident else None,
+        "latest_incident_generated_at": incident.get("generated_at"),
+        "latest_incident_time_utc": incident.get("incident_time_utc"),
+        "latest_incident_trade_type": incident.get("trade_type"),
+        "latest_incident_recommended_action": incident.get("recommended_action"),
+        "stale_dataset_hard_block_status": incident.get("stale_dataset_hard_block_status", "not_a_hard_block_at_incident_time"),
+        "critical_alert_hard_block_status": incident.get("critical_alert_hard_block_status", "not_confirmed_hard_block_at_incident_time"),
     }
 
 
@@ -509,6 +572,7 @@ def _download_safety() -> tuple[dict, list[str]]:
         "api_keys_excluded": not any("api" in f["pattern"].lower() or "sk-ant" in f["pattern"] for f in findings),
         "telegram_token_excluded": not any("telegram" in f["pattern"].lower() or r"\d{8,12}" in f["pattern"] for f in findings),
         "cookies_excluded": not any("cookie" in f["pattern"].lower() for f in findings),
+        "db_included": "paper_trader.db" in included_files,
     }, errors
 
 
@@ -570,6 +634,7 @@ def _write_markdown(report: dict) -> None:
         "# Daily Validation Report",
         "",
         f"Generated: {report['generated_at']}",
+        f"Probe mode: {report.get('probe_mode')}",
         f"Primary recommendation: **{report['final_recommendation']}**",
         f"All recommendations: `{recs}`",
         "",
@@ -598,6 +663,9 @@ def _write_markdown(report: dict) -> None:
         "candidate_buy_count",
         "risk_blocked_candidates",
         "trades_executed",
+        "real_trades_executed",
+        "paper_trades",
+        "open_trades",
         "shadow_buy_count",
         "shadow_smart_money_count",
     ]:
@@ -605,6 +673,16 @@ def _write_markdown(report: dict) -> None:
 
     lines.extend(
         [
+            "",
+            "## Execution Incident / Freeze",
+            "",
+            f"- Execution frozen: `{report.get('execution_frozen')}`",
+            f"- Latest incident report: `{report.get('latest_incident_report')}`",
+            f"- Latest incident time: `{report.get('latest_incident_time_utc')}`",
+            f"- Latest incident trade type: `{report.get('latest_incident_trade_type')}`",
+            f"- Latest incident recommendation: `{report.get('latest_incident_recommended_action')}`",
+            f"- Stale dataset hard block status: `{report.get('stale_dataset_hard_block_status')}`",
+            f"- Critical alert hard block status: `{report.get('critical_alert_hard_block_status')}`",
             "",
             "## Progress Targets",
             "",
@@ -919,10 +997,11 @@ def _skipped_download_zip_probe() -> tuple[dict, list[str]]:
         "api_keys_excluded": True,
         "telegram_token_excluded": True,
         "cookies_excluded": True,
+        "db_included": False,
     }, []
 
 
-def run(auto_push: bool | None = None, *, skip_network_probes: bool = False) -> dict:
+def run(auto_push: bool | None = None, *, skip_network_probes: bool = False, persist: bool = True) -> dict:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
     decisions = _read_decisions()
@@ -940,13 +1019,18 @@ def run(auto_push: bool | None = None, *, skip_network_probes: bool = False) -> 
     progress = _progress_targets(counts)
     cost_estimates = _learning_cost_estimates(decisions)
     days_estimates = _estimated_days_to_targets(decisions, counts)
+    trade_state = _trade_state()
+    incident_status = _incident_status()
     risk = _risk_block_performance()
     smart = _smart_money_performance(decisions)
     new_layers = _new_layer_metrics(decisions)
+    risk_review = _read_report_json("risk_block_review.json", {})
+    smart_review = _read_report_json("smart_money_review.json", {})
     primary, recommendations = _recommendations(system, counts, smart, errors)
 
     report: dict[str, Any] = {
         "generated_at": _utc_now(),
+        "probe_mode": "skipped" if skip_network_probes else "live",
         "system_health_status": system["system_health_status"],
         "master_dataset_last_date": master.get("master_dataset_last_date"),
         "master_dataset_rows": master.get("master_dataset_rows"),
@@ -958,6 +1042,11 @@ def run(auto_push: bool | None = None, *, skip_network_probes: bool = False) -> 
         "candidate_buy_count": counts["candidate_buy_count"],
         "risk_blocked_candidates": counts["risk_blocked_candidates"],
         "trades_executed": counts["trades_executed"],
+        "real_trades_executed": trade_state.get("real_trades_executed"),
+        "paper_trades": trade_state.get("paper_trades"),
+        "open_trades": trade_state.get("open_trades"),
+        "closed_trades": trade_state.get("closed_trades"),
+        **incident_status,
         "shadow_buy_count": counts["shadow_buy_count"],
         "shadow_smart_money_count": counts["shadow_smart_money_count"],
         "learning_only_scan_enabled": LEARNING_ONLY_SCAN_ENABLED,
@@ -972,6 +1061,9 @@ def run(auto_push: bool | None = None, *, skip_network_probes: bool = False) -> 
         "ready_for_risk_block_review": counts["risk_blocked_candidates"] >= BLOCKED_BUY_TARGET,
         "ready_for_smart_money_review": counts["shadow_smart_money_count"] >= SHADOW_SMART_MONEY_TARGET,
         **new_layers,
+        "final_risk_recommendation": risk_review.get("final_risk_recommendation"),
+        "final_smart_money_recommendation": smart_review.get("final_smart_money_recommendation"),
+        "final_shadow_buy_recommendation": new_layers.get("shadow_buy_review_recommendation"),
         "download_zip_safe": bool(download_safety.get("download_zip_safe")),
         "secrets_excluded": bool(download_safety.get("secrets_excluded")),
         "errors": errors,
@@ -994,17 +1086,21 @@ def run(auto_push: bool | None = None, *, skip_network_probes: bool = False) -> 
         ],
     }
 
-    JSON_REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    _write_markdown(report)
+    if persist:
+        JSON_REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        _write_markdown(report)
 
     if auto_push is None:
         auto_push = _env_bool("DAILY_VALIDATION_AUTOPUSH", True)
     push_result = {"status": "skipped", "reason": "auto_push_disabled"}
-    if auto_push:
+    if auto_push and persist:
         push_result = _auto_push_safe_reports(report)
 
-    print(f"Daily validation report written -> {JSON_REPORT}")
-    print(f"Markdown report written -> {MD_REPORT}")
+    if persist:
+        print(f"Daily validation report written -> {JSON_REPORT}")
+        print(f"Markdown report written -> {MD_REPORT}")
+    else:
+        print("Daily validation report generated without persisting canonical files")
     print(f"Recommendation: {primary}")
     print(f"Auto-push: {push_result['status']}")
     if push_result.get("reason"):
