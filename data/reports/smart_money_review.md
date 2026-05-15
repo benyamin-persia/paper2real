@@ -1,37 +1,37 @@
 # Smart Money Review
 
-- generated_at: `2026-05-10T02:15:21.163162+00:00`
-- smart_money_shadow_count: `69`
+- generated_at: `2026-05-15T06:35:06.847988+00:00`
+- smart_money_shadow_count: `175`
 - minimum_required: `50`
-- ready_for_review: `true`
-- win_rate_1h: `45.45`
-- win_rate_4h: `45.31`
-- win_rate_24h: `34.78`
-- avg_directional_return_1h: `-0.0218`
-- avg_directional_return_4h: `-0.0146`
-- avg_directional_return_24h: `-0.1249`
-- bullish_count: `29`
-- bearish_count: `40`
+- ready_for_review: `True`
+- win_rate_1h: `50.29`
+- win_rate_4h: `51.76`
+- win_rate_24h: `49.36`
+- avg_directional_return_1h: `0.0077`
+- avg_directional_return_4h: `-0.0284`
+- avg_directional_return_24h: `-0.3416`
+- bullish_count: `95`
+- bearish_count: `80`
 
 ## Bullish Performance
 
-- count: `29`
-- win_rate_1h: `34.62`
-- win_rate_4h: `41.67`
-- win_rate_24h: `28.57`
-- avg_directional_return_1h: `-0.1337`
-- avg_directional_return_4h: `-0.0782`
-- avg_directional_return_24h: `-1.2607`
+- count: `95`
+- win_rate_1h: `51.58`
+- avg_directional_return_1h: `0.003`
+- win_rate_4h: `56.84`
+- avg_directional_return_4h: `0.0426`
+- win_rate_24h: `57.65`
+- avg_directional_return_24h: `-0.2505`
 
 ## Bearish Performance
 
-- count: `40`
-- win_rate_1h: `52.5`
-- win_rate_4h: `47.5`
-- win_rate_24h: `35.9`
-- avg_directional_return_1h: `0.0509`
-- avg_directional_return_4h: `0.0236`
-- avg_directional_return_24h: `0.079`
+- count: `80`
+- win_rate_1h: `48.72`
+- avg_directional_return_1h: `0.0134`
+- win_rate_4h: `45.33`
+- avg_directional_return_4h: `-0.1183`
+- win_rate_24h: `39.44`
+- avg_directional_return_24h: `-0.4507`
 
 ## Recommendation
 

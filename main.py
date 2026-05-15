@@ -15,7 +15,7 @@ import httpx
 import pandas as pd
 import pandas_ta as ta
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response, StreamingResponse
 
 import trader
 import brain
@@ -34,6 +34,10 @@ import ta_backtest
 import shadow_buy_review
 import risk_block_review
 import smart_money_review
+import shadow_paper_test
+import shadow_buy_failure_diagnosis
+import strict_resume_shadow_simulation
+import chatgpt_supervision_export
 import ai_technical_analyst
 import ai_ta_evaluator
 import ai_ta_backtest
@@ -62,6 +66,34 @@ LIVE_CANDLES_FILE = Path("data/raw/live_btc_15m.csv")
 LIVE_BTC_STATUS_FILE = Path("data/raw/live_btc_source_status.json")
 EVALUATOR_REFRESH_MINUTES = 60  # refresh AI feedback from completed decisions
 SCHEDULED_SCAN_COOLDOWN_MINUTES = 30
+SAFE_REPORT_FILES = {
+    "CHATGPT_SUPERVISION_REPORT.md",
+    "data/reports/ai_ta_backtest.json",
+    "data/reports/ai_ta_summary.json",
+    "data/reports/ai_ta_performance.json",
+    "data/reports/chatgpt_supervision_manifest.json",
+    "data/reports/chatgpt_supervision_report.json",
+    "data/reports/chatgpt_supervision_report.md",
+    "data/reports/daily_validation_report.json",
+    "data/reports/daily_validation_report.md",
+    "data/reports/risk_block_review.json",
+    "data/reports/risk_block_review.md",
+    "data/reports/shadow_buy_failure_diagnosis.json",
+    "data/reports/shadow_buy_failure_diagnosis.md",
+    "data/reports/shadow_buy_review.json",
+    "data/reports/shadow_buy_review.md",
+    "data/reports/shadow_paper_resume_plan.json",
+    "data/reports/shadow_paper_resume_plan.md",
+    "data/reports/shadow_paper_test_report.json",
+    "data/reports/shadow_paper_test_report.md",
+    "data/reports/smart_money_review.json",
+    "data/reports/smart_money_review.md",
+    "data/reports/strict_resume_shadow_simulation.json",
+    "data/reports/strict_resume_shadow_simulation.md",
+    "data/reports/ta_backtest.json",
+    "data/reports/ta_forecast.json",
+    "data/reports/ta_summary.json",
+}
 
 # Always next to main.py — never rely on process cwd (TrueNAS/systemd often set cwd wrong and then "/" had no Twitter UI).
 DASHBOARD_HTML = Path(__file__).resolve().parent / "dashboard.html"
@@ -492,8 +524,7 @@ async def _notify_scan_result(trigger: str, context: dict, claude_out: dict, fin
     severity = "INFO"
     event_type = "scan_completed"
     if blocked:
-        severity = "WARNING"
-        event_type = "trade_blocked_by_risk_engine"
+        event_type = "trade_blocked_by_risk_engine"  # keep the DB audit event, but INFO prevents Telegram spam for normal blocked decisions
     if trade_executed:
         severity = "CRITICAL"
         event_type = "trade_executed"
@@ -520,6 +551,19 @@ async def _notify_scan_result(trigger: str, context: dict, claude_out: dict, fin
             "api_cost_today": trader.api_usage_summary().get("today_cost_usd"),
         },
     )
+
+
+async def _notify_shadow_paper_events(events: list[dict], source: str) -> None:
+    for event in events:
+        await notifier.notify(
+            event.get("severity", "WARNING"),
+            event.get("event_type", "shadow_paper_test_event"),
+            event.get("message", "Shadow paper test event"),
+            source=source,
+            status_text=event.get("type") or "paper_test",
+            metadata=event.get("metadata") or {},
+            force=True,
+        )
 
 
 def _check_data_freshness(context: dict) -> list[str]:
@@ -612,6 +656,14 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
                 status_text="failed" if w.startswith("CRITICAL") else "warning",
                 metadata={"trigger": trigger, "price": context.get("price")},
             )
+        if issues:
+            paper_exit_events = await asyncio.to_thread(
+                shadow_paper_test.update_open_trades,
+                price,
+                issues,
+                trigger,
+            )
+            await _notify_shadow_paper_events(paper_exit_events, trigger)
         if any(w.startswith("CRITICAL") for w in issues):
             log.warning("SCAN SKIPPED — critical data missing")
             return
@@ -691,6 +743,17 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
             post_risk_tq=post_risk_tq,
             strategy_version=STRATEGY_VERSION,
         )
+        paper_result = await asyncio.to_thread(
+            shadow_paper_test.process_scan,
+            context,
+            candidate,
+            final,
+            pre_risk_tq,
+            issues,
+            trigger,
+            trade_executed,
+        )
+        await _notify_shadow_paper_events(paper_result.get("notifications") or [], trigger)
         await _notify_scan_result(trigger, context, risk_input_decision, final, result)
 
     except Exception as e:
@@ -858,6 +921,17 @@ async def _run_learning_only_scan(trigger: str = "learning_only_scan") -> dict:
                 post_risk_tq=post_risk_tq,
                 strategy_version=STRATEGY_VERSION,
             )
+            paper_result = await asyncio.to_thread(
+                shadow_paper_test.process_scan,
+                context,
+                candidate,
+                final,
+                pre_risk_tq,
+                [],
+                trigger,
+                False,  # learning-only scans never mutate the normal portfolio, so qualified BUY signals stay paper-test only
+            )
+            await _notify_shadow_paper_events(paper_result.get("notifications") or [], trigger)
             log.info(
                 "LEARNING ONLY | BTC=$%s | Claude called=%s | Candidate=%s/%s | Final=%s%s | TQ=%s | SM=%s",
                 f"{price:,.0f}",
@@ -1151,6 +1225,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Paper2Real BTC Trader", lifespan=lifespan)
 trader.init_db()
+shadow_paper_test.init_db()
 
 YAHOO_15M_URL = "https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?interval=15m&range=5d"
 COINBASE_PRICE_URL = "https://api.coinbase.com/v2/prices/BTC-USD/spot"
@@ -2066,13 +2141,45 @@ def _count_decisions_where(where: str) -> int:
 
 
 def _db_review_counts() -> dict[str, int]:
-    return {
-        "shadow_buy_count": _count_decisions_where("UPPER(COALESCE(shadow_action, ''))='BUY'"),
-        "risk_blocked_candidates": _count_decisions_where("COALESCE(risk_blocked_candidate, 0)=1"),
-        "smart_money_shadow_count": _count_decisions_where(
-            "COALESCE(shadow_smart_money_action, '') != ''"
-        ),
+    db = Path(trader.DB_FILE)
+    defaults = {
+        "total_decisions": 0,
+        "max_decision_id": 0,
+        "latest_decision_timestamp": 0,
+        "shadow_buy_count": 0,
+        "risk_blocked_candidates": 0,
+        "smart_money_shadow_count": 0,
     }
+    if not db.exists():
+        return defaults
+    con = trader.sqlite3.connect(db)
+    try:
+        row = con.execute(
+            """
+            SELECT
+                COUNT(*) AS total_decisions,
+                COALESCE(MAX(id), 0) AS max_decision_id,
+                COALESCE(MAX(timestamp), 0) AS latest_decision_timestamp,
+                SUM(CASE WHEN UPPER(COALESCE(shadow_action, ''))='BUY' THEN 1 ELSE 0 END) AS shadow_buy_count,
+                SUM(CASE WHEN COALESCE(risk_blocked_candidate, 0)=1 THEN 1 ELSE 0 END) AS risk_blocked_candidates,
+                SUM(CASE WHEN COALESCE(shadow_smart_money_action, '')!='' THEN 1 ELSE 0 END) AS smart_money_shadow_count
+            FROM decisions
+            """
+        ).fetchone()
+        if not row:
+            return defaults
+        return {
+            "total_decisions": int(row[0] or 0),
+            "max_decision_id": int(row[1] or 0),
+            "latest_decision_timestamp": int(row[2] or 0),
+            "shadow_buy_count": int(row[3] or 0),
+            "risk_blocked_candidates": int(row[4] or 0),
+            "smart_money_shadow_count": int(row[5] or 0),
+        }
+    except trader.sqlite3.OperationalError:
+        return defaults
+    finally:
+        con.close()
 
 
 def _assert_fresh_review_reports(expected: dict[str, int]) -> dict:
@@ -2094,10 +2201,6 @@ def _assert_fresh_review_reports(expected: dict[str, int]) -> dict:
         ("shadow_buy_review_count", expected["shadow_buy_count"], actual["shadow_buy_review_count"]),
         ("risk_block_review_count", expected["risk_blocked_candidates"], actual["risk_block_review_count"]),
         ("smart_money_review_count", expected["smart_money_shadow_count"], actual["smart_money_review_count"]),
-        ("daily_shadow_buy_count", expected["shadow_buy_count"], actual["daily_shadow_buy_count"]),
-        ("daily_shadow_buy_review_count", actual["shadow_buy_review_count"], actual["daily_shadow_buy_review_count"]),
-        ("daily_risk_blocked_candidates", expected["risk_blocked_candidates"], actual["daily_risk_blocked_candidates"]),
-        ("daily_shadow_smart_money_count", expected["smart_money_shadow_count"], actual["daily_shadow_smart_money_count"]),
     ]
     for name, want, got in checks:
         if want != got:
@@ -2107,6 +2210,14 @@ def _assert_fresh_review_reports(expected: dict[str, int]) -> dict:
     return {
         "db_counts": expected,
         "report_counts": actual,
+        "daily_validation_stale_vs_db": any(
+            [
+                expected["shadow_buy_count"] != actual["daily_shadow_buy_count"],
+                actual["shadow_buy_review_count"] != actual["daily_shadow_buy_review_count"],
+                expected["risk_blocked_candidates"] != actual["daily_risk_blocked_candidates"],
+                expected["smart_money_shadow_count"] != actual["daily_shadow_smart_money_count"],
+            ]
+        ),
         "timestamps": {
             "shadow_buy_review": shadow.get("generated_at"),
             "risk_block_review": risk.get("generated_at"),
@@ -2124,24 +2235,50 @@ def _assert_fresh_review_reports(expected: dict[str, int]) -> dict:
 
 def _refresh_audit_reports_before_zip() -> dict:
     """Regenerate review JSON/MD from current DB so ZIP cannot bundle stale reports (no trading logic)."""
-    expected = _db_review_counts()
+    snapshot = _db_review_counts()
     decision_evaluator.run()  # score horizons + write risk_block_performance.json consumed by risk_block_review
     shadow_buy_review.run()  # shadow BUY stats + shadow_buy_review.json from decisions.shadow_action=BUY
     smart_money_review.run()  # Smart Money shadow stats from DB (directional returns)
     risk_block_review.run()  # review file counts DB risk_blocked_candidate rows directly
-    daily_validation_report.run(False, skip_network_probes=True)  # skip localhost HTTP probes to avoid /download deadlock
-    return _assert_fresh_review_reports(expected)
+    ta_forecast.run()  # latest deterministic TA forecast for public supervision
+    ta_backtest.run()  # deterministic TA replay + summary scope metadata
+    ai_ta_evaluator.run()  # live AI TA performance from decision rows
+    ai_ta_backtest.run()  # deterministic AI TA replay; no AI calls
+    shadow_paper_test.run_report()  # paper-test report only; does not mutate normal portfolio/trades
+    shadow_buy_failure_diagnosis.run()  # read-only Shadow BUY failure diagnosis for audit ZIP
+    strict_resume_shadow_simulation.run()  # read-only staged strict-rules simulation
+    daily_validation_report.run(False, skip_network_probes=True, persist=True)  # daily report must match this export snapshot
+    final_snapshot = _db_review_counts()
+    if final_snapshot != snapshot:
+        raise RuntimeError(
+            f"db_snapshot_changed_during_export: before={snapshot} after={final_snapshot}"
+        )
+    refresh_result = _assert_fresh_review_reports(snapshot)
+    refresh_result["db_snapshot"] = snapshot
+    supervision = chatgpt_supervision_export.run(save=True, db_fingerprint=snapshot)
+    refresh_result["chatgpt_supervision"] = supervision
+    if (supervision.get("count_consistency") or {}).get("status") != "PASS":
+        trader.log_event(
+            "WARNING",
+            "supervision_export_not_audit_clean",
+            "Supervision export count consistency failed; ZIP export blocked.",
+            source="supervision_export",
+            status="failed",
+            metadata={"count_consistency": supervision.get("count_consistency")},
+        )
+        raise RuntimeError("supervision_count_consistency_failed")
+    return refresh_result
 
 
 @app.get("/download/all.zip")
 async def download_all_artifacts():
     """Download safe audit/learning artifacts. Secrets and .env are intentionally excluded."""
-    try:
-        refresh_result = await asyncio.to_thread(_refresh_audit_reports_before_zip)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    async with SCAN_LOCK:
+        try:
+            refresh_result = await asyncio.to_thread(_refresh_audit_reports_before_zip)
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
     files = [
-        "paper_trader.db",
         "data/reports/ai_feedback_summary.json",
         "data/reports/ai_feedback_summary.md",
         "data/reports/decision_evaluations.csv",
@@ -2158,6 +2295,14 @@ async def download_all_artifacts():
         "data/reports/smart_money_review.md",
         "data/reports/shadow_buy_review.json",
         "data/reports/shadow_buy_review.md",
+        "data/reports/shadow_paper_test_report.json",
+        "data/reports/shadow_paper_test_report.md",
+        "data/reports/shadow_buy_failure_diagnosis.json",
+        "data/reports/shadow_buy_failure_diagnosis.md",
+        "data/reports/strict_resume_shadow_simulation.json",
+        "data/reports/strict_resume_shadow_simulation.md",
+        "data/reports/shadow_paper_resume_plan.json",
+        "data/reports/shadow_paper_resume_plan.md",
         "data/reports/technical_indicators.csv",
         "data/reports/technical_indicators.json",
         "data/reports/support_resistance_zones.csv",
@@ -2173,6 +2318,10 @@ async def download_all_artifacts():
         "data/reports/ai_ta_backtest.json",
         "data/reports/ai_ta_backtest.csv",
         "data/reports/ai_ta_summary.json",
+        "CHATGPT_SUPERVISION_REPORT.md",
+        "data/reports/chatgpt_supervision_report.json",
+        "data/reports/chatgpt_supervision_report.md",
+        "data/reports/chatgpt_supervision_manifest.json",
         "data/reports/daily_validation_report.json",
         "data/reports/daily_validation_report.md",
         "data/reports/full_application_test_report.md",
@@ -2201,6 +2350,9 @@ async def download_all_artifacts():
         "data/processed/btc_15m_labeled.csv",
         "PAPER2REAL_IMPLEMENTATION_LOG.md",
     ]
+    db_included = os.getenv("INCLUDE_DB_IN_AUDIT_ZIP", "false").lower() in {"1", "true", "yes", "on"}
+    if db_included:
+        files.insert(0, "paper_trader.db")
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         manifest = {
@@ -2208,6 +2360,7 @@ async def download_all_artifacts():
             "excluded": [".env", "tokens", "API keys", "cookies", "private secrets"],
             "included_files": [],
             "report_refresh": refresh_result,
+            "db_included": db_included,
         }
         for rel in files:
             path = Path(trader.DB_FILE) if rel == "paper_trader.db" else Path(rel)
@@ -2317,21 +2470,72 @@ async def reports():
         "ai_feedback": _read_json("data/reports/ai_feedback_summary.json"),
         "trade_quality_sweep": _read_json("data/reports/trade_quality_sweep.json"),
         "risk_block_performance": _read_json("data/reports/risk_block_performance.json"),
+        "shadow_paper_test": _read_json("data/reports/shadow_paper_test_report.json"),
+        "shadow_buy_failure_diagnosis": _read_json("data/reports/shadow_buy_failure_diagnosis.json"),
+        "strict_resume_shadow_simulation": _read_json("data/reports/strict_resume_shadow_simulation.json"),
+        "chatgpt_supervision": _read_json("data/reports/chatgpt_supervision_report.json"),
+        "shadow_paper_resume_plan": _read_json("data/reports/shadow_paper_resume_plan.json"),
         "smart_money": _read_json("data/reports/smart_money_summary.json"),
         "smart_money_backtest": _read_json("data/reports/smart_money_backtest.json"),
         "api_usage": trader.api_usage_summary(),
     }
 
 
+def _safe_report_file_path(requested_path: str) -> Path:
+    normalized = requested_path.replace("\\", "/").lstrip("/")
+    if normalized not in SAFE_REPORT_FILES or ".." in Path(normalized).parts:
+        raise HTTPException(status_code=404, detail="report_not_found")
+    path = Path(normalized)
+    if not path.exists() or not path.is_file():
+        raise HTTPException(status_code=404, detail="report_not_found")
+    return path
+
+
+@app.get("/report-file")
+async def report_file(path: str):
+    report_path = _safe_report_file_path(path)
+    content = report_path.read_text(encoding="utf-8")
+    media_type = "application/json" if report_path.suffix == ".json" else "text/markdown; charset=utf-8"
+    return Response(content=content, media_type=media_type)
+
+
 @app.get("/daily-validation-report")
 async def daily_validation_report_endpoint():
-    await asyncio.to_thread(_refresh_audit_reports_before_zip)
+    async with SCAN_LOCK:
+        await asyncio.to_thread(_refresh_audit_reports_before_zip)
     return _read_json_file("data/reports/daily_validation_report.json", {})
 
 
 @app.get("/shadow-buy-review")
 async def shadow_buy_review_endpoint():
     return await asyncio.to_thread(shadow_buy_review.run)  # always recompute from DB so API cannot serve stale JSON
+
+
+@app.get("/shadow-buy-failure-diagnosis")
+async def shadow_buy_failure_diagnosis_endpoint():
+    return await asyncio.to_thread(shadow_buy_failure_diagnosis.run)
+
+
+@app.get("/strict-resume-shadow-simulation")
+async def strict_resume_shadow_simulation_endpoint():
+    return await asyncio.to_thread(strict_resume_shadow_simulation.run)
+
+
+@app.get("/chatgpt-supervision-report")
+async def chatgpt_supervision_report_endpoint():
+    async with SCAN_LOCK:
+        await asyncio.to_thread(_refresh_audit_reports_before_zip)
+    return _read_json_file("data/reports/chatgpt_supervision_report.json", {})
+
+
+@app.get("/shadow-paper-test")
+async def shadow_paper_test_endpoint():
+    return await asyncio.to_thread(shadow_paper_test.run_report)
+
+
+@app.get("/shadow-paper-trades")
+async def shadow_paper_trades_endpoint(limit: int = 200):
+    return await asyncio.to_thread(shadow_paper_test.get_trades, limit)
 
 
 @app.get("/technical-analysis")

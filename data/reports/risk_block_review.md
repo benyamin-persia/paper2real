@@ -1,42 +1,62 @@
 # Risk Block Review
 
-- generated_at: `2026-05-10T02:15:21.163162+00:00`
-- total_blocked_candidates: `58`
+- generated_at: `2026-05-15T06:35:06.979828+00:00`
+- total_blocked_candidates: `187`
 - minimum_required: `30`
-- ready_for_review: `true`
+- ready_for_review: `True`
 
 ## Blocker Breakdown
 
 ### bb_squeeze
-- count: `36`
-- avg_return_1h: `0.0019`
-- avg_return_4h: `0.0581`
-- avg_return_24h: `-0.2596`
-- blocked_winners_24h: `17`
-- saved_losses_24h: `13`
+- count: `101`
+- avg_return_1h: `0.0278`
+- avg_return_4h: `0.1359`
+- avg_return_24h: `0.1132`
+- blocked_winners_1h: `1`
+- blocked_winners_4h: `4`
+- blocked_winners_24h: `14`
+- saved_losses_1h: `0`
+- saved_losses_4h: `6`
+- saved_losses_24h: `20`
+- neutral_1h: `98`
+- neutral_4h: `86`
+- neutral_24h: `47`
+- verdict: `helping`
+- average_return_all_scored_horizons: `0.0923`
 
 ### exchange_alert
-- count: `22`
-- avg_return_1h: `-0.208`
-- avg_return_4h: `-0.0539`
-- avg_return_24h: `-1.7098`
+- count: `80`
+- avg_return_1h: `-0.0502`
+- avg_return_4h: `-0.0613`
+- avg_return_24h: `-0.4875`
+- blocked_winners_1h: `1`
+- blocked_winners_4h: `1`
 - blocked_winners_24h: `0`
-- saved_losses_24h: `6`
+- saved_losses_1h: `2`
+- saved_losses_4h: `3`
+- saved_losses_24h: `32`
+- neutral_1h: `77`
+- neutral_4h: `76`
+- neutral_24h: `48`
+- verdict: `helping`
+- average_return_all_scored_horizons: `-0.1997`
 
-## Required Fields
-
-- bb_squeeze count: `36`
-- bb_squeeze avg_return_1h: `0.0019`
-- bb_squeeze avg_return_4h: `0.0581`
-- bb_squeeze avg_return_24h: `-0.2596`
-- bb_squeeze blocked_winners: `17`
-- bb_squeeze saved_losses: `13`
-- exchange_alert count: `22`
-- exchange_alert avg_return_1h: `-0.208`
-- exchange_alert avg_return_4h: `-0.0539`
-- exchange_alert avg_return_24h: `-1.7098`
-- exchange_alert blocked_winners: `0`
-- exchange_alert saved_losses: `6`
+### macro_event_day
+- count: `6`
+- avg_return_1h: `0.0528`
+- avg_return_4h: `0.3037`
+- avg_return_24h: `2.2871`
+- blocked_winners_1h: `0`
+- blocked_winners_4h: `0`
+- blocked_winners_24h: `5`
+- saved_losses_1h: `0`
+- saved_losses_4h: `0`
+- saved_losses_24h: `0`
+- neutral_1h: `6`
+- neutral_4h: `6`
+- neutral_24h: `1`
+- verdict: `not_enough_data`
+- average_return_all_scored_horizons: `0.8812`
 
 ## Recommendation
 
