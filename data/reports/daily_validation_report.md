@@ -1,7 +1,7 @@
 # Daily Validation Report
 
-Generated: 2026-05-15T16:00:24.120056+00:00
-Probe mode: live
+Generated: 2026-05-15T21:50:49.153474+00:00
+Probe mode: skipped
 Primary recommendation: **INVESTIGATE_ERROR**
 All recommendations: `INVESTIGATE_ERROR, READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_SMART_MONEY_REVIEW`
 
@@ -16,59 +16,72 @@ All recommendations: `INVESTIGATE_ERROR, READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_
 
 ## Endpoint Statuses
 
-- /system-health: `ok=True` `http=200` `elapsed=8.631s`
-- /learning-status: `ok=True` `http=200` `elapsed=0.411s`
-- /risk-block-performance: `ok=True` `http=200` `elapsed=0.003s`
-- /shadow-performance: `ok=True` `http=200` `elapsed=0.415s`
-- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.007s`
-- /shadow-buy-review: `ok=True` `http=200` `elapsed=0.085s`
-- /technical-analysis: `ok=True` `http=200` `elapsed=0.063s`
-- /support-resistance: `ok=True` `http=200` `elapsed=0.007s`
-- /chart-patterns: `ok=True` `http=200` `elapsed=0.003s`
-- /ta-forecast: `ok=True` `http=200` `elapsed=0.003s`
-- /ta-backtest: `ok=True` `http=200` `elapsed=0.003s`
-- /ai-technical-analyst: `ok=True` `http=200` `elapsed=0.007s`
-- /ai-ta-performance: `ok=True` `http=200` `elapsed=0.002s`
-- /ai-ta-backtest: `ok=True` `http=200` `elapsed=0.003s`
-- /shadow-paper-test: `ok=True` `http=200` `elapsed=0.096s`
-- /shadow-paper-trades: `ok=True` `http=200` `elapsed=0.005s`
-- /shadow-buy-failure-diagnosis: `ok=True` `http=200` `elapsed=0.163s`
-- /strict-resume-shadow-simulation: `ok=True` `http=200` `elapsed=0.159s`
-- /report-file?path=data/reports/chatgpt_supervision_report.json: `ok=True` `http=200` `elapsed=0.003s`
-- /reports: `ok=True` `http=200` `elapsed=0.076s`
+- /system-health: `ok=True` `http=200` `elapsed=0.0s`
+- /learning-status: `ok=True` `http=200` `elapsed=0.0s`
+- /risk-block-performance: `ok=True` `http=200` `elapsed=0.0s`
+- /shadow-performance: `ok=True` `http=200` `elapsed=0.0s`
+- /smart-money-backtest: `ok=True` `http=200` `elapsed=0.0s`
+- /shadow-buy-review: `ok=True` `http=200` `elapsed=0.0s`
+- /technical-analysis: `ok=True` `http=200` `elapsed=0.0s`
+- /support-resistance: `ok=True` `http=200` `elapsed=0.0s`
+- /chart-patterns: `ok=True` `http=200` `elapsed=0.0s`
+- /ta-forecast: `ok=True` `http=200` `elapsed=0.0s`
+- /ta-backtest: `ok=True` `http=200` `elapsed=0.0s`
+- /ai-technical-analyst: `ok=True` `http=200` `elapsed=0.0s`
+- /ai-ta-performance: `ok=True` `http=200` `elapsed=0.0s`
+- /ai-ta-backtest: `ok=True` `http=200` `elapsed=0.0s`
+- /shadow-paper-test: `ok=True` `http=200` `elapsed=0.0s`
+- /shadow-paper-trades: `ok=True` `http=200` `elapsed=0.0s`
+- /shadow-buy-failure-diagnosis: `ok=True` `http=200` `elapsed=0.0s`
+- /strict-resume-shadow-simulation: `ok=True` `http=200` `elapsed=0.0s`
+- /report-file?path=data/reports/chatgpt_supervision_report.json: `ok=True` `http=200` `elapsed=0.0s`
+- /reports: `ok=True` `http=200` `elapsed=0.0s`
 
 ## Learning Counts
 
-- decisions_total: `266`
+- decisions_total: `275`
 - claude_buy_count: `2`
-- candidate_buy_count: `204`
-- risk_blocked_candidates: `195`
+- candidate_buy_count: `209`
+- risk_blocked_candidates: `198`
 - trades_executed: `1`
-- shadow_buy_count: `217`
-- shadow_smart_money_count: `181`
+- real_trades_executed: `0`
+- paper_trades: `1`
+- open_trades: `1`
+- shadow_buy_count: `224`
+- shadow_smart_money_count: `188`
+
+## Execution Incident / Freeze
+
+- Execution frozen: `True`
+- Latest incident report: `data/reports/trade_execution_incident_20260515.json`
+- Latest incident time: `2026-05-15T14:35:14+00:00`
+- Latest incident trade type: `normal_paper_trade`
+- Latest incident recommendation: `BUG_FIX_REQUIRED_BEFORE_RESUME`
+- Stale dataset hard block status: `not_a_hard_block_at_incident_time`
+- Critical alert hard block status: `twitter_alert_not_mapped_to_events_json_hard_block_at_incident_time`
 
 ## Progress Targets
 
-- Blocked BUY candidates: `195 / 30`
-- Shadow BUYs: `217 / 100`
-- Shadow Smart Money: `181 / 50`
+- Blocked BUY candidates: `198 / 30`
+- Shadow BUYs: `224 / 100`
+- Shadow Smart Money: `188 / 50`
 - Ready for risk block review: `True`
 - Ready for Smart Money review: `True`
-- Shadow BUY review: `217 / 100` `SHADOW_BUY_STAYS_SHADOW`
-- TA shadow progress: `76 / 50` ready_for_bonus=`False`
-- AI TA shadow progress: `76 / 50` ready_for_bonus=`False`
+- Shadow BUY review: `224 / 100` `SHADOW_BUY_STAYS_SHADOW`
+- TA shadow progress: `80 / 50` ready_for_bonus=`False`
+- AI TA shadow progress: `80 / 50` ready_for_bonus=`False`
 
 ## Learning-Only Scans
 
 - Enabled: `True`
 - Interval minutes: `60`
-- Learning-only scans total: `198`
-- Live paper scans total: `68`
-- Last learning-only scan: `2026-05-15T15:00:15+00:00`
+- Learning-only scans total: `204`
+- Live paper scans total: `71`
+- Last learning-only scan: `2026-05-15T21:00:23+00:00`
 - Duplicate scans suppressed: `4`
-- Claude calls from learning scans: `198`
-- Estimated learning API cost daily: `$0.176347`
-- Estimated learning API cost monthly: `$5.29041`
+- Claude calls from learning scans: `204`
+- Estimated learning API cost daily: `$0.175442`
+- Estimated learning API cost monthly: `$5.26326`
 - Estimated days to 30 blocked BUY candidates: `0.0`
 - Estimated days to 100 shadow BUYs: `0.0`
 - Estimated days to 50 Smart Money shadows: `0.0`
@@ -76,25 +89,25 @@ All recommendations: `INVESTIGATE_ERROR, READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_
 
 ## Risk Block Performance
 
-- Total blocked candidates: `195`
-- BB squeeze: `{'count': 109, 'avg_return_1h': 0.0058, 'avg_return_4h': 0.051, 'avg_return_24h': 0.1897, 'blocked_winners_1h': 1, 'blocked_winners_4h': 4, 'blocked_winners_24h': 15, 'saved_losses_1h': 1, 'saved_losses_4h': 9, 'saved_losses_24h': 20, 'verdict': 'helping'}`
+- Total blocked candidates: `198`
+- BB squeeze: `{'count': 112, 'avg_return_1h': 0.002, 'avg_return_4h': 0.0227, 'avg_return_24h': 0.1244, 'blocked_winners_1h': 1, 'blocked_winners_4h': 4, 'blocked_winners_24h': 15, 'saved_losses_1h': 1, 'saved_losses_4h': 11, 'saved_losses_24h': 22, 'verdict': 'helping'}`
 
 ## Smart Money Performance
 
-- Shadow count: `181`
+- Shadow count: `188`
 - Ready for bonus: `True`
-- Score distribution: `{'0-39': 3, '40-59': 38, '60-79': 162, '80-100': 30}`
-- Bias distribution: `{'bullish': 132, 'bearish': 95, 'neutral': 6}`
+- Score distribution: `{'0-39': 3, '40-59': 38, '60-79': 171, '80-100': 30}`
+- Bias distribution: `{'bullish': 132, 'bearish': 104, 'neutral': 6}`
 
 ## TA / AI TA Shadow Layers
 
 - TA enabled: `True` shadow_only=`True`
-- TA shadow count: `76`
-- TA avg future return 4h: `-0.0032`
+- TA shadow count: `80`
+- TA avg future return 4h: `0.0365`
 - AI TA enabled: `True` shadow_only=`True`
-- AI TA calls total: `156`
-- AI TA shadow count: `76`
-- AI TA avg future return 4h: `-0.0032`
+- AI TA calls total: `165`
+- AI TA shadow count: `80`
+- AI TA avg future return 4h: `0.0365`
 - AI TA invalid JSON count: `0`
 - AI TA safety violations: should_trade=`0`, risk_engine=`0`
 
@@ -102,7 +115,7 @@ All recommendations: `INVESTIGATE_ERROR, READY_FOR_RISK_BLOCK_REVIEW, READY_FOR_
 
 - Download ZIP safe: `True`
 - Secrets excluded: `True`
-- Files checked: `72`
+- Files checked: `0`
 - Findings: `[]`
 
 ## Guardrails

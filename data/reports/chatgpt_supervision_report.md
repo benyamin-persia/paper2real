@@ -1,7 +1,7 @@
 # Paper2Real ChatGPT Supervision Report
 
-Snapshot ID: `b4d0275ef4cdcbde`
-Bundle generated at: `2026-05-15T16:00:28.347062+00:00`
+Snapshot ID: `72beca85f9885e51`
+Bundle generated at: `2026-05-15T21:50:49.220601+00:00`
 Source commit SHA: `717665658df7ef508d7f556bab15c2ba0bdd6c1d`
 
 ## Executive Verdict
@@ -13,6 +13,12 @@ Source commit SHA: `717665658df7ef508d7f556bab15c2ba0bdd6c1d`
 - System health: `warning`
 - Stale dataset warning: `True`
 - Real trades executed: `1`
+- Real exchange orders sent: `0`
+- Open normal paper trades: `1`
+- Execution frozen: `True`
+- Latest incident report: `data/reports/trade_execution_incident_20260515.json`
+- Latest incident trade type: `normal_paper_trade`
+- Latest incident recommendation: `BUG_FIX_REQUIRED_BEFORE_RESUME`
 - Paper test status: `Paper Test Paused`
 - Paper entries enabled: `False`
 - Final risk recommendation: `KEEP_AS_IS`
@@ -51,163 +57,177 @@ Source commit SHA: `717665658df7ef508d7f556bab15c2ba0bdd6c1d`
 
 ## Count Consistency
 
-- `PASS` shadow_buy_count: `{"daily.shadow_buy_count": 217, "daily.shadow_buy_review_count": 217, "shadow_buy_failure_diagnosis.total_shadow_buy_records": 217, "shadow_buy_review.shadow_buy_count": 217, "shadow_paper_test.shadow_buy_review_count": 217, "strict_resume_shadow_simulation.total_shadow_buy_records": 217}`
-- `PASS` risk_blocked_candidates: `{"daily.risk_blocked_candidates": 195, "risk_block_review.total_blocked_candidates": 195}`
-- `PASS` smart_money_shadow_count: `{"daily.shadow_smart_money_count": 181, "smart_money_review.smart_money_shadow_count": 181}`
+- `PASS` shadow_buy_count: `{"daily.shadow_buy_count": 224, "daily.shadow_buy_review_count": 224, "shadow_buy_failure_diagnosis.total_shadow_buy_records": 224, "shadow_buy_review.shadow_buy_count": 224, "shadow_paper_test.shadow_buy_review_count": 224, "strict_resume_shadow_simulation.total_shadow_buy_records": 224}`
+- `PASS` risk_blocked_candidates: `{"daily.risk_blocked_candidates": 198, "risk_block_review.total_blocked_candidates": 198}`
+- `PASS` smart_money_shadow_count: `{"daily.shadow_smart_money_count": 188, "smart_money_review.smart_money_shadow_count": 188}`
 
 ## Required Report Inventory
 
 - `data/reports/daily_validation_report.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:24.120056+00:00`
+  - Generated at: `2026-05-15T21:50:49.153474+00:00`
   - Metric scope: canonical daily system health, endpoint, safety, learning, TA, and AI TA summary snapshot
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/daily_validation_report.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/daily_validation_report.json
-  - SHA-256: `1fd24b0d21972da8e511dfde20b667af1ab7614e290bd3e579df3363315881c9`
+  - SHA-256: `cb6361f46963c2c0c27951e44e9aa1e21bee6eb7325726676f376e07f7562d61`
 - `data/reports/daily_validation_report.md`
   - Present: `True`
   - Generated at: `None`
   - Metric scope: human-readable daily validation summary
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/daily_validation_report.md
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/daily_validation_report.md
-  - SHA-256: `cdd01f53610c0277579078366d582ad1c560cd25688b2c3cac85649a2f972158`
+  - SHA-256: `bc001c5526b28bd926bd920c41234e0f78bc45282b9a4de7c89486d8d55fbbd6`
 - `data/reports/risk_block_review.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:20.819505+00:00`
+  - Generated at: `2026-05-15T21:50:44.945601+00:00`
   - Metric scope: risk-blocked candidate review from decisions.risk_blocked_candidate rows
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/risk_block_review.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/risk_block_review.json
-  - SHA-256: `28a1adf41b7a3fa9e449e911995db3434ff4bbe59a39b922bf85b2c4db02c1bc`
+  - SHA-256: `86dc9ab11f9d65f12801d583ce6e454a1729f1a91cbf454b25ee4648ff34a931`
 - `data/reports/risk_block_review.md`
   - Present: `True`
   - Generated at: `None`
   - Metric scope: human-readable risk-blocked candidate review
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/risk_block_review.md
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/risk_block_review.md
-  - SHA-256: `33d766a001240fe1863dbe3aa83f2ba88abe3cd36788301dc9eae2aad33d272b`
+  - SHA-256: `fe72e23e9e7da1cd3d4d9b4b230dfb8ef9dd239d3f1077f6224000b75d114fcc`
 - `data/reports/smart_money_review.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:20.747749+00:00`
+  - Generated at: `2026-05-15T21:50:44.809870+00:00`
   - Metric scope: Smart Money shadow evidence review; not an execution approval
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/smart_money_review.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/smart_money_review.json
-  - SHA-256: `c3fcddd5312fc990e92e9ffb08edc5f771d217c9378b4f22bb2a8e26fe7d47b3`
+  - SHA-256: `2877944bb3b3bcded6d50541677c2ddfdcf1d9345e7519b4e9a2fa709125211b`
 - `data/reports/smart_money_review.md`
   - Present: `True`
   - Generated at: `None`
   - Metric scope: human-readable Smart Money shadow review
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/smart_money_review.md
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/smart_money_review.md
-  - SHA-256: `f731426b591f49d7e2957859eb989d44dfed50fa01b3f74192842036e5b5da68`
+  - SHA-256: `321c74d924b1430c0fea2795fd0f456a73acdd50c2c40bd120d290110f507281`
 - `data/reports/shadow_buy_review.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:22.021629+00:00`
+  - Generated at: `2026-05-15T21:50:47.702815+00:00`
   - Metric scope: Shadow BUY evidence review from decisions.shadow_action=BUY rows
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_buy_review.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/shadow_buy_review.json
-  - SHA-256: `24146843b2973d723f916d83081482764d23880b98d0f14c08708896ce6db417`
+  - SHA-256: `918d5d0bd99dad7d478bc3e4cbe897926480c6d519b18444d236fd6250df7965`
 - `data/reports/shadow_buy_review.md`
   - Present: `True`
   - Generated at: `None`
   - Metric scope: human-readable Shadow BUY review
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_buy_review.md
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/shadow_buy_review.md
-  - SHA-256: `494e91498eff6dce766d2bcb855406574c2d48331937b14e724f09abefe7738f`
+  - SHA-256: `a1d59a2c68b6f37b8d0cd7e95d40cf63cf57cf49cfa7ecd2938618e48ea6d8b7`
 - `data/reports/shadow_paper_test_report.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:22.023503+00:00`
+  - Generated at: `2026-05-15T21:50:47.706695+00:00`
   - Metric scope: paper-only Shadow Paper Test lifecycle and paused-entry state
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_paper_test_report.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/shadow_paper_test_report.json
-  - SHA-256: `6a44698ed01e5fc4448c19eb8c8361a0ef70d894da5aa9778f88949d71ec261d`
+  - SHA-256: `c4d82dd74fc71466086bb2971c46bd3b7ce1ff95150926e67f52bd89f17ddf9a`
 - `data/reports/shadow_paper_test_report.md`
   - Present: `True`
   - Generated at: `None`
   - Metric scope: human-readable Shadow Paper Test state
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_paper_test_report.md
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/shadow_paper_test_report.md
-  - SHA-256: `94c84e1824f6b36e2056e92d4cee93be215de25e8afc369b6cc960ba61985670`
+  - SHA-256: `f6371a73412c306b9da35d4450661281ea809d0961a3cca1488849bd3917ea16`
 - `data/reports/shadow_buy_failure_diagnosis.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:22.177225+00:00`
+  - Generated at: `2026-05-15T21:50:48.272283+00:00`
   - Metric scope: read-only failure diagnosis across Shadow BUY records and paper trades
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_buy_failure_diagnosis.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/shadow_buy_failure_diagnosis.json
-  - SHA-256: `01fcd251f9e50c7490b3e102bc9684e7001d941b1911c70228ce706902dd7c84`
+  - SHA-256: `0177e0257e5696ee77e46dc41542add3d29fcf42a91ab65229b7cd38f1ad89eb`
 - `data/reports/shadow_buy_failure_diagnosis.md`
   - Present: `True`
   - Generated at: `None`
   - Metric scope: human-readable Shadow BUY failure diagnosis
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_buy_failure_diagnosis.md
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/shadow_buy_failure_diagnosis.md
-  - SHA-256: `74ba431d818820d513cab381eccbcb81a2f01f83375fa3b7f41e5a3e1d08ef1f`
+  - SHA-256: `6c1164d91db3abaf3f285214e4a6c29a92f8df1c6f8c6f5efb105ba10bb2dfc1`
 - `data/reports/strict_resume_shadow_simulation.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:22.310709+00:00`
+  - Generated at: `2026-05-15T21:50:48.627133+00:00`
   - Metric scope: read-only staged strict-resume simulation; no entries are enabled
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/strict_resume_shadow_simulation.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/strict_resume_shadow_simulation.json
-  - SHA-256: `800eee36eccdac4f98ba7149104c964b9d3775f2e9793e025cd834367482ae8f`
+  - SHA-256: `4758ca8be450c42cb293f406a887e9350ed3b8de3365dcb98c352ff1df5cdf52`
 - `data/reports/strict_resume_shadow_simulation.md`
   - Present: `True`
   - Generated at: `None`
   - Metric scope: human-readable strict-resume simulation
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/strict_resume_shadow_simulation.md
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/strict_resume_shadow_simulation.md
-  - SHA-256: `886ce4080a8d2a2bdae95d44375b4370bfdee75bd812aa64a58dda0f424ae3c8`
+  - SHA-256: `cc3de968b58f7dca5b38bc9f77508cdf6902dd18dd9bdc064efa787db28b151e`
 - `data/reports/shadow_paper_resume_plan.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:22.036400+00:00`
+  - Generated at: `2026-05-15T21:50:47.777239+00:00`
   - Metric scope: staged resume plan; recommendations are not applied automatically
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_paper_resume_plan.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/shadow_paper_resume_plan.json
-  - SHA-256: `a26f08d8f795eb3ebeebb694bde8c4d969a635e3746a41039126658c2c9d1ab1`
+  - SHA-256: `dcc30298a07d487768b14e1c5dde158a84653e84fd1c24d5bf5898150642ea04`
 - `data/reports/shadow_paper_resume_plan.md`
   - Present: `True`
   - Generated at: `None`
   - Metric scope: human-readable staged resume plan
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_paper_resume_plan.md
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/shadow_paper_resume_plan.md
-  - SHA-256: `ce89237f3be68f996ed40cef0806ea756d481fb5fbc6a3050f615570df7e07b4`
+  - SHA-256: `afef47de80d95dfdf507dd4b378289695cff979c70d7f90b1d9487242acd40b4`
+- `data/reports/trade_execution_incident_20260515.json`
+  - Present: `True`
+  - Generated at: `2026-05-15T21:45:50.442341+00:00`
+  - Metric scope: 2026-05-15 execution-freeze incident audit; reporting only
+  - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/trade_execution_incident_20260515.json
+  - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/trade_execution_incident_20260515.json
+  - SHA-256: `8d9667268554827748b65cf72c537b411d2ed8710d9a31959e08d94426d08ffc`
+- `data/reports/trade_execution_incident_20260515.md`
+  - Present: `True`
+  - Generated at: `None`
+  - Metric scope: human-readable 2026-05-15 execution-freeze incident audit
+  - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/trade_execution_incident_20260515.md
+  - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/trade_execution_incident_20260515.md
+  - SHA-256: `2015c44168794d453d8c1ccbe71fc883c92aba48a15c85c34ddae35f63cb81cb`
 - `data/reports/ta_forecast.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:21.426624+00:00`
+  - Generated at: `2026-05-15T21:50:45.874854+00:00`
   - Metric scope: latest deterministic TA forecast, not historical backtest evidence
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ta_forecast.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/ta_forecast.json
-  - SHA-256: `42025fbb5c46895bb06950c418b512b770e4944a37beaa772f6ec845411bf4c6`
+  - SHA-256: `946a4876c78bf1240fe3a8811e1530c52025b57a2f9604adaa25a0d4e7ea6899`
 - `data/reports/ta_summary.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:21.808142+00:00`
+  - Generated at: `2026-05-15T21:50:46.905689+00:00`
   - Metric scope: deterministic TA backtest summary over eligible historical rows and score thresholds
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ta_summary.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/ta_summary.json
-  - SHA-256: `f213a332adc0b8180592ffb8a111d9393b439b50efcd58ad3f36bcabafe1418b`
+  - SHA-256: `510148a4c0eebc794236296acee19e8778009bf86cff7e667d10eab5204059fe`
 - `data/reports/ta_backtest.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:21.808142+00:00`
+  - Generated at: `2026-05-15T21:50:46.905689+00:00`
   - Metric scope: deterministic TA backtest over eligible historical rows and score thresholds
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ta_backtest.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/ta_backtest.json
-  - SHA-256: `256bd16e4b656d2d4a9b9ce8d628d997001a7fdbbef0762868e8eb588f0c0604`
+  - SHA-256: `a47b8877ba4418f08e4814adb8608b88fc9807800342e6048391df665bd8d768`
 - `data/reports/ai_ta_performance.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:21.711787+00:00`
+  - Generated at: `2026-05-15T21:50:46.694088+00:00`
   - Metric scope: live AI TA call/shadow-candidate performance from decisions rows, not threshold replay
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ai_ta_performance.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/ai_ta_performance.json
-  - SHA-256: `4e72542d412f64e3e76bd5b8d9d6e321c939042b055e778737595e45f5c02248`
+  - SHA-256: `0440c00f22f549c76b564abe0b555c1961ba6be295597aa3a72a9aa48c24c407`
 - `data/reports/ai_ta_summary.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:21.940360+00:00`
+  - Generated at: `2026-05-15T21:50:47.126646+00:00`
   - Metric scope: AI TA deterministic replay summary; no AI calls are made during backtest
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ai_ta_summary.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/ai_ta_summary.json
-  - SHA-256: `046b5ee611173fc032f5b428bfbf84138a0e968afdf96da25a1a738d743f4030`
+  - SHA-256: `bc759b6a5412e62c75316346c583cfbd2040eaa3fb98d525e620fd37183f093f`
 - `data/reports/ai_ta_backtest.json`
   - Present: `True`
-  - Generated at: `2026-05-15T16:00:21.940360+00:00`
+  - Generated at: `2026-05-15T21:50:47.126646+00:00`
   - Metric scope: AI TA deterministic replay of TA thresholds; ai_calls_made=0 by design
   - Branch raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ai_ta_backtest.json
   - Commit-pinned raw URL: https://raw.githubusercontent.com/benyamin-persia/paper2real/717665658df7ef508d7f556bab15c2ba0bdd6c1d/data/reports/ai_ta_backtest.json
-  - SHA-256: `f36aaecf06e5372d3bc9a40674c5d463e70655e125a1db845f58a7d7b9deece3`
+  - SHA-256: `23b570f51c8b184bf1dc381e25162f572f4ff64bfe4da3d1638754be8f64e8e4`

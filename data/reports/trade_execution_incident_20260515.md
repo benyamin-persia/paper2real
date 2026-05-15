@@ -1,21 +1,21 @@
 # Trade Execution Incident 2026-05-15
 
-Generated: `2026-05-15T20:54:16Z`
-Incident time UTC: `2026-05-15T14:35:14Z`
+Generated: `2026-05-15T21:45:50.442341+00:00`
+Incident time UTC: `2026-05-15T14:35:14+00:00`
 Trade ID: `1`
 Decision ID: `265`
 Trade type: `normal_paper_trade`
-Real order sent: `false`
-Paper order: `true`
+Real order sent: `False`
+Paper order: `True`
 Entry price: `79039.0`
 Position USD: `3000.0`
 Risk blocker: `none`
 Stale dataset age hours: `44.0`
-Critical alerts active: `true`
-Exchange risk active: `true`
-Structured exchange risk seen by risk engine: `false`
+Critical alerts active: `True`
+Exchange risk active: `True`
+Structured exchange risk seen by risk engine: `False`
 Supervision verdict at last report: `DO_NOT_RESUME_TRADING_OR_PAPER_TEST`
-Execution frozen: `true`
+Execution frozen: `True`
 Recommended action: `BUG_FIX_REQUIRED_BEFORE_RESUME`
 
 ## Current Position
@@ -24,8 +24,8 @@ Recommended action: `BUG_FIX_REQUIRED_BEFORE_RESUME`
 - Open trade IDs: `[1]`
 - Cash balance USD: `7000.0`
 - BTC held: `0.03795595`
-- Current BTC price: `79017.9`
-- Unrealized PnL USD: `-0.8`
+- Current BTC price: `79096.8`
+- Unrealized PnL USD: `2.19`
 
 ## Why Execution Was Allowed
 
