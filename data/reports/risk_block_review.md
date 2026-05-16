@@ -1,34 +1,34 @@
 # Risk Block Review
 
-- generated_at: `2026-05-15T16:00:20.819505+00:00`
-- total_blocked_candidates: `195`
+- generated_at: `2026-05-16T04:00:23.367945+00:00`
+- total_blocked_candidates: `198`
 - minimum_required: `30`
 - ready_for_review: `True`
 
 ## Blocker Breakdown
 
 ### bb_squeeze
-- count: `109`
-- avg_return_1h: `0.0085`
-- avg_return_4h: `0.051`
-- avg_return_24h: `0.1897`
+- count: `112`
+- avg_return_1h: `-0.0008`
+- avg_return_4h: `0.0149`
+- avg_return_24h: `-0.0496`
 - blocked_winners_1h: `1`
 - blocked_winners_4h: `4`
 - blocked_winners_24h: `15`
-- saved_losses_1h: `1`
-- saved_losses_4h: `9`
-- saved_losses_24h: `20`
-- neutral_1h: `107`
-- neutral_4h: `94`
+- saved_losses_1h: `2`
+- saved_losses_4h: `11`
+- saved_losses_24h: `28`
+- neutral_1h: `109`
+- neutral_4h: `97`
 - neutral_24h: `55`
 - verdict: `helping`
-- average_return_all_scored_horizons: `0.0831`
+- average_return_all_scored_horizons: `-0.0118`
 
 ### exchange_alert
 - count: `80`
-- avg_return_1h: `-0.0656`
-- avg_return_4h: `-0.0605`
-- avg_return_24h: `-0.5028`
+- avg_return_1h: `-0.0677`
+- avg_return_4h: `-0.0601`
+- avg_return_24h: `-0.5074`
 - blocked_winners_1h: `1`
 - blocked_winners_4h: `1`
 - blocked_winners_24h: `0`
@@ -39,7 +39,7 @@
 - neutral_4h: `76`
 - neutral_24h: `48`
 - verdict: `helping`
-- average_return_all_scored_horizons: `-0.2096`
+- average_return_all_scored_horizons: `-0.2117`
 
 ### macro_event_day
 - count: `6`

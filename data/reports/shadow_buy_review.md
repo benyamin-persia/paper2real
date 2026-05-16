@@ -1,20 +1,20 @@
 # Shadow BUY Review
 
-- generated_at: `2026-05-15T16:00:22.021629+00:00`
-- shadow_buy_count: `217`
+- generated_at: `2026-05-16T04:00:24.566180+00:00`
+- shadow_buy_count: `232`
 - minimum_required: `100`
 - ready_for_review: `True`
-- win_rate_1h: `49.77`
-- win_rate_4h: `51.63`
-- win_rate_24h: `53.03`
-- avg_return_1h: `-0.0173`
-- avg_return_4h: `-0.0015`
-- avg_return_24h: `-0.0603`
+- win_rate_1h: `49.78`
+- win_rate_4h: `50.22`
+- win_rate_24h: `50.49`
+- avg_return_1h: `-0.0205`
+- avg_return_4h: `-0.0168`
+- avg_return_24h: `-0.1659`
 - median_return_1h: `-0.0007`
-- median_return_4h: `0.0165`
-- median_return_24h: `0.0897`
+- median_return_4h: `0.0046`
+- median_return_24h: `0.0195`
 - max_favorable_move: `3.3126`
-- max_adverse_move: `-2.6983`
+- max_adverse_move: `-3.0203`
 - best_horizon: `4h`
 - worst_horizon: `24h`
 - positive_expectancy: `False`

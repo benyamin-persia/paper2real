@@ -1,11 +1,13 @@
 {
-  "generated_at": "2026-05-15T16:00:22.036400+00:00",
+  "generated_at": "2026-05-16T04:00:24.580486+00:00",
   "current_status": "Paper Test Paused",
-  "why_paused": "Shadow Paper Test disabled by staged config",
+  "why_paused": "Supervision forbids trading: DO_NOT_RESUME_TRADING_OR_PAPER_TEST",
   "diagnosis_summary": {
     "source_report": "data/reports/shadow_buy_failure_diagnosis.json",
     "recommended_next_action": [
       "KEEP_PAPER_TEST_PAUSED",
+      "REQUIRE_ALL_CONFIRMATION_NEUTRAL_OR_BETTER",
+      "REQUIRE_TA_NOT_BEARISH",
       "CHANGE_STOP_TAKE_PROFIT_REVIEW_ONLY",
       "COLLECT_MORE_SHADOW_ONLY",
       "DO_NOT_RESUME"
@@ -24,15 +26,15 @@
       "bb_squeeze_overrides_are_weak": true,
       "four_hour_horizon_mismatches_stop_loss": true,
       "exchange_or_news_regime_changed": true,
-      "sample_became_worse_after_more_data": false,
-      "any_bearish_alignment_loses": false
+      "sample_became_worse_after_more_data": true,
+      "any_bearish_alignment_loses": true
     },
     "best_condition": {
-      "section": "combined_alignment",
-      "filter": "all_bearish_alignment",
-      "avg_return_4h": 0.1711,
-      "win_rate_4h": 72.0,
-      "count": 26
+      "section": "market_condition",
+      "filter": "bearish_sweep",
+      "avg_return_4h": 0.1555,
+      "win_rate_4h": 68.75,
+      "count": 32
     },
     "worst_condition": {
       "section": "smart_money_bias",

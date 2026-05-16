@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-05-15T16:00:21.940360+00:00",
+  "generated_at": "2026-05-16T04:00:24.479153+00:00",
   "metric_scope": "summary wrapper for deterministic AI TA replay; calls_ai=false distinguishes it from live AI TA decisions",
   "ai_ta_backtest": {
-    "generated_at": "2026-05-15T16:00:21.940360+00:00",
+    "generated_at": "2026-05-16T04:00:24.479153+00:00",
     "metric_scope": "deterministic AI TA replay derived from TA threshold replay; no AI API calls are made in this backtest",
     "mode": "deterministic_ai_ta_replay",
     "ai_calls_made": 0,
