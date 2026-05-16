@@ -453,6 +453,16 @@ def _read_json_file(path: str | Path, fallback=None):
         return fallback
 
 
+def _incident_report_files() -> list[str]:
+    return sorted(
+        p.as_posix()
+        for p in Path("data/reports").glob("trade_execution_incident_*.json")
+    ) + sorted(
+        p.as_posix()
+        for p in Path("data/reports").glob("trade_execution_incident_*.md")
+    )
+
+
 def _attach_ai_ta(context: dict, candidate: dict, final: dict) -> None:
     if not AI_TA_ENABLED:
         context["ai_ta"] = {"ai_ta_called": 0, "ai_ta_bias": "neutral", "ai_ta_score": 0, "ai_ta_confidence": 0}
@@ -553,6 +563,77 @@ async def _notify_scan_result(trigger: str, context: dict, claude_out: dict, fin
             "api_cost_today": trader.api_usage_summary().get("today_cost_usd"),
         },
     )
+
+
+async def _reject_trade_for_runtime_hard_block(
+    *,
+    trigger: str,
+    trade_type: str,
+    context: dict,
+    final: dict,
+    portfolio: dict,
+    hard_block: dict,
+) -> dict:
+    incident = daily_validation_report.log_trade_execution_incident(
+        trade_type=trade_type,
+        hard_block=hard_block,
+        context=context,
+        final=final,
+        portfolio=portfolio,
+        real_order_sent=False,
+        recommendation="DO_NOT_RESUME",
+    )
+    message = "\n".join(
+        [
+            "TRADE EXECUTION INCIDENT",
+            f"Trade type: {trade_type}",
+            f"Blocked by: {hard_block.get('blocker')}",
+            f"Reason: {hard_block.get('reason')}",
+            f"BTC price: {context.get('price')}",
+            f"Report: {incident.get('json_path')}",
+        ]
+    )
+    metadata = {
+        "trade_type": trade_type,
+        "blocked_by": hard_block.get("blocker"),
+        "blockers": hard_block.get("blockers"),
+        "incident_report": incident.get("json_path"),
+        "supervision_verdict": hard_block.get("supervision_verdict"),
+        "stale_dataset_age_hours": hard_block.get("master_dataset_age_hours"),
+        "critical_alerts_active": hard_block.get("critical_alerts_active"),
+    }
+    await notifier.notify(
+        "CRITICAL",
+        "EXECUTION_FREEZE_ACTIVE",
+        message,
+        source=trigger,
+        status_text="blocked",
+        metadata=metadata,
+        force=True,
+    )
+    await notifier.notify(
+        "CRITICAL",
+        "TRADE_EXECUTION_INCIDENT",
+        message,
+        source=trigger,
+        status_text="blocked",
+        metadata=metadata,
+        force=True,
+    )
+    return {
+        "blocked": True,
+        "error": "runtime_hard_block_active",
+        "blocked_by": hard_block.get("blocker"),
+        "reason": hard_block.get("reason"),
+        "incident_report": incident.get("json_path"),
+    }
+
+
+def _apply_runtime_hard_block_if_needed(context: dict, final: dict) -> tuple[dict, dict | None]:
+    hard_block = risk_engine.runtime_hard_block_active(context)
+    if (final.get("action") or "").upper() in {"BUY", "SELL"} and hard_block.get("active"):
+        return risk_engine.apply_runtime_hard_block(final, hard_block), hard_block
+    return final, None
 
 
 async def _notify_shadow_paper_events(events: list[dict], source: str) -> None:
@@ -697,6 +778,8 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
         context["pre_risk_trade_quality"] = pre_risk_tq
         closed     = [t for t in trader.get_all_trades() if t["closed"]]
         final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+        original_final = dict(final)
+        final, runtime_hard_block = _apply_runtime_hard_block_if_needed(context, final)
         _attach_ai_ta(context, candidate, final)
         post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
         context["post_risk_trade_quality"] = post_risk_tq
@@ -721,7 +804,17 @@ async def _run_scan_unlocked(trigger: str = "scheduled"):
 
         trade_executed = False
         result = None
-        if action == "BUY":
+        if runtime_hard_block:
+            result = await _reject_trade_for_runtime_hard_block(
+                trigger=trigger,
+                trade_type="paper",
+                context=context,
+                final=original_final,
+                portfolio=summary,
+                hard_block=runtime_hard_block,
+            )
+            log.warning("TRADE BLOCKED BY RUNTIME HARD BLOCK: %s", result)
+        elif action == "BUY":
             result = trader.buy(
                 price, reason,
                 position_usd=final.get("position_usd"),
@@ -1656,6 +1749,8 @@ async def tradingview_webhook(request: Request):
     context["pre_risk_trade_quality"] = pre_risk_tq
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
     final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+    original_final = dict(final)
+    final, runtime_hard_block = _apply_runtime_hard_block_if_needed(context, final)
     _attach_ai_ta(context, candidate, final)
     post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
     context["post_risk_trade_quality"] = post_risk_tq
@@ -1672,7 +1767,16 @@ async def tradingview_webhook(request: Request):
         "confidence":      candidate.get("confidence"),
     }
 
-    if action == "BUY":
+    if runtime_hard_block:
+        result["trade"] = await _reject_trade_for_runtime_hard_block(
+            trigger="webhook",
+            trade_type="paper",
+            context=context,
+            final=original_final,
+            portfolio=summary,
+            hard_block=runtime_hard_block,
+        )
+    elif action == "BUY":
         result["trade"] = trader.buy(
             context["price"], reason,
             position_usd=final.get("position_usd"),
@@ -1711,6 +1815,8 @@ async def manual_scan():
     context["pre_risk_trade_quality"] = pre_risk_tq
     closed     = [t for t in trader.get_all_trades() if t["closed"]]
     final      = risk_engine.evaluate(risk_input_decision, context, summary, closed)
+    original_final = dict(final)
+    final, runtime_hard_block = _apply_runtime_hard_block_if_needed(context, final)
     _attach_ai_ta(context, candidate, final)
     post_risk_tq = trade_quality.score(context, claude_out.get("historical_summary"), final)
     context["post_risk_trade_quality"] = post_risk_tq
@@ -1727,7 +1833,16 @@ async def manual_scan():
         "final_action":      action,
     }
 
-    if action == "BUY":
+    if runtime_hard_block:
+        result["trade"] = await _reject_trade_for_runtime_hard_block(
+            trigger="manual",
+            trade_type="paper",
+            context=context,
+            final=original_final,
+            portfolio=summary,
+            hard_block=runtime_hard_block,
+        )
+    elif action == "BUY":
         result["trade"] = trader.buy(
             price, reason,
             position_usd=final.get("position_usd"),
@@ -2354,6 +2469,9 @@ async def download_all_artifacts():
         "data/processed/btc_15m_labeled.csv",
         "PAPER2REAL_IMPLEMENTATION_LOG.md",
     ]
+    for incident_path in _incident_report_files():
+        if incident_path not in files:
+            files.append(incident_path)
     db_included = os.getenv("INCLUDE_DB_IN_AUDIT_ZIP", "false").lower() in {"1", "true", "yes", "on"}
     if db_included:
         files.insert(0, "paper_trader.db")
@@ -2487,7 +2605,11 @@ async def reports():
 
 def _safe_report_file_path(requested_path: str) -> Path:
     normalized = requested_path.replace("\\", "/").lstrip("/")
-    if normalized not in SAFE_REPORT_FILES or ".." in Path(normalized).parts:
+    is_incident_report = (
+        normalized.startswith("data/reports/trade_execution_incident_")
+        and Path(normalized).suffix.lower() in {".json", ".md"}
+    )
+    if (normalized not in SAFE_REPORT_FILES and not is_incident_report) or ".." in Path(normalized).parts:
         raise HTTPException(status_code=404, detail="report_not_found")
     path = Path(normalized)
     if not path.exists() or not path.is_file():

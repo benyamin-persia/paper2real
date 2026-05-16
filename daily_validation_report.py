@@ -23,6 +23,7 @@ from typing import Any
 
 import pandas as pd
 
+import risk_engine
 from config import (
     DB_FILE,
     LEARNING_ONLY_SCAN_ENABLED,
@@ -40,7 +41,6 @@ from config import (
 REPORT_DIR = Path("data/reports")
 JSON_REPORT = REPORT_DIR / "daily_validation_report.json"
 MD_REPORT = REPORT_DIR / "daily_validation_report.md"
-INCIDENT_REPORT_JSON = REPORT_DIR / "trade_execution_incident_20260515.json"
 
 MASTER_DATASET = Path("data/processed/master_dataset.csv")
 RISK_BLOCK_REPORT = REPORT_DIR / "risk_block_performance.json"
@@ -119,6 +119,103 @@ TEXT_EXTENSIONS = {
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _incident_paths(day: str | None = None) -> tuple[Path, Path]:
+    suffix = day or datetime.now(timezone.utc).strftime("%Y%m%d")
+    return (
+        REPORT_DIR / f"trade_execution_incident_{suffix}.json",
+        REPORT_DIR / f"trade_execution_incident_{suffix}.md",
+    )
+
+
+def _latest_incident_path() -> Path | None:
+    reports = sorted(REPORT_DIR.glob("trade_execution_incident_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    return reports[0] if reports else None
+
+
+def _write_incident_markdown(report: dict, path: Path) -> None:
+    current = report.get("current_position_status") or {}
+    lines = [
+        f"# Trade Execution Incident {report.get('incident_date') or ''}".strip(),
+        "",
+        f"Generated: `{report.get('generated_at')}`",
+        f"Trade type: `{report.get('trade_type')}`",
+        f"Real order sent: `{report.get('real_order_sent')}`",
+        f"Entry price: `{report.get('entry_price')}`",
+        f"Position USD: `{report.get('position_usd')}`",
+        f"BTC held: `{report.get('btc_held')}`",
+        f"Risk blocker: `{report.get('risk_blocker')}`",
+        f"Stale dataset age hours: `{report.get('stale_dataset_age_hours')}`",
+        f"Critical alerts active: `{report.get('critical_alerts_active')}`",
+        f"Supervision verdict: `{report.get('supervision_verdict')}`",
+        f"Recommendation: `{report.get('recommendation')}`",
+        "",
+        "## Current Position",
+        "",
+        f"- Open normal paper trades: `{current.get('open_trades')}`",
+        f"- Open shadow-paper trades: `{current.get('open_shadow_paper_trades')}`",
+        f"- Cash balance USD: `{current.get('cash_balance_usd')}`",
+        f"- BTC held: `{current.get('btc_held')}`",
+        f"- Unrealized PnL USD: `{current.get('unrealized_pnl_usd')}`",
+        "",
+        "## Reason",
+        "",
+        f"- {report.get('reason')}",
+    ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def log_trade_execution_incident(
+    *,
+    trade_type: str,
+    hard_block: dict,
+    context: dict | None = None,
+    final: dict | None = None,
+    portfolio: dict | None = None,
+    real_order_sent: bool = False,
+    recommendation: str = "DO_NOT_RESUME",
+) -> dict:
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    context = context or {}
+    final = final or {}
+    portfolio = portfolio or {}
+    generated = datetime.now(timezone.utc)
+    json_path, md_path = _incident_paths(generated.strftime("%Y%m%d"))
+    existing = _read_json(json_path, {}) or {}
+    incidents = existing.get("incidents") if isinstance(existing.get("incidents"), list) else []
+    incident = {
+        "generated_at": generated.isoformat(),
+        "incident_date": generated.strftime("%Y-%m-%d"),
+        "trade_type": trade_type,
+        "real_order_sent": bool(real_order_sent),
+        "entry_price": context.get("price"),
+        "position_usd": final.get("position_usd"),
+        "btc_held": portfolio.get("btc_held"),
+        "risk_blocker": hard_block.get("blocker") or "runtime_hard_block",
+        "stale_dataset_age_hours": hard_block.get("master_dataset_age_hours"),
+        "critical_alerts_active": hard_block.get("critical_alerts_active") or [],
+        "supervision_verdict": hard_block.get("supervision_verdict"),
+        "recommendation": recommendation,
+        "reason": hard_block.get("reason"),
+        "hard_block": hard_block,
+        "current_position_status": {
+            "open_trades": portfolio.get("open_trades"),
+            "open_shadow_paper_trades": context.get("open_shadow_paper_trades"),
+            "cash_balance_usd": portfolio.get("cash_balance_usd"),
+            "btc_held": portfolio.get("btc_held"),
+            "unrealized_pnl_usd": portfolio.get("unrealized_pnl_usd"),
+        },
+    }
+    incidents.append(incident)
+    report = {
+        **incident,
+        "incident_count": len(incidents),
+        "incidents": incidents,
+    }
+    json_path.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
+    _write_incident_markdown(report, md_path)
+    return {"json_path": json_path.as_posix(), "md_path": md_path.as_posix(), **incident}
 
 
 def _read_json(path: Path, fallback=None):
@@ -333,15 +430,24 @@ def _trade_state() -> dict:
 
 
 def _incident_status() -> dict:
-    incident = _read_json(INCIDENT_REPORT_JSON, {}) or {}
+    incident_path = _latest_incident_path()
+    incident = _read_json(incident_path, {}) if incident_path else {}
+    shadow_paper = _read_json(REPORT_DIR / "shadow_paper_test_report.json", {}) or {}
     freeze_flag = os.getenv("EXECUTION_FREEZE", "").strip().lower() in {"1", "true", "yes", "on"}
+    hard_block = risk_engine.runtime_hard_block_active()
     return {
-        "execution_frozen": bool(freeze_flag or incident.get("execution_frozen")),
-        "latest_incident_report": str(INCIDENT_REPORT_JSON) if incident else None,
+        "execution_frozen": bool(freeze_flag or incident.get("execution_frozen") or hard_block.get("active")),
+        "runtime_hard_block_active": bool(hard_block.get("active")),
+        "runtime_hard_block_reason": hard_block.get("reason"),
+        "runtime_hard_blockers": hard_block.get("blockers"),
+        "latest_incident_report": incident_path.as_posix() if incident_path and incident else None,
         "latest_incident_generated_at": incident.get("generated_at"),
         "latest_incident_time_utc": incident.get("incident_time_utc"),
         "latest_incident_trade_type": incident.get("trade_type"),
         "latest_incident_recommended_action": incident.get("recommended_action"),
+        "paper_test_entries_enabled": bool(shadow_paper.get("paper_test_entries_enabled")),
+        "open_shadow_paper_trades": int(shadow_paper.get("open_test_trades") or 0),
+        "shadow_paper_test_status": shadow_paper.get("current_status"),
         "stale_dataset_hard_block_status": incident.get("stale_dataset_hard_block_status", "not_a_hard_block_at_incident_time"),
         "critical_alert_hard_block_status": incident.get("critical_alert_hard_block_status", "not_confirmed_hard_block_at_incident_time"),
     }
@@ -682,6 +788,10 @@ def _write_markdown(report: dict) -> None:
             f"- Latest incident time: `{report.get('latest_incident_time_utc')}`",
             f"- Latest incident trade type: `{report.get('latest_incident_trade_type')}`",
             f"- Latest incident recommendation: `{report.get('latest_incident_recommended_action')}`",
+            f"- Runtime hard block active: `{report.get('runtime_hard_block_active')}`",
+            f"- Runtime hard block reason: `{report.get('runtime_hard_block_reason')}`",
+            f"- Paper test entries enabled: `{report.get('paper_test_entries_enabled')}`",
+            f"- Open shadow-paper trades: `{report.get('open_shadow_paper_trades')}`",
             f"- Stale dataset hard block status: `{report.get('stale_dataset_hard_block_status')}`",
             f"- Critical alert hard block status: `{report.get('critical_alert_hard_block_status')}`",
             "",

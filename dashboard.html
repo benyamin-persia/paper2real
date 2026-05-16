@@ -222,6 +222,9 @@ async function loadOverview(){
   target.innerHTML = pageShell("Overview","Command Center","A compact read-only summary of trading state, shadow learning progress, API cost, and what needs attention next.",`
     <div class="grid cards compact">
       ${renderCard("System Health",renderBadge(h.status || dailyData.system_health?.system_health_status || "--"),"live endpoint + validation report")}
+      ${renderCard("Execution Freeze",renderBadge(dailyData.execution_frozen ? "ACTIVE" : "clear", dailyData.execution_frozen ? "error" : "ok"),dailyData.runtime_hard_block_reason || "runtime gate")}
+      ${renderCard("Normal Paper",renderBadge(dailyData.execution_frozen ? "blocked" : "enabled", dailyData.execution_frozen ? "error" : "ok"),`${p.open_trades || dailyData.open_trades || 0} open / ${formatMoney(p.unrealized_pnl_usd || 0)} PnL`)}
+      ${renderCard("Shadow Paper",renderBadge(dailyData.paper_test_entries_enabled ? "enabled" : "paused", dailyData.paper_test_entries_enabled ? "warning" : "ok"),`${dailyData.open_shadow_paper_trades || 0} open`)}
       ${renderCard("Dataset Freshness",renderBadge(dailyData.stale_dataset_warning || dailyData.system_health?.stale_dataset_warning ? "stale" : "fresh"),`last date ${dailyData.master_dataset_last_date || dailyData.system_health?.master_dataset_last_date || "--"}`)}
       ${renderCard("Trades Executed",d.summary?.trades_executed ?? 0,`${d.summary?.total_scans || 0} scans measured`)}
       ${renderCard("Final Recommendation",renderBadge(rec), "from daily validation report")}
@@ -234,6 +237,7 @@ async function loadOverview(){
     </div>
     <div class="grid cols2" style="margin-top:14px">
       <div class="action-card"><div class="label">What should I do now?</div><div class="value">${escapeHtml(nextAction[0])}</div>${nextAction.slice(1).map(x=>`<div class="hint">${escapeHtml(x)}</div>`).join("")}</div>
+      <div class="action-card"><div class="label">Last Incident</div><div class="value">${escapeHtml(dailyData.latest_incident_trade_type || "none")}</div><div class="hint">${escapeHtml(dailyData.latest_incident_recommended_action || dailyData.runtime_hard_block_reason || "no current incident")}</div><div class="hint">${escapeHtml(dailyData.latest_incident_report || "")}</div></div>
       <div class="panel"><div class="panel-title"><span>Current Research Stack</span><span>${renderBadge("read-only","info")}</span></div><div class="grid cols2">
         ${renderCard("Portfolio",formatMoney(p.total_portfolio_usd),`${p.open_trades || 0} open trades`)}
         ${renderCard("BTC Price",formatMoney(p.btc_price_usd),formatPct(p.return_pct))}
@@ -455,6 +459,9 @@ async function loadSystemHealth(){
       ${renderCard("Health Status",renderBadge(h.status || d.system_health?.system_health_status || "--"),"overall")}
       ${renderCard("Dataset Last Date",d.master_dataset_last_date || d.system_health?.master_dataset_last_date || "--",`${d.master_dataset_age_hours ?? d.system_health?.master_dataset_age_hours ?? "--"}h old`)}
       ${renderCard("Stale Dataset",renderBadge(d.stale_dataset_warning || d.system_health?.stale_dataset_warning ? "yes":"no"),"warning if older than target")}
+      ${renderCard("Runtime Freeze",renderBadge(d.execution_frozen ? "ACTIVE":"clear", d.execution_frozen ? "error":"ok"),d.runtime_hard_block_reason || "--")}
+      ${renderCard("Normal / Shadow Paper",`${d.open_trades ?? "--"} / ${d.open_shadow_paper_trades ?? 0}`,`normal open / shadow open`)}
+      ${renderCard("Last Incident",d.latest_incident_trade_type || "none",d.latest_incident_recommended_action || d.latest_incident_report || "--")}
       ${renderCard("Download ZIP Safe",renderBadge(h.download_zip_safe===false?"no":"yes"),"secrets excluded")}
       ${renderCard("Secrets Excluded",renderBadge("yes","ok"),".env, tokens, cookies, passwords blocked")}
       ${renderCard("Last Learning Scan",formatDateTime(d.last_learning_only_scan_time),`interval ${d.learning_only_interval_minutes || "--"} min`)}
