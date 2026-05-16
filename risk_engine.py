@@ -5,7 +5,10 @@ Claude gives an opinion. This module decides whether that opinion is safe to act
 Final action is always: HOLD unless every check passes.
 """
 
+import json
+import os
 from datetime import datetime, timezone
+from pathlib import Path
 from config import (
     STARTING_BALANCE,
     MAX_DRAWDOWN_PCT,
@@ -25,6 +28,17 @@ MAX_BB_WIDTH_SQUEEZE    = 0.02   # skip trades when bands are extremely tight (n
 MAX_STALE_PRICE_MINUTES = 5
 MAX_STALE_DAILY_HOURS   = 30
 MAX_STALE_SENTIMENT_HRS = 24
+MASTER_DATASET_PATH = Path("data/processed/master_dataset.csv")
+EVENTS_JSON_PATH = Path("data/raw/events.json")
+SUPERVISION_REPORT_PATH = Path("data/reports/chatgpt_supervision_report.json")
+MASTER_DATASET_MAX_AGE_HOURS = float(os.getenv("MASTER_DATASET_MAX_AGE_HOURS", "36"))
+DO_NOT_RESUME_SUPERVISION_VERDICTS = {
+    "DO_NOT_RESUME",
+    "DO_NOT_RESUME_TRADING",
+    "DO_NOT_RESUME_TRADING_OR_PAPER_TEST",
+    "EXPORT_NOT_AUDIT_CLEAN",
+}
+CRITICAL_ALERT_CATEGORIES = {"BTC_DIRECT", "REGULATORY_CRYPTO", "EXCHANGE_RISK"}
 
 # Calendar of high-volatility events — dates when we default to HOLD unless confidence ≥ 80
 # Format: "MM-DD" (repeating annual) or "YYYY-MM-DD" (one-off)
@@ -58,6 +72,164 @@ def _is_event_day() -> tuple[bool, str]:
     if today in CPI_DATES:
         return True, f"CPI release day ({today}) — elevated volatility risk"
     return False, ""
+
+
+def master_dataset_age_hours(path: str | Path = MASTER_DATASET_PATH) -> float | None:
+    dataset = Path(path)
+    if not dataset.exists():
+        return None
+    return (datetime.now(timezone.utc).timestamp() - dataset.stat().st_mtime) / 3600
+
+
+def stale_dataset_hard_block(
+    max_age_hours: float = MASTER_DATASET_MAX_AGE_HOURS,
+    path: str | Path = MASTER_DATASET_PATH,
+) -> dict:
+    age = master_dataset_age_hours(path)
+    if age is None:
+        return {
+            "active": True,
+            "blocker": "stale_dataset",
+            "reason": "master_dataset.csv missing",
+            "master_dataset_age_hours": None,
+            "max_age_hours": max_age_hours,
+        }
+    if age > max_age_hours:
+        return {
+            "active": True,
+            "blocker": "stale_dataset",
+            "reason": f"master_dataset.csv is {age:.2f}h old; max allowed is {max_age_hours:.2f}h",
+            "master_dataset_age_hours": round(age, 4),
+            "max_age_hours": max_age_hours,
+        }
+    return {
+        "active": False,
+        "blocker": None,
+        "reason": "master_dataset_fresh",
+        "master_dataset_age_hours": round(age, 4),
+        "max_age_hours": max_age_hours,
+    }
+
+
+def _read_json(path: str | Path) -> dict:
+    try:
+        p = Path(path)
+        if p.exists():
+            value = json.loads(p.read_text(encoding="utf-8"))
+            return value if isinstance(value, dict) else {}
+    except Exception:
+        pass
+    return {}
+
+
+def active_critical_alerts(path: str | Path = EVENTS_JSON_PATH) -> list[dict]:
+    data = _read_json(path)
+    alerts: list[dict] = []
+
+    if data.get("exchange_hack_alert"):
+        alerts.append({"category": "EXCHANGE_RISK", "message": str(data.get("exchange_hack_alert"))})
+    if data.get("stablecoin_depeg"):
+        alerts.append({"category": "REGULATORY_CRYPTO", "message": str(data.get("stablecoin_depeg"))})
+
+    raw_alerts = data.get("critical_alerts") or data.get("alerts") or data.get("events") or []
+    if isinstance(raw_alerts, dict):
+        raw_alerts = [raw_alerts]
+    for raw in raw_alerts if isinstance(raw_alerts, list) else []:
+        if not isinstance(raw, dict):
+            continue
+        category = str(raw.get("category") or raw.get("alert_type") or raw.get("source") or raw.get("type") or "").upper()
+        severity = str(raw.get("severity") or raw.get("level") or "").upper()
+        status = str(raw.get("status") or "active").lower()
+        text = " ".join(
+            str(raw.get(key) or "")
+            for key in ("message", "title", "summary", "reason", "text")
+        )
+        text_upper = text.upper()
+        category_hit = category in CRITICAL_ALERT_CATEGORIES or any(cat in text_upper for cat in CRITICAL_ALERT_CATEGORIES)
+        severity_hit = severity in {"CRITICAL", "HIGH"} or bool(data.get("has_critical"))
+        if status not in {"resolved", "inactive", "closed"} and (category_hit or severity_hit):
+            alerts.append(
+                {
+                    "category": category or ("CRITICAL" if severity_hit else "UNKNOWN"),
+                    "severity": severity or raw.get("severity"),
+                    "status": status,
+                    "message": text.strip() or str(raw)[:500],
+                }
+            )
+    if data.get("has_critical") and not alerts:
+        alerts.append({"category": "CRITICAL", "message": "events.json has_critical=true"})
+    return alerts
+
+
+def critical_alerts_hard_block(path: str | Path = EVENTS_JSON_PATH) -> dict:
+    alerts = active_critical_alerts(path)
+    return {
+        "active": bool(alerts),
+        "blocker": "critical_market_alert" if alerts else None,
+        "reason": "critical market alerts active" if alerts else "no_critical_alerts",
+        "critical_alerts_active": alerts,
+    }
+
+
+def supervision_verdict(path: str | Path = SUPERVISION_REPORT_PATH) -> str | None:
+    return _read_json(path).get("supervision_verdict")
+
+
+def supervision_hard_block(path: str | Path = SUPERVISION_REPORT_PATH) -> dict:
+    verdict = supervision_verdict(path)
+    active = bool(verdict and (verdict in DO_NOT_RESUME_SUPERVISION_VERDICTS or str(verdict).startswith("DO_NOT_RESUME")))
+    return {
+        "active": active,
+        "blocker": "supervision_do_not_resume" if active else None,
+        "reason": f"supervision_verdict={verdict}" if active else "supervision_allows_runtime",
+        "supervision_verdict": verdict,
+    }
+
+
+def runtime_hard_block_active(
+    market: dict | None = None,
+    *,
+    max_dataset_age_hours: float = MASTER_DATASET_MAX_AGE_HOURS,
+    master_dataset_path: str | Path = MASTER_DATASET_PATH,
+    events_path: str | Path = EVENTS_JSON_PATH,
+    supervision_path: str | Path = SUPERVISION_REPORT_PATH,
+) -> dict:
+    dataset = stale_dataset_hard_block(max_dataset_age_hours, master_dataset_path)
+    alerts = critical_alerts_hard_block(events_path)
+    supervision = supervision_hard_block(supervision_path)
+    checks = [dataset, alerts, supervision]
+    active_checks = [check for check in checks if check.get("active")]
+    blockers = [str(check.get("blocker")) for check in active_checks if check.get("blocker")]
+    reasons = [str(check.get("reason")) for check in active_checks if check.get("reason")]
+    result = {
+        "active": bool(active_checks),
+        "blocked": bool(active_checks),
+        "blocker": blockers[0] if blockers else None,
+        "blockers": blockers,
+        "reason": "; ".join(reasons) if reasons else "runtime_hard_block_clear",
+        "checks": {
+            "stale_dataset": dataset,
+            "critical_alerts": alerts,
+            "supervision": supervision,
+        },
+        "master_dataset_age_hours": dataset.get("master_dataset_age_hours"),
+        "critical_alerts_active": alerts.get("critical_alerts_active", []),
+        "supervision_verdict": supervision.get("supervision_verdict"),
+    }
+    if market:
+        market["runtime_hard_block"] = result
+        market["runtime_hard_block_active"] = result["active"]
+    return result
+
+
+def apply_runtime_hard_block(decision: dict, hard_block: dict) -> dict:
+    blocked = dict(decision)
+    blocked["action"] = "HOLD"
+    blocked["blocked_by"] = hard_block.get("blocker") or "runtime_hard_block"
+    blocked["reason"] = f"Runtime hard block active: {hard_block.get('reason')}"
+    blocked["position_usd"] = None
+    blocked["stop_price"] = None
+    return blocked
 
 
 def compute_position_size(
