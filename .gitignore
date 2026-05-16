@@ -9,6 +9,7 @@ env/
 *.sqlite
 *.sqlite3
 *.log
+data/reports/monitor_paper2real_state.json
 
 __pycache__/
 *.pyc
