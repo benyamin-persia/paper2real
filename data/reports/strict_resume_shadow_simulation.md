@@ -2,10 +2,10 @@
 
 Paper test is paused. This is simulation only. No trades can open.
 
-- Generated at: `2026-05-16T04:00:24.877160+00:00`
-- Total Shadow BUY records: `232`
-- Strict candidates: `62`
-- Rejected: `170`
+- Generated at: `2026-05-16T16:00:18.332894+00:00`
+- Total Shadow BUY records: `247`
+- Strict candidates: `63`
+- Rejected: `184`
 - Failed paper trades filtered out: `4`
 - Strict 4h win rate: `50.0%`
 - Strict avg 4h return: `-0.0886%`
@@ -14,7 +14,7 @@ Paper test is paused. This is simulation only. No trades can open.
 ## Rejected By Reason
 
 - no_bullish_confirmation: `9`
-- smart_money_bearish: `94`
+- smart_money_bearish: `108`
 - bb_squeeze_override_disabled: `40`
 - ta_bearish: `27`
 

@@ -1,31 +1,31 @@
 {
-  "generated_at": "2026-05-16T04:00:23.027898+00:00",
+  "generated_at": "2026-05-16T16:00:16.413310+00:00",
   "db_file": "/app/paper_trader.db",
-  "decisions_total": 283,
-  "price_points_total": 1264,
-  "latest_price_time": "2026-05-16T04:00:19+00:00",
-  "rows_total": 1132,
-  "rows_scored": 889,
-  "rows_pending": 38,
-  "rows_no_price_at_horizon": 205,
-  "shadow_buys_total": 232,
-  "shadow_rows_scored": 728,
-  "shadow_smart_money_total": 196,
-  "shadow_smart_money_rows_scored": 624,
+  "decisions_total": 298,
+  "price_points_total": 1279,
+  "latest_price_time": "2026-05-16T16:00:12+00:00",
+  "rows_total": 1192,
+  "rows_scored": 936,
+  "rows_pending": 40,
+  "rows_no_price_at_horizon": 216,
+  "shadow_buys_total": 247,
+  "shadow_rows_scored": 772,
+  "shadow_smart_money_total": 209,
+  "shadow_smart_money_rows_scored": 664,
   "candidate_buys_total": 209,
   "risk_blocked_candidates_total": 198,
   "horizons": {
     "15m": {
-      "total": 283,
-      "scored": 96,
+      "total": 298,
+      "scored": 100,
       "pending": 1,
-      "no_price_at_horizon": 186,
+      "no_price_at_horizon": 197,
       "claude_accuracy": {
         "BUY": {
           "count": 1,
           "good": 0,
           "accuracy_pct": 0.0,
-          "avg_return_pct": -0.1138
+          "avg_return_pct": -0.0804
         },
         "HOLD": {
           "count": 1,
@@ -51,15 +51,15 @@
       "claude_buy_accuracy_pct": 0.0,
       "missed_upside_holds": 0,
       "risk_engine": {
-        "candidate_buy_blocked": 60,
+        "candidate_buy_blocked": 49,
         "claude_buy_blocked": 1,
-        "trade_quality_buy_blocked": 60,
-        "risk_engine_saved_losses": 32,
-        "risk_engine_blocked_winners": 28,
+        "trade_quality_buy_blocked": 49,
+        "risk_engine_saved_losses": 27,
+        "risk_engine_blocked_winners": 22,
         "block_breakdown": {
-          "bb_squeeze": 50,
-          "macro_event_day": 6,
-          "exchange_alert": 4
+          "bb_squeeze": 44,
+          "exchange_alert": 4,
+          "macro_event_day": 1
         }
       },
       "conditions": {
@@ -68,11 +68,6 @@
             "condition": "final_BUY",
             "count": 10,
             "avg_return_pct": 0.1138
-          },
-          {
-            "condition": "rsi_lt_35",
-            "count": 14,
-            "avg_return_pct": 0.1131
           },
           {
             "condition": "rsi_55_65",
@@ -100,16 +95,31 @@
             "avg_return_pct": 0.0704
           },
           {
+            "condition": "rsi_lt_35",
+            "count": 14,
+            "avg_return_pct": 0.0704
+          },
+          {
             "condition": "trigger_scheduled",
-            "count": 31,
-            "avg_return_pct": 0.0457
+            "count": 33,
+            "avg_return_pct": 0.0195
           }
         ],
         "worst_conditions": [
           {
             "condition": "rsi_45_55",
-            "count": 23,
-            "avg_return_pct": -0.0549
+            "count": 22,
+            "avg_return_pct": -0.0459
+          },
+          {
+            "condition": "candidate_HOLD",
+            "count": 26,
+            "avg_return_pct": -0.044
+          },
+          {
+            "condition": "candidate_source_none",
+            "count": 26,
+            "avg_return_pct": -0.044
           },
           {
             "condition": "rsi_gte_65",
@@ -118,54 +128,44 @@
           },
           {
             "condition": "rsi_35_45",
-            "count": 29,
-            "avg_return_pct": -0.0229
+            "count": 34,
+            "avg_return_pct": -0.0334
           },
           {
             "condition": "fg_fear",
-            "count": 74,
-            "avg_return_pct": -0.0057
-          },
-          {
-            "condition": "trigger_learning_only_scan",
-            "count": 65,
-            "avg_return_pct": -0.0045
-          },
-          {
-            "condition": "candidate_BUY",
-            "count": 70,
-            "avg_return_pct": -0.0024
+            "count": 78,
+            "avg_return_pct": -0.0159
           },
           {
             "condition": "funding_positive",
-            "count": 79,
-            "avg_return_pct": -0.0014
+            "count": 83,
+            "avg_return_pct": -0.0112
           },
           {
-            "condition": "candidate_source_trade_quality",
-            "count": 69,
-            "avg_return_pct": -0.0008
+            "condition": "final_HOLD",
+            "count": 90,
+            "avg_return_pct": -0.0092
           }
         ]
       },
       "shadow_buy": {
-        "count": 71,
-        "avg_return_pct": -0.0184,
-        "win_rate_pct": 47.89,
+        "count": 75,
+        "avg_return_pct": -0.0283,
+        "win_rate_pct": 45.33,
         "missed_big_upside": 0,
-        "would_have_lost": 37
+        "would_have_lost": 41
       },
       "shadow_smart_money": {
-        "count": 67,
-        "avg_directional_return_pct": 0.0205,
-        "win_rate_pct": 50.75,
+        "count": 70,
+        "avg_directional_return_pct": 0.0331,
+        "win_rate_pct": 54.29,
         "missed_big_directional_move": 1,
-        "would_have_lost": 33
+        "would_have_lost": 32
       }
     },
     "1h": {
-      "total": 283,
-      "scored": 263,
+      "total": 298,
+      "scored": 278,
       "pending": 1,
       "no_price_at_horizon": 19,
       "claude_accuracy": {
@@ -228,29 +228,29 @@
             "avg_return_pct": 0.1207
           },
           {
-            "condition": "rsi_lt_35",
-            "count": 27,
-            "avg_return_pct": 0.0904
-          },
-          {
-            "condition": "candidate_HOLD",
-            "count": 47,
-            "avg_return_pct": 0.027
-          },
-          {
-            "condition": "candidate_source_none",
-            "count": 47,
-            "avg_return_pct": 0.027
-          },
-          {
-            "condition": "trigger_scheduled",
-            "count": 52,
-            "avg_return_pct": 0.0179
-          },
-          {
             "condition": "trigger_manual",
             "count": 2,
             "avg_return_pct": 0.0161
+          },
+          {
+            "condition": "rsi_55_65",
+            "count": 60,
+            "avg_return_pct": 0.0138
+          },
+          {
+            "condition": "rsi_lt_35",
+            "count": 33,
+            "avg_return_pct": 0.0039
+          },
+          {
+            "condition": "trigger_scheduled",
+            "count": 55,
+            "avg_return_pct": -0.0029
+          },
+          {
+            "condition": "funding_positive",
+            "count": 222,
+            "avg_return_pct": -0.0154
           }
         ],
         "worst_conditions": [
@@ -260,61 +260,61 @@
             "avg_return_pct": -0.213
           },
           {
-            "condition": "rsi_45_55",
-            "count": 82,
-            "avg_return_pct": -0.0559
-          },
-          {
             "condition": "funding_neutral",
             "count": 56,
             "avg_return_pct": -0.0539
           },
           {
+            "condition": "rsi_45_55",
+            "count": 83,
+            "avg_return_pct": -0.0521
+          },
+          {
+            "condition": "rsi_35_45",
+            "count": 78,
+            "avg_return_pct": -0.0343
+          },
+          {
             "condition": "candidate_BUY",
             "count": 204,
-            "avg_return_pct": -0.0314
+            "avg_return_pct": -0.034
           },
           {
             "condition": "candidate_source_trade_quality",
             "count": 203,
-            "avg_return_pct": -0.0311
+            "avg_return_pct": -0.0338
           },
           {
-            "condition": "rsi_35_45",
-            "count": 70,
-            "avg_return_pct": -0.0243
-          },
-          {
-            "condition": "fg_neutral",
-            "count": 125,
-            "avg_return_pct": -0.0228
+            "condition": "final_HOLD",
+            "count": 267,
+            "avg_return_pct": -0.0291
           },
           {
             "condition": "trigger_learning_only_scan",
-            "count": 209,
-            "avg_return_pct": -0.0209
+            "count": 221,
+            "avg_return_pct": -0.0286
           }
         ]
       },
       "shadow_buy": {
-        "count": 224,
-        "avg_return_pct": -0.031,
-        "win_rate_pct": 48.66,
+        "count": 239,
+        "avg_return_pct": -0.0417,
+        "win_rate_pct": 47.28,
         "missed_big_upside": 1,
-        "would_have_lost": 115
+        "would_have_lost": 126
       },
       "shadow_smart_money": {
-        "count": 194,
-        "avg_directional_return_pct": -0.0077,
-        "win_rate_pct": 49.48,
+        "count": 208,
+        "avg_directional_return_pct": 0.0081,
+        "win_rate_pct": 51.44,
         "missed_big_directional_move": 1,
-        "would_have_lost": 98
+        "would_have_lost": 101
       }
     },
     "4h": {
-      "total": 283,
-      "scored": 278,
-      "pending": 5,
+      "total": 298,
+      "scored": 292,
+      "pending": 6,
       "no_price_at_horizon": 0,
       "claude_accuracy": {
         "BUY": {
@@ -327,7 +327,7 @@
           "count": 11,
           "good": 6,
           "accuracy_pct": 54.55,
-          "avg_return_pct": -0.0097
+          "avg_return_pct": -0.0021
         }
       },
       "final_accuracy": {
@@ -335,7 +335,7 @@
           "count": 11,
           "good": 6,
           "accuracy_pct": 54.55,
-          "avg_return_pct": -0.0097
+          "avg_return_pct": -0.0021
         },
         "BUY": {
           "count": 11,
@@ -362,8 +362,8 @@
         "best_conditions": [
           {
             "condition": "rsi_45_55",
-            "count": 81,
-            "avg_return_pct": 0.0813
+            "count": 83,
+            "avg_return_pct": 0.0766
           },
           {
             "condition": "final_BUY",
@@ -371,34 +371,34 @@
             "avg_return_pct": 0.0758
           },
           {
-            "condition": "rsi_lt_35",
-            "count": 28,
-            "avg_return_pct": 0.0292
-          },
-          {
-            "condition": "funding_positive",
-            "count": 204,
-            "avg_return_pct": 0.0054
-          },
-          {
             "condition": "candidate_BUY",
             "count": 209,
-            "avg_return_pct": -0.0023
+            "avg_return_pct": 0.0008
           },
           {
             "condition": "candidate_source_trade_quality",
             "count": 208,
-            "avg_return_pct": -0.003
+            "avg_return_pct": 0.0001
+          },
+          {
+            "condition": "funding_positive",
+            "count": 218,
+            "avg_return_pct": -0.0253
+          },
+          {
+            "condition": "rsi_lt_35",
+            "count": 34,
+            "avg_return_pct": -0.0283
           },
           {
             "condition": "trigger_learning_only_scan",
-            "count": 207,
-            "avg_return_pct": -0.006
+            "count": 218,
+            "avg_return_pct": -0.0313
           },
           {
-            "condition": "fg_fear",
-            "count": 134,
-            "avg_return_pct": -0.0127
+            "condition": "fg_neutral",
+            "count": 144,
+            "avg_return_pct": -0.0361
           }
         ],
         "worst_conditions": [
@@ -406,6 +406,21 @@
             "condition": "trigger_manual",
             "count": 2,
             "avg_return_pct": -0.3361
+          },
+          {
+            "condition": "candidate_HOLD",
+            "count": 59,
+            "avg_return_pct": -0.1841
+          },
+          {
+            "condition": "candidate_source_none",
+            "count": 59,
+            "avg_return_pct": -0.1841
+          },
+          {
+            "condition": "rsi_35_45",
+            "count": 77,
+            "avg_return_pct": -0.1275
           },
           {
             "condition": "rsi_gte_65",
@@ -426,43 +441,28 @@
             "condition": "funding_neutral",
             "count": 74,
             "avg_return_pct": -0.1081
-          },
-          {
-            "condition": "rsi_55_65",
-            "count": 69,
-            "avg_return_pct": -0.0812
-          },
-          {
-            "condition": "candidate_HOLD",
-            "count": 45,
-            "avg_return_pct": -0.08
-          },
-          {
-            "condition": "candidate_source_none",
-            "count": 45,
-            "avg_return_pct": -0.08
           }
         ]
       },
       "shadow_buy": {
-        "count": 227,
-        "avg_return_pct": -0.0168,
-        "win_rate_pct": 50.22,
+        "count": 241,
+        "avg_return_pct": -0.0433,
+        "win_rate_pct": 47.72,
         "missed_big_upside": 5,
-        "would_have_lost": 113
+        "would_have_lost": 126
       },
       "shadow_smart_money": {
-        "count": 191,
-        "avg_directional_return_pct": -0.0127,
-        "win_rate_pct": 52.36,
+        "count": 205,
+        "avg_directional_return_pct": 0.0209,
+        "win_rate_pct": 55.12,
         "missed_big_directional_move": 2,
-        "would_have_lost": 91
+        "would_have_lost": 92
       }
     },
     "24h": {
-      "total": 283,
-      "scored": 252,
-      "pending": 31,
+      "total": 298,
+      "scored": 266,
+      "pending": 32,
       "no_price_at_horizon": 0,
       "claude_accuracy": {
         "BUY": {
@@ -472,36 +472,36 @@
           "avg_return_pct": 1.0746
         },
         "HOLD": {
-          "count": 68,
-          "good": 49,
-          "accuracy_pct": 72.06,
-          "avg_return_pct": -0.856
+          "count": 76,
+          "good": 57,
+          "accuracy_pct": 75.0,
+          "avg_return_pct": -1.1123
         }
       },
       "final_accuracy": {
         "HOLD": {
-          "count": 64,
-          "good": 44,
-          "accuracy_pct": 68.75,
-          "avg_return_pct": -0.6558
+          "count": 72,
+          "good": 52,
+          "accuracy_pct": 72.22,
+          "avg_return_pct": -0.9485
         },
         "BUY": {
-          "count": 6,
+          "count": 9,
           "good": 0,
           "accuracy_pct": 0.0,
-          "avg_return_pct": -2.5419
+          "avg_return_pct": -2.0846
         }
       },
       "claude_buy_accuracy_pct": 50.0,
       "missed_upside_holds": 19,
       "risk_engine": {
-        "candidate_buy_blocked": 184,
+        "candidate_buy_blocked": 195,
         "claude_buy_blocked": 1,
-        "trade_quality_buy_blocked": 184,
-        "risk_engine_saved_losses": 92,
+        "trade_quality_buy_blocked": 195,
+        "risk_engine_saved_losses": 103,
         "risk_engine_blocked_winners": 92,
         "block_breakdown": {
-          "bb_squeeze": 98,
+          "bb_squeeze": 109,
           "exchange_alert": 80,
           "macro_event_day": 6
         }
@@ -512,11 +512,6 @@
             "condition": "claude_BUY",
             "count": 2,
             "avg_return_pct": 1.0746
-          },
-          {
-            "condition": "rsi_lt_35",
-            "count": 22,
-            "avg_return_pct": 0.5314
           },
           {
             "condition": "trigger_manual",
@@ -534,26 +529,31 @@
             "avg_return_pct": 0.3805
           },
           {
-            "condition": "fg_fear",
-            "count": 108,
-            "avg_return_pct": 0.2188
+            "condition": "rsi_lt_35",
+            "count": 26,
+            "avg_return_pct": 0.2333
           },
           {
             "condition": "candidate_HOLD",
             "count": 38,
-            "avg_return_pct": 0.0885
+            "avg_return_pct": 0.0843
           },
           {
             "condition": "candidate_source_none",
             "count": 38,
-            "avg_return_pct": 0.0885
+            "avg_return_pct": 0.0843
+          },
+          {
+            "condition": "fg_fear",
+            "count": 122,
+            "avg_return_pct": -0.0899
           }
         ],
         "worst_conditions": [
           {
             "condition": "final_BUY",
-            "count": 6,
-            "avg_return_pct": -2.5419
+            "count": 9,
+            "avg_return_pct": -2.0846
           },
           {
             "condition": "rsi_gte_65",
@@ -561,9 +561,19 @@
             "avg_return_pct": -0.5408
           },
           {
+            "condition": "candidate_source_trade_quality",
+            "count": 203,
+            "avg_return_pct": -0.4112
+          },
+          {
             "condition": "fg_neutral",
             "count": 144,
-            "avg_return_pct": -0.4036
+            "avg_return_pct": -0.401
+          },
+          {
+            "condition": "candidate_BUY",
+            "count": 204,
+            "avg_return_pct": -0.3973
           },
           {
             "condition": "rsi_55_65",
@@ -571,40 +581,30 @@
             "avg_return_pct": -0.3244
           },
           {
-            "condition": "candidate_source_trade_quality",
-            "count": 189,
-            "avg_return_pct": -0.2614
+            "condition": "rsi_35_45",
+            "count": 61,
+            "avg_return_pct": -0.3208
           },
           {
-            "condition": "candidate_BUY",
-            "count": 190,
-            "avg_return_pct": -0.2473
-          },
-          {
-            "condition": "funding_neutral",
-            "count": 74,
-            "avg_return_pct": -0.1904
-          },
-          {
-            "condition": "trigger_scheduled",
-            "count": 63,
-            "avg_return_pct": -0.1512
+            "condition": "funding_positive",
+            "count": 192,
+            "avg_return_pct": -0.2845
           }
         ]
       },
       "shadow_buy": {
-        "count": 206,
-        "avg_return_pct": -0.1659,
-        "win_rate_pct": 50.49,
+        "count": 217,
+        "avg_return_pct": -0.299,
+        "win_rate_pct": 47.93,
         "missed_big_upside": 20,
-        "would_have_lost": 102
+        "would_have_lost": 113
       },
       "shadow_smart_money": {
-        "count": 172,
-        "avg_directional_return_pct": -0.377,
-        "win_rate_pct": 48.26,
-        "missed_big_directional_move": 13,
-        "would_have_lost": 89
+        "count": 181,
+        "avg_directional_return_pct": -0.3271,
+        "win_rate_pct": 49.17,
+        "missed_big_directional_move": 19,
+        "would_have_lost": 92
       }
     }
   },

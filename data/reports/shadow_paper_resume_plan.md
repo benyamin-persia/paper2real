@@ -1,6 +1,6 @@
 # Shadow Paper Resume Plan
 
-- Generated at: `2026-05-16T04:00:24.580486+00:00`
+- Generated at: `2026-05-16T16:00:18.009794+00:00`
 - Current status: `Paper Test Paused`
 - Why paused: `Supervision forbids trading: DO_NOT_RESUME_TRADING_OR_PAPER_TEST`
 - Recommendation: `KEEP_PAUSED_AND_COLLECT_SHADOW, DO_NOT_RESUME_YET`
@@ -14,6 +14,8 @@
     "KEEP_PAPER_TEST_PAUSED",
     "REQUIRE_ALL_CONFIRMATION_NEUTRAL_OR_BETTER",
     "REQUIRE_TA_NOT_BEARISH",
+    "REQUIRE_AI_TA_NOT_BEARISH",
+    "REQUIRE_SMART_MONEY_CONFIRMATION",
     "CHANGE_STOP_TAKE_PROFIT_REVIEW_ONLY",
     "COLLECT_MORE_SHADOW_ONLY",
     "DO_NOT_RESUME"
@@ -38,16 +40,16 @@
   "best_condition": {
     "section": "market_condition",
     "filter": "bearish_sweep",
-    "avg_return_4h": 0.1555,
+    "avg_return_4h": 0.1704,
     "win_rate_4h": 68.75,
     "count": 32
   },
   "worst_condition": {
-    "section": "smart_money_bias",
-    "filter": "neutral",
-    "avg_return_4h": -0.2471,
-    "win_rate_4h": 20.0,
-    "count": 15
+    "section": "risk_blocker",
+    "filter": "no blocker",
+    "avg_return_4h": -0.3102,
+    "win_rate_4h": 21.74,
+    "count": 29
   }
 }
 ```

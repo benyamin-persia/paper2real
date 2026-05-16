@@ -1,65 +1,65 @@
 # AI Feedback Summary
 
-Generated: 2026-05-16T04:00:23.027898+00:00
-Decisions: 283
-Scored rows: 889
-Pending rows: 38
-Shadow BUYs: 232
-Shadow rows scored: 728
-Shadow Smart Money candidates: 196
-Shadow Smart Money rows scored: 624
+Generated: 2026-05-16T16:00:16.413310+00:00
+Decisions: 298
+Scored rows: 936
+Pending rows: 40
+Shadow BUYs: 247
+Shadow rows scored: 772
+Shadow Smart Money candidates: 209
+Shadow Smart Money rows scored: 664
 Recommendation: Keep collecting decisions. Do not change strategy until sample size is larger.
 
 ## Horizons
 
 ### 15m
-- Scored: 96 / 283
+- Scored: 100 / 298
 - Claude BUY accuracy: 0.0
 - Missed upside HOLDs: 0
-- Risk engine saved losses: 32
-- Risk engine blocked winners: 28
-- Shadow BUY count: 71
-- Shadow BUY avg return: -0.0184
-- Shadow BUY win rate: 47.89
-- Shadow Smart Money count: 67
-- Shadow Smart Money directional avg return: 0.0205
-- Shadow Smart Money directional win rate: 50.75
+- Risk engine saved losses: 27
+- Risk engine blocked winners: 22
+- Shadow BUY count: 75
+- Shadow BUY avg return: -0.0283
+- Shadow BUY win rate: 45.33
+- Shadow Smart Money count: 70
+- Shadow Smart Money directional avg return: 0.0331
+- Shadow Smart Money directional win rate: 54.29
 
 ### 1h
-- Scored: 263 / 283
+- Scored: 278 / 298
 - Claude BUY accuracy: 0.0
 - Missed upside HOLDs: 1
 - Risk engine saved losses: 102
 - Risk engine blocked winners: 91
-- Shadow BUY count: 224
-- Shadow BUY avg return: -0.031
-- Shadow BUY win rate: 48.66
-- Shadow Smart Money count: 194
-- Shadow Smart Money directional avg return: -0.0077
-- Shadow Smart Money directional win rate: 49.48
+- Shadow BUY count: 239
+- Shadow BUY avg return: -0.0417
+- Shadow BUY win rate: 47.28
+- Shadow Smart Money count: 208
+- Shadow Smart Money directional avg return: 0.0081
+- Shadow Smart Money directional win rate: 51.44
 
 ### 4h
-- Scored: 278 / 283
+- Scored: 292 / 298
 - Claude BUY accuracy: 50.0
 - Missed upside HOLDs: 5
 - Risk engine saved losses: 98
 - Risk engine blocked winners: 100
-- Shadow BUY count: 227
-- Shadow BUY avg return: -0.0168
-- Shadow BUY win rate: 50.22
-- Shadow Smart Money count: 191
-- Shadow Smart Money directional avg return: -0.0127
-- Shadow Smart Money directional win rate: 52.36
+- Shadow BUY count: 241
+- Shadow BUY avg return: -0.0433
+- Shadow BUY win rate: 47.72
+- Shadow Smart Money count: 205
+- Shadow Smart Money directional avg return: 0.0209
+- Shadow Smart Money directional win rate: 55.12
 
 ### 24h
-- Scored: 252 / 283
+- Scored: 266 / 298
 - Claude BUY accuracy: 50.0
 - Missed upside HOLDs: 19
-- Risk engine saved losses: 92
+- Risk engine saved losses: 103
 - Risk engine blocked winners: 92
-- Shadow BUY count: 206
-- Shadow BUY avg return: -0.1659
-- Shadow BUY win rate: 50.49
-- Shadow Smart Money count: 172
-- Shadow Smart Money directional avg return: -0.377
-- Shadow Smart Money directional win rate: 48.26
+- Shadow BUY count: 217
+- Shadow BUY avg return: -0.299
+- Shadow BUY win rate: 47.93
+- Shadow Smart Money count: 181
+- Shadow Smart Money directional avg return: -0.3271
+- Shadow Smart Money directional win rate: 49.17
