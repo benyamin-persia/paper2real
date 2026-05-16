@@ -1,10 +1,10 @@
 # Shadow Paper Test Report
 
-- Generated at: `2026-05-15T06:35:09.047176+00:00`
+- Generated at: `2026-05-16T00:55:55.932611+00:00`
 - Enabled: `False`
 - Paper test entries enabled: `False`
 - Current status: `Paper Test Paused`
-- Pause reason: `Shadow Paper Test disabled by staged config`
+- Pause reason: `Supervision forbids trading: DO_NOT_RESUME_TRADING_OR_PAPER_TEST`
 - Strict rules staged: `True`
 - Shadow BUY review recommendation: `SHADOW_BUY_STAYS_SHADOW`
 - Mode: `paper_only`
