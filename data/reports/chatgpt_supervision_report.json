@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-16T16:00:23.204910+00:00",
-  "snapshot_id": "f3b3d24b82d973ce",
-  "bundle_generated_at": "2026-05-16T16:00:23.204910+00:00",
+  "generated_at": "2026-05-17T04:00:20.294781+00:00",
+  "snapshot_id": "5c10aa244a216d11",
+  "bundle_generated_at": "2026-05-17T04:00:20.294781+00:00",
   "repository": "https://github.com/benyamin-persia/paper2real.git",
   "branch": "shadow-paper-paused-20260513",
   "source_commit_sha": "21ad041a7db2402c11ba9bb4df060f986bc92e2b",
@@ -35,9 +35,9 @@
   "ta_ready_for_bonus": false,
   "ai_ta_ready_for_bonus": false,
   "strict_resume_recommendation": "DO_NOT_RESUME_YET",
-  "strict_candidates_count": 63,
-  "strict_candidate_4h_win_rate": 50.0,
-  "strict_candidate_avg_return_4h": -0.0886,
+  "strict_candidates_count": 68,
+  "strict_candidate_4h_win_rate": 51.47,
+  "strict_candidate_avg_return_4h": -0.0789,
   "failed_paper_trades_filtered_out": 4,
   "count_consistency": {
     "status": "FAIL",
@@ -46,12 +46,12 @@
         "name": "shadow_buy_count",
         "status": "FAIL",
         "values": {
-          "daily.shadow_buy_count": 246,
-          "daily.shadow_buy_review_count": 247,
-          "shadow_buy_review.shadow_buy_count": 247,
-          "shadow_paper_test.shadow_buy_review_count": 247,
-          "shadow_buy_failure_diagnosis.total_shadow_buy_records": 247,
-          "strict_resume_shadow_simulation.total_shadow_buy_records": 247
+          "daily.shadow_buy_count": 261,
+          "daily.shadow_buy_review_count": 262,
+          "shadow_buy_review.shadow_buy_count": 262,
+          "shadow_paper_test.shadow_buy_review_count": 262,
+          "shadow_buy_failure_diagnosis.total_shadow_buy_records": 262,
+          "strict_resume_shadow_simulation.total_shadow_buy_records": 262
         }
       },
       {
@@ -64,10 +64,10 @@
       },
       {
         "name": "smart_money_shadow_count",
-        "status": "PASS",
+        "status": "FAIL",
         "values": {
-          "daily.shadow_smart_money_count": 209,
-          "smart_money_review.smart_money_shadow_count": 209
+          "daily.shadow_smart_money_count": 214,
+          "smart_money_review.smart_money_shadow_count": 215
         }
       }
     ],
@@ -76,25 +76,33 @@
         "name": "shadow_buy_count",
         "status": "FAIL",
         "values": {
-          "daily.shadow_buy_count": 246,
-          "daily.shadow_buy_review_count": 247,
-          "shadow_buy_review.shadow_buy_count": 247,
-          "shadow_paper_test.shadow_buy_review_count": 247,
-          "shadow_buy_failure_diagnosis.total_shadow_buy_records": 247,
-          "strict_resume_shadow_simulation.total_shadow_buy_records": 247
+          "daily.shadow_buy_count": 261,
+          "daily.shadow_buy_review_count": 262,
+          "shadow_buy_review.shadow_buy_count": 262,
+          "shadow_paper_test.shadow_buy_review_count": 262,
+          "shadow_buy_failure_diagnosis.total_shadow_buy_records": 262,
+          "strict_resume_shadow_simulation.total_shadow_buy_records": 262
+        }
+      },
+      {
+        "name": "smart_money_shadow_count",
+        "status": "FAIL",
+        "values": {
+          "daily.shadow_smart_money_count": 214,
+          "smart_money_review.smart_money_shadow_count": 215
         }
       }
     ]
   },
   "db_fingerprint": {
-    "total_decisions": 298,
-    "max_decision_id": 298,
-    "latest_decision_timestamp": 1778947212,
-    "shadow_buy_count": 247,
+    "total_decisions": 313,
+    "max_decision_id": 313,
+    "latest_decision_timestamp": 1778990412,
+    "shadow_buy_count": 262,
     "risk_blocked_candidates": 198,
-    "smart_money_shadow_count": 209,
-    "ta_shadow_count": 88,
-    "ai_ta_shadow_count": 88,
+    "smart_money_shadow_count": 215,
+    "ta_shadow_count": 95,
+    "ai_ta_shadow_count": 95,
     "paper_open_trades": 0,
     "paper_closed_trades": 0
   },
@@ -102,13 +110,13 @@
     "daily_validation_report.json": {
       "path": "data/reports/daily_validation_report.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:19.907616+00:00",
+      "generated_at": "2026-05-17T04:00:20.283376+00:00",
       "metric_scope": "canonical daily system health, endpoint, safety, learning, TA, and AI TA summary snapshot",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/daily_validation_report.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/daily_validation_report.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/daily_validation_report.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/daily_validation_report.json",
-      "sha256": "8f1b84b05d280393621d99cebf5451ceea890a35c820858b2948f05624c426ce"
+      "sha256": "0bfb939dc0d45b1d5aa51db78ee6e41d44c2c3bf95553101f6e350ccd25d7831"
     },
     "daily_validation_report.md": {
       "path": "data/reports/daily_validation_report.md",
@@ -119,18 +127,18 @@
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/daily_validation_report.md",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/daily_validation_report.md",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/daily_validation_report.md",
-      "sha256": "c4ffa60bbb23ae77c31bbf806ca3c812ed69d69b4bb67bb0aed0df9194fd03b4"
+      "sha256": "f49f9c50a95edfdb34b160b91f4d23570175a9562d64698369bcb79ba488bd26"
     },
     "risk_block_review.json": {
       "path": "data/reports/risk_block_review.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:16.772422+00:00",
+      "generated_at": "2026-05-17T04:00:17.109963+00:00",
       "metric_scope": "risk-blocked candidate review from decisions.risk_blocked_candidate rows",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/risk_block_review.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/risk_block_review.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/risk_block_review.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/risk_block_review.json",
-      "sha256": "5720399e4c96160f0460a937ceac6c7d78052d6ab0cb7b5cd0b38b2603cdab3f"
+      "sha256": "46298f4e35160ddba050cd4b44d3e217d48cdb2f8fe939879f8a6cdf3c35223c"
     },
     "risk_block_review.md": {
       "path": "data/reports/risk_block_review.md",
@@ -141,18 +149,18 @@
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/risk_block_review.md",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/risk_block_review.md",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/risk_block_review.md",
-      "sha256": "883ae313355cac6015f9dff9040871c6db53992b316bd87425ac45d7bb88c35c"
+      "sha256": "763673a45f22208e787ec1a5e306d49596416e04d898a461e5505c52894a6b50"
     },
     "smart_money_review.json": {
       "path": "data/reports/smart_money_review.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:16.695946+00:00",
+      "generated_at": "2026-05-17T04:00:17.031740+00:00",
       "metric_scope": "Smart Money shadow evidence review; not an execution approval",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/smart_money_review.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/smart_money_review.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/smart_money_review.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/smart_money_review.json",
-      "sha256": "9da43c8536ea1ccc1a032b25d3bf6c6bea65ef36c5e10b907371cd57a64f8fdf"
+      "sha256": "8a1c916afe4551b4ac19961406fa1ca7522bdf8e91aff8c37a371206083595b0"
     },
     "smart_money_review.md": {
       "path": "data/reports/smart_money_review.md",
@@ -163,18 +171,18 @@
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/smart_money_review.md",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/smart_money_review.md",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/smart_money_review.md",
-      "sha256": "9b6e753ac3385b23df6f444b05fe76027a167513b27c5e40e23e0a3906afc08b"
+      "sha256": "c845f585951d1637c80a7429d7b96d5f63c48cb9d7d83bb9273ed59f4f54f2bd"
     },
     "shadow_buy_review.json": {
       "path": "data/reports/shadow_buy_review.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:17.995370+00:00",
+      "generated_at": "2026-05-17T04:00:18.342475+00:00",
       "metric_scope": "Shadow BUY evidence review from decisions.shadow_action=BUY rows",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_buy_review.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/shadow_buy_review.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_buy_review.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_buy_review.json",
-      "sha256": "1653c86078024bfd9aa82abef34983a45cd3cbc275c39f92e79c30b5a82f9356"
+      "sha256": "809809a773c1ba521b5d42228ff5c8000b4c863522472cca6490ab238fab2535"
     },
     "shadow_buy_review.md": {
       "path": "data/reports/shadow_buy_review.md",
@@ -185,18 +193,18 @@
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/shadow_buy_review.md",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_buy_review.md",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_buy_review.md",
-      "sha256": "23d36e91ba126a1e88075a3e58908bb54217842ba5bacefb2a42bdd069138770"
+      "sha256": "349ed333500e0f5e1377dd7d243e6beba4751904be44210eebeaa04dc31ed3b4"
     },
     "shadow_paper_test_report.json": {
       "path": "data/reports/shadow_paper_test_report.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:17.997989+00:00",
+      "generated_at": "2026-05-17T04:00:18.345262+00:00",
       "metric_scope": "paper-only Shadow Paper Test lifecycle and paused-entry state",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_paper_test_report.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/shadow_paper_test_report.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_paper_test_report.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_paper_test_report.json",
-      "sha256": "1fa4edbc87e9b71292d7adb5544188e7f1057cd261d763fb2e79c71967d91e5c"
+      "sha256": "716e02b046c5ff59fba23dcd9a094c8005f93571e53d5fce38abd9386749ae6b"
     },
     "shadow_paper_test_report.md": {
       "path": "data/reports/shadow_paper_test_report.md",
@@ -207,18 +215,18 @@
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/shadow_paper_test_report.md",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_paper_test_report.md",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_paper_test_report.md",
-      "sha256": "8c69c6ea28aff0925252d62a4b384a9772a0ec3bd97cdde1e882a6ab9135bc99"
+      "sha256": "3afeeda3feac11855038e87843270096f6fcd03cd7601b2196089045013ae4c1"
     },
     "shadow_buy_failure_diagnosis.json": {
       "path": "data/reports/shadow_buy_failure_diagnosis.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:18.176664+00:00",
+      "generated_at": "2026-05-17T04:00:18.531229+00:00",
       "metric_scope": "read-only failure diagnosis across Shadow BUY records and paper trades",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_buy_failure_diagnosis.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/shadow_buy_failure_diagnosis.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_buy_failure_diagnosis.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_buy_failure_diagnosis.json",
-      "sha256": "83f4cd1848803a889fe0516dc48b55e94f3fa29d7bbc8b4fd35a416576b7b9ff"
+      "sha256": "08505ae64a5d88f41ffbe95b24be7d77e1acac8d45cd47396c814efe99ddc74c"
     },
     "shadow_buy_failure_diagnosis.md": {
       "path": "data/reports/shadow_buy_failure_diagnosis.md",
@@ -229,18 +237,18 @@
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/shadow_buy_failure_diagnosis.md",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_buy_failure_diagnosis.md",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_buy_failure_diagnosis.md",
-      "sha256": "a050a3fc9a32cee145eb58427eb010e39a7dfe5459d2b6777026eb7517471757"
+      "sha256": "a8d98a49c0ad4f784b7956456b3aa4a0a18552763c77fa6f3c85afdc5ed1ffb5"
     },
     "strict_resume_shadow_simulation.json": {
       "path": "data/reports/strict_resume_shadow_simulation.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:18.332894+00:00",
+      "generated_at": "2026-05-17T04:00:18.697103+00:00",
       "metric_scope": "read-only staged strict-resume simulation; no entries are enabled",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/strict_resume_shadow_simulation.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/strict_resume_shadow_simulation.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/strict_resume_shadow_simulation.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/strict_resume_shadow_simulation.json",
-      "sha256": "57239ab5f8444c978168d78bd4e48f5ad5b979090123e3087412c2da64268975"
+      "sha256": "fe22d3ad398852bc9c5fc63f651c635e34b2a20704e9819ba6adf2fa762042f4"
     },
     "strict_resume_shadow_simulation.md": {
       "path": "data/reports/strict_resume_shadow_simulation.md",
@@ -251,18 +259,18 @@
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/strict_resume_shadow_simulation.md",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/strict_resume_shadow_simulation.md",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/strict_resume_shadow_simulation.md",
-      "sha256": "8afe2dbaf12346b5edb1a4729eb923752b54b4a4bac90fb4d0e6200cf3e46164"
+      "sha256": "61999c07e588e18ad8348653c45da094bc48fb9640d45709803d8145477538c7"
     },
     "shadow_paper_resume_plan.json": {
       "path": "data/reports/shadow_paper_resume_plan.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:18.009794+00:00",
+      "generated_at": "2026-05-17T04:00:18.357241+00:00",
       "metric_scope": "staged resume plan; recommendations are not applied automatically",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/shadow_paper_resume_plan.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/shadow_paper_resume_plan.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_paper_resume_plan.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_paper_resume_plan.json",
-      "sha256": "d72d88169ca0890b7e4132faa7ae34353c63f5e060a4d683db0f2977d1741c71"
+      "sha256": "c67c098a11c80bb89c2d5247a934931ce2cbb6d8dcdef8d0b7ba79bb84bc9722"
     },
     "shadow_paper_resume_plan.md": {
       "path": "data/reports/shadow_paper_resume_plan.md",
@@ -273,7 +281,7 @@
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/shadow_paper_resume_plan.md",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_paper_resume_plan.md",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/shadow_paper_resume_plan.md",
-      "sha256": "74ec019e0127bf26da3c03f839b1db4e29152ba3131b9ce3d7d2f97898d2e9ab"
+      "sha256": "da2106cf474d578d921a4389fabccce4f5c375f889120511d294c53850c3f08a"
     },
     "trade_execution_incident_20260515.json": {
       "path": "data/reports/trade_execution_incident_20260515.json",
@@ -300,68 +308,68 @@
     "ta_forecast.json": {
       "path": "data/reports/ta_forecast.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:17.374263+00:00",
+      "generated_at": "2026-05-17T04:00:17.703979+00:00",
       "metric_scope": "latest deterministic TA forecast, not historical backtest evidence",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ta_forecast.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/ta_forecast.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ta_forecast.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ta_forecast.json",
-      "sha256": "667a671da79710c5c7670b8f2f8b08755c1228e1bd2df6261a859961afbf9bfb"
+      "sha256": "3797b4b73391955698c0d859d103f6ee6f761b7862383f89316fdd52382ff4bf"
     },
     "ta_summary.json": {
       "path": "data/reports/ta_summary.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:17.768715+00:00",
+      "generated_at": "2026-05-17T04:00:18.106509+00:00",
       "metric_scope": "deterministic TA backtest summary over eligible historical rows and score thresholds",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ta_summary.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/ta_summary.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ta_summary.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ta_summary.json",
-      "sha256": "bea1ee96eb96731d51e78dac40c0d00ed11f8ac481287c99f3e8d3aee275f8d8"
+      "sha256": "5efd900c94af684cde89a0d36b30c126c7464e85f9c23ecbb6621148dbf739ca"
     },
     "ta_backtest.json": {
       "path": "data/reports/ta_backtest.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:17.768715+00:00",
+      "generated_at": "2026-05-17T04:00:18.106509+00:00",
       "metric_scope": "deterministic TA backtest over eligible historical rows and score thresholds",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ta_backtest.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/ta_backtest.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ta_backtest.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ta_backtest.json",
-      "sha256": "c5d10c0a237920778aa3e2da320c8e4691d5eb934ddbdd6767eba339b6897199"
+      "sha256": "7c049125fbc1a2b88a416d9618eae933007f321134387b82f28920acad37b381"
     },
     "ai_ta_performance.json": {
       "path": "data/reports/ai_ta_performance.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:17.673121+00:00",
+      "generated_at": "2026-05-17T04:00:18.006570+00:00",
       "metric_scope": "live AI TA call/shadow-candidate performance from decisions rows, not threshold replay",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ai_ta_performance.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/ai_ta_performance.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ai_ta_performance.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ai_ta_performance.json",
-      "sha256": "aaa5686ca74cdbbbc1181bf669f5f81f964bb1df6cbd297611d024b301bcd593"
+      "sha256": "6a399865f467d94454b594393488ab1134e4b8888ee6caab4ba67cd21fb44f27"
     },
     "ai_ta_summary.json": {
       "path": "data/reports/ai_ta_summary.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:17.901752+00:00",
+      "generated_at": "2026-05-17T04:00:18.237644+00:00",
       "metric_scope": "AI TA deterministic replay summary; no AI calls are made during backtest",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ai_ta_summary.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/ai_ta_summary.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ai_ta_summary.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ai_ta_summary.json",
-      "sha256": "526dc137c3aa5f7e74c74bef72d3622df885e872dc7d6646418070048ed2ec24"
+      "sha256": "fc1a37c10d3afda12bd9a494fb0cf0e745433f07684860e09f91c47574ea243c"
     },
     "ai_ta_backtest.json": {
       "path": "data/reports/ai_ta_backtest.json",
       "present": true,
-      "generated_at": "2026-05-16T16:00:17.901752+00:00",
+      "generated_at": "2026-05-17T04:00:18.237644+00:00",
       "metric_scope": "AI TA deterministic replay of TA thresholds; ai_calls_made=0 by design",
       "branch_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/shadow-paper-paused-20260513/data/reports/ai_ta_backtest.json",
       "branch_github_url": "https://github.com/benyamin-persia/paper2real/blob/shadow-paper-paused-20260513/data/reports/ai_ta_backtest.json",
       "commit_pinned_raw_url": "https://raw.githubusercontent.com/benyamin-persia/paper2real/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ai_ta_backtest.json",
       "commit_pinned_github_url": "https://github.com/benyamin-persia/paper2real/blob/21ad041a7db2402c11ba9bb4df060f986bc92e2b/data/reports/ai_ta_backtest.json",
-      "sha256": "d77eeee16264d8f42d2803df14f4e43be705932006a46cb5ce6992be7cde1424"
+      "sha256": "a0bf6285e45a6a2bcee9928a6c98eaad2a83e67a6f8e06f159c23a24c1dd4d3d"
     }
   },
   "raw_github_urls": {
