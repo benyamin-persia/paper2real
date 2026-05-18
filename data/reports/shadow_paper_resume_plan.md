@@ -1,6 +1,6 @@
 # Shadow Paper Resume Plan
 
-- Generated at: `2026-05-18T04:00:20.577139+00:00`
+- Generated at: `2026-05-18T16:00:18.654683+00:00`
 - Current status: `Paper Test Paused`
 - Why paused: `Supervision forbids trading: DO_NOT_RESUME_TRADING_OR_PAPER_TEST`
 - Recommendation: `KEEP_PAUSED_AND_COLLECT_SHADOW, DO_NOT_RESUME_YET`
@@ -33,7 +33,7 @@
     "bb_squeeze_overrides_are_weak": true,
     "four_hour_horizon_mismatches_stop_loss": true,
     "exchange_or_news_regime_changed": true,
-    "sample_became_worse_after_more_data": true,
+    "sample_became_worse_after_more_data": false,
     "any_bearish_alignment_loses": true
   },
   "best_condition": {
