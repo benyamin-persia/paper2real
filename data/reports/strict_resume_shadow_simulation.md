@@ -2,21 +2,21 @@
 
 Paper test is paused. This is simulation only. No trades can open.
 
-- Generated at: `2026-05-17T04:00:18.697103+00:00`
-- Total Shadow BUY records: `262`
-- Strict candidates: `68`
-- Rejected: `194`
+- Generated at: `2026-05-18T04:00:20.949733+00:00`
+- Total Shadow BUY records: `280`
+- Strict candidates: `72`
+- Rejected: `208`
 - Failed paper trades filtered out: `4`
-- Strict 4h win rate: `51.47%`
-- Strict avg 4h return: `-0.0789%`
+- Strict 4h win rate: `48.61%`
+- Strict avg 4h return: `-0.1037%`
 - Recommendation: `DO_NOT_RESUME_YET`
 
 ## Rejected By Reason
 
 - no_bullish_confirmation: `9`
-- smart_money_bearish: `118`
+- smart_money_bearish: `131`
 - bb_squeeze_override_disabled: `40`
-- ta_bearish: `27`
+- ta_bearish: `28`
 
 ## Best Condition
 
@@ -55,32 +55,32 @@ Paper test is paused. This is simulation only. No trades can open.
 
 ```json
 {
-  "condition": "alignment:ta_bullish",
-  "count": 30,
-  "scored_15m": 18,
-  "win_rate_15m": 38.89,
-  "avg_return_15m": -0.0921,
-  "median_return_15m": -0.0163,
-  "min_return_15m": -0.7571,
-  "max_return_15m": 0.1933,
-  "scored_1h": 30,
+  "condition": "risk_blocker:no blocker",
+  "count": 10,
+  "scored_15m": 3,
+  "win_rate_15m": 66.67,
+  "avg_return_15m": 0.0475,
+  "median_return_15m": 0.0619,
+  "min_return_15m": -0.0333,
+  "max_return_15m": 0.1138,
+  "scored_1h": 10,
   "win_rate_1h": 30.0,
-  "avg_return_1h": -0.1124,
-  "median_return_1h": -0.0763,
-  "min_return_1h": -0.8012,
-  "max_return_1h": 0.5323,
-  "scored_4h": 30,
-  "win_rate_4h": 43.33,
-  "avg_return_4h": -0.1576,
-  "median_return_4h": -0.0435,
-  "min_return_4h": -1.2435,
-  "max_return_4h": 0.7873,
-  "scored_24h": 29,
-  "win_rate_24h": 48.28,
-  "avg_return_24h": -0.6819,
-  "median_return_24h": -0.1891,
-  "min_return_24h": -2.6983,
-  "max_return_24h": 0.8769
+  "avg_return_1h": -0.079,
+  "median_return_1h": -0.0427,
+  "min_return_1h": -0.4803,
+  "max_return_1h": 0.0703,
+  "scored_4h": 10,
+  "win_rate_4h": 40.0,
+  "avg_return_4h": -0.1974,
+  "median_return_4h": -0.0683,
+  "min_return_4h": -0.6977,
+  "max_return_4h": 0.1156,
+  "scored_24h": 6,
+  "win_rate_24h": 16.67,
+  "avg_return_24h": -0.1428,
+  "median_return_24h": -0.1438,
+  "min_return_24h": -0.2923,
+  "max_return_24h": 0.0188
 }
 ```
 
