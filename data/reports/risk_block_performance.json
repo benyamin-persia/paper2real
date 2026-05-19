@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-19T04:00:33.992430+00:00",
+  "generated_at": "2026-05-19T16:00:22.089700+00:00",
   "total_blocked_candidates": 200,
   "minimum_required_before_tuning": 30,
   "ready_to_tune": true,
@@ -8,7 +8,7 @@
       "count": 112,
       "avg_return_1h": -0.0288,
       "avg_return_4h": 0.0153,
-      "avg_return_24h": -0.3742,
+      "avg_return_24h": -0.3743,
       "blocked_winners_1h": 1,
       "blocked_winners_4h": 5,
       "blocked_winners_24h": 15,
@@ -56,7 +56,7 @@
       "count": 2,
       "avg_return_1h": -0.0189,
       "avg_return_4h": 0.5204,
-      "avg_return_24h": -0.2016,
+      "avg_return_24h": 0.0151,
       "blocked_winners_1h": 0,
       "blocked_winners_4h": 0,
       "blocked_winners_24h": 0,
@@ -65,7 +65,7 @@
       "saved_losses_24h": 0,
       "neutral_1h": 2,
       "neutral_4h": 2,
-      "neutral_24h": 1,
+      "neutral_24h": 2,
       "verdict": "not_enough_data"
     }
   }

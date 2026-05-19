@@ -2,19 +2,19 @@
 
 Paper test is paused. This is simulation only. No trades can open.
 
-- Generated at: `2026-05-19T04:00:36.337703+00:00`
-- Total Shadow BUY records: `310`
-- Strict candidates: `77`
-- Rejected: `233`
+- Generated at: `2026-05-19T16:00:24.294038+00:00`
+- Total Shadow BUY records: `325`
+- Strict candidates: `81`
+- Rejected: `244`
 - Failed paper trades filtered out: `4`
-- Strict 4h win rate: `46.67%`
-- Strict avg 4h return: `-0.1564%`
+- Strict 4h win rate: `41.98%`
+- Strict avg 4h return: `-0.1694%`
 - Recommendation: `DO_NOT_RESUME_YET`
 
 ## Rejected By Reason
 
 - no_bullish_confirmation: `9`
-- smart_money_bearish: `156`
+- smart_money_bearish: `167`
 - bb_squeeze_override_disabled: `40`
 - ta_bearish: `28`
 
@@ -56,29 +56,29 @@ Paper test is paused. This is simulation only. No trades can open.
 ```json
 {
   "condition": "risk_blocker:no blocker",
-  "count": 15,
-  "scored_15m": 6,
-  "win_rate_15m": 33.33,
-  "avg_return_15m": -0.3238,
-  "median_return_15m": -0.224,
+  "count": 19,
+  "scored_15m": 10,
+  "win_rate_15m": 30.0,
+  "avg_return_15m": -0.2603,
+  "median_return_15m": -0.232,
   "min_return_15m": -1.0294,
-  "max_return_15m": 0.1138,
-  "scored_1h": 15,
-  "win_rate_1h": 26.67,
-  "avg_return_1h": -0.2492,
-  "median_return_1h": -0.0579,
+  "max_return_15m": 0.3057,
+  "scored_1h": 19,
+  "win_rate_1h": 31.58,
+  "avg_return_1h": -0.2554,
+  "median_return_1h": -0.154,
   "min_return_1h": -1.1629,
   "max_return_1h": 0.4149,
-  "scored_4h": 13,
-  "win_rate_4h": 30.77,
-  "avg_return_4h": -0.48,
-  "median_return_4h": -0.3585,
+  "scored_4h": 19,
+  "win_rate_4h": 15.79,
+  "avg_return_4h": -0.4331,
+  "median_return_4h": -0.3389,
   "min_return_4h": -1.5672,
   "max_return_4h": 0.1156,
-  "scored_24h": 10,
-  "win_rate_24h": 10.0,
-  "avg_return_24h": -0.6434,
-  "median_return_24h": -0.2853,
+  "scored_24h": 13,
+  "win_rate_24h": 7.69,
+  "avg_return_24h": -0.6895,
+  "median_return_24h": -0.785,
   "min_return_24h": -2.1555,
   "max_return_24h": 0.0188
 }
