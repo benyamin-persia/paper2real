@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-18T16:00:18.527665+00:00",
+  "generated_at": "2026-05-19T04:00:35.741562+00:00",
   "metric_scope": "deterministic AI TA replay derived from TA threshold replay; no AI API calls are made in this backtest",
   "mode": "deterministic_ai_ta_replay",
   "ai_calls_made": 0,

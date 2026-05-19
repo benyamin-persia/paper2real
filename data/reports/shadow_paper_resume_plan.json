@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-18T16:00:18.654683+00:00",
+  "generated_at": "2026-05-19T04:00:35.883236+00:00",
   "current_status": "Paper Test Paused",
-  "why_paused": "Supervision forbids trading: DO_NOT_RESUME_TRADING_OR_PAPER_TEST",
+  "why_paused": "Supervision forbids trading: EXPORT_NOT_AUDIT_CLEAN",
   "diagnosis_summary": {
     "source_report": "data/reports/shadow_buy_failure_diagnosis.json",
     "recommended_next_action": [

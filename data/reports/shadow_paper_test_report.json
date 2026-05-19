@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-05-18T16:00:18.642772+00:00",
+  "generated_at": "2026-05-19T04:00:35.870885+00:00",
   "enabled": false,
   "paper_test_entries_enabled": false,
   "config_enabled": false,
   "mode": "paper_only",
   "paper_only": true,
-  "pause_reason": "Supervision forbids trading: DO_NOT_RESUME_TRADING_OR_PAPER_TEST",
+  "pause_reason": "Supervision forbids trading: EXPORT_NOT_AUDIT_CLEAN",
   "review_pause_reason": "Shadow BUY review downgraded to SHADOW_BUY_STAYS_SHADOW",
   "shadow_buy_review_recommendation": "SHADOW_BUY_STAYS_SHADOW",
   "shadow_buy_positive_expectancy": false,
-  "shadow_buy_review_count": 295,
+  "shadow_buy_review_count": 310,
   "strict_rules_staged": true,
   "strict_resume_conditions": {
     "smart_money_not_bearish": true,
