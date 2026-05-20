@@ -1,6 +1,6 @@
 # Shadow Paper Resume Plan
 
-- Generated at: `2026-05-19T16:00:23.863805+00:00`
+- Generated at: `2026-05-20T04:00:19.979176+00:00`
 - Current status: `Paper Test Paused`
 - Why paused: `Supervision forbids trading: EXPORT_NOT_AUDIT_CLEAN`
 - Recommendation: `KEEP_PAUSED_AND_COLLECT_SHADOW, DO_NOT_RESUME_YET`

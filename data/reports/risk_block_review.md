@@ -1,7 +1,7 @@
 # Risk Block Review
 
-- generated_at: `2026-05-19T16:00:22.537458+00:00`
-- total_blocked_candidates: `200`
+- generated_at: `2026-05-20T04:00:18.667178+00:00`
+- total_blocked_candidates: `201`
 - minimum_required: `30`
 - ready_for_review: `True`
 
@@ -59,9 +59,9 @@
 - average_return_all_scored_horizons: `0.8644`
 
 ### max_open_trades
-- count: `2`
-- avg_return_1h: `-0.0189`
-- avg_return_4h: `0.5204`
+- count: `3`
+- avg_return_1h: `0.0898`
+- avg_return_4h: `0.3534`
 - avg_return_24h: `0.0151`
 - blocked_winners_1h: `0`
 - blocked_winners_4h: `0`
@@ -69,11 +69,11 @@
 - saved_losses_1h: `0`
 - saved_losses_4h: `0`
 - saved_losses_24h: `0`
-- neutral_1h: `2`
-- neutral_4h: `2`
+- neutral_1h: `3`
+- neutral_4h: `3`
 - neutral_24h: `2`
 - verdict: `not_enough_data`
-- average_return_all_scored_horizons: `0.1722`
+- average_return_all_scored_horizons: `0.1528`
 
 ## Recommendation
 

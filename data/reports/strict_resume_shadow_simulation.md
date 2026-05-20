@@ -2,21 +2,21 @@
 
 Paper test is paused. This is simulation only. No trades can open.
 
-- Generated at: `2026-05-19T16:00:24.294038+00:00`
-- Total Shadow BUY records: `325`
-- Strict candidates: `81`
-- Rejected: `244`
+- Generated at: `2026-05-20T04:00:20.427847+00:00`
+- Total Shadow BUY records: `340`
+- Strict candidates: `85`
+- Rejected: `255`
 - Failed paper trades filtered out: `4`
-- Strict 4h win rate: `41.98%`
-- Strict avg 4h return: `-0.1694%`
+- Strict 4h win rate: `41.18%`
+- Strict avg 4h return: `-0.1735%`
 - Recommendation: `DO_NOT_RESUME_YET`
 
 ## Rejected By Reason
 
 - no_bullish_confirmation: `9`
-- smart_money_bearish: `167`
+- smart_money_bearish: `177`
 - bb_squeeze_override_disabled: `40`
-- ta_bearish: `28`
+- ta_bearish: `29`
 
 ## Best Condition
 
@@ -56,29 +56,29 @@ Paper test is paused. This is simulation only. No trades can open.
 ```json
 {
   "condition": "risk_blocker:no blocker",
-  "count": 19,
-  "scored_15m": 10,
-  "win_rate_15m": 30.0,
-  "avg_return_15m": -0.2603,
-  "median_return_15m": -0.232,
+  "count": 22,
+  "scored_15m": 11,
+  "win_rate_15m": 27.27,
+  "avg_return_15m": -0.2407,
+  "median_return_15m": -0.0645,
   "min_return_15m": -1.0294,
   "max_return_15m": 0.3057,
-  "scored_1h": 19,
-  "win_rate_1h": 31.58,
-  "avg_return_1h": -0.2554,
-  "median_return_1h": -0.154,
+  "scored_1h": 22,
+  "win_rate_1h": 27.27,
+  "avg_return_1h": -0.2447,
+  "median_return_1h": -0.1526,
   "min_return_1h": -1.1629,
   "max_return_1h": 0.4149,
-  "scored_4h": 19,
-  "win_rate_4h": 15.79,
-  "avg_return_4h": -0.4331,
-  "median_return_4h": -0.3389,
+  "scored_4h": 22,
+  "win_rate_4h": 13.64,
+  "avg_return_4h": -0.4213,
+  "median_return_4h": -0.3484,
   "min_return_4h": -1.5672,
   "max_return_4h": 0.1156,
-  "scored_24h": 13,
-  "win_rate_24h": 7.69,
-  "avg_return_24h": -0.6895,
-  "median_return_24h": -0.785,
+  "scored_24h": 15,
+  "win_rate_24h": 6.67,
+  "avg_return_24h": -0.6777,
+  "median_return_24h": -0.6418,
   "min_return_24h": -2.1555,
   "max_return_24h": 0.0188
 }
